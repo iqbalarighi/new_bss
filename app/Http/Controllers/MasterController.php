@@ -12,10 +12,10 @@ class MasterController extends Controller
     public function tenant()
     {
         $perusahaan = PerusahaanModel::paginate(10);
-        $kantor = KantorModel::paginate(10);
+        
         $jabatan = JabatanModel::paginate(10);
 
-        return view('master.tenant', compact('perusahaan', 'kantor', 'jabatan'));
+        return view('master.tenant', compact('perusahaan'));
     }
 
     public function tambah(Request $request)
@@ -29,7 +29,15 @@ class MasterController extends Controller
 
         $tambah->save();
 
-        return redirect()->back()
-        ->with('success', 'Tambah Data Berhasil');
+        return back()
+            ->with('status', 'berhasil');
+    }
+
+
+    public function kantor()
+    {
+        $kantor = KantorModel::paginate(10);
+
+        return view('master.kantor', compact( 'kantor'));
     }
 }

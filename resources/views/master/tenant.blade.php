@@ -1,17 +1,6 @@
 @extends('layouts.side.side')
 
 @section('content')
-@if(Session::get('success'))
-<script type="text/javascript">
-    Swal.fire({
-  title: "Berhasil",
-  text: "{{Session::get('success')}}",
-  icon: "success",
-  showConfirmButton: false,
-  timer: 1500
-});
-</script>
-@endif
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
@@ -21,11 +10,17 @@
                 </div>
 
                 <div class="card-body">
-                    @if (session('status'))
-                        <div class="alert alert-success" role="alert">
-                            {{ session('status') }}
-                        </div>
-                    @endif
+@if (Session::get('status'))
+<script>
+        Swal.fire({
+          title: "Berhasil",
+          icon: "success",
+          showConfirmButton: false,
+          timer: 1500
+        });
+</script>
+@endif
+
 <style>
         .modal.fade .modal-dialog {
             transform: scale(0.8);

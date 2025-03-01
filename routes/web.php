@@ -20,6 +20,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/tenant', [MasterController::class, 'tenant'])->name('tenant');
     Route::post('/tenant/tambah', [MasterController::class, 'tambah']);
+    Route::get('/kantor', [MasterController::class, 'kantor'])->name('kantor');
 });
 
 Route::post('/loginabsen', [AuthController::class, 'loginabsen']);

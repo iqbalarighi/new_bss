@@ -17,6 +17,7 @@
 
             <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
@@ -30,7 +31,7 @@
     </head>
     <body>
 
-        <div class="d-flex " id="wrapper">
+        <div class="d-flex " id="wrapper" style="background-color: darkgrey;">
         <!-- Sidebar -->
         @include('layouts.side.sidenav')
         <!-- /#sidebar-wrapper -->
@@ -39,7 +40,7 @@
 
         <!-- Page Content -->
         <div id="page-content-wrapper" class="d-flex flex-column min-vh-100">
-        <nav class="navbar navbar-expand-lg navbar-light bg-info border-bottom sticky-top">
+        <nav class="navbar navbar-expand-lg navbar-light border-bottom sticky-top" style="background-color: mediumpurple;">
             <button class="btn btn-light ms-2" id="menu-toggle">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
                     <path fill-rule="evenodd" d="M4 7a1 1 0 100-2 1 1 0 000 2zm4.75-1.5a.75.75 0 000 1.5h11.5a.75.75 0 000-1.5H8.75zm0 6a.75.75 0 000 1.5h11.5a.75.75 0 000-1.5H8.75zm0 6a.75.75 0 000 1.5h11.5a.75.75 0 000-1.5H8.75zM5 12a1 1 0 11-2 0 1 1 0 012 0zm-1 7a1 1 0 100-2 1 1 0 000 2z">
@@ -80,11 +81,11 @@
             
         </div>
     </div>
+</div>
+</body>
             <footer class="footer py-1">
                   <center>Copyright &copy; {{Carbon\Carbon::today()->isoFormat('Y');}} www.sispam.id. All Rights Reserved </center>  
             </footer>
-</div>
-</body>
 
 
     <script src=

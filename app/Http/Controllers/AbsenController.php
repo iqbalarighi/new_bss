@@ -33,9 +33,13 @@ class AbsenController extends Controller
         $fileName = $formatName . ".png";
         $file= $folderPath . $fileName;
 
-        Storage::disk('local')->put($file, $image_base64);
+        $stor = Storage::put($file, $image_base64);
 
+    if ($stor) {
+        echo 0;
+    } else {
+        echo 1;
+    }
 
-        return view('absen.create');
     }
 }

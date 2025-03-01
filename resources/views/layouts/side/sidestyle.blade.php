@@ -60,7 +60,6 @@
             background: #333;
             color: white;
             text-align: center;
-            padding: 10px;
             position: sticky;
             bottom: 0;
             width: 100%;
