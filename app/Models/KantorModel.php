@@ -13,5 +13,6 @@ class KantorModel extends Model
         'nama_kantor',
         'alamat',
         'lokasi',
+        'radius',
     ];
 }

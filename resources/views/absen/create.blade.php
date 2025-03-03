@@ -22,7 +22,7 @@
 		border-radius: 15px;
 	}
 
-	#map { height: 250px; }.
+	#map { height: 200px; }.
 </style>
 
 	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -35,13 +35,13 @@
     <div class="wide-block pt-2 pb-2">
     	<div class="row">
     		<div class="col">
-		    	<input type="hidden" id="lokasi">
+		    	<input type="text" id="lokasi">
 		        <div class="webcam-capture"></div>
     		</div>
 		</div>
 		<div class="row">
     		<div class="col">
-    			<button id="capture" class="btn btn-primary btn-block">
+    			<button id="capture" class="btn btn-primary btn-block" disabled>
     				<ion-icon name="camera-outline"></ion-icon>
     			Absen Masuk</button>
     		</div>
@@ -63,37 +63,68 @@
 		width: 640,
 		image_format:'jpeg',
 		jpeg_quality: 80
-	})
+	});
 
-	Webcam.attach('.webcam-capture')
+	Webcam.attach('.webcam-capture');
 
 var lokasi = document.getElementById('lokasi');
-if(navigator.geolocation){
-	navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
-}
 
-function successCallback(position) {
-	lokasi.value = position.coords.latitude + "," + position.coords.longitude;
+	// var map = L.map('map').setView([position.coords.latitude, position.coords.longitude], 18);
+var map = L.map('map').setView([-6.200000, 106.816666], 18);
 
-	var map = L.map('map').setView([position.coords.latitude, position.coords.longitude], 18);
 	L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
-    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    attribution: '&copy; OpenStreetMap contributors'
 	}).addTo(map);
 
-	var marker = L.marker([position.coords.latitude, position.coords.longitude]).addTo(map);
+	var center = L.latLng(-6.2963703,106.5934415); //lokasi radius kantor -6.1697879,106.8381454
+	var radius = 10; //ganti dengan value dari database
 
-	var circle = L.circle([-6.1697879,106.8381454], {
-    color: 'red',
-    fillColor: '#f03',
-    fillOpacity: 0.5,
-    radius: 50
-}).addTo(map);
-	}
+	var circle = L.circle(center, { //-6.1697879,106.8381454 ganti lokasi kantor dengan value dari database
+	    color: 'blue',
+        fillColor: '#blue',
+        fillOpacity: 0.2,
+        radius: radius
+	}).addTo(map);
 
-function errorCallback(position) {
-	
-}
+var userMarker = L.marker(center).addTo(map).bindPopup('Menunggu lokasi...');
+
+if(navigator.geolocation){
+	navigator.geolocation.watchPosition(function (position) {
+	lokasi.value = position.coords.latitude + "," + position.coords.longitude;
+
+	var lat = position.coords.latitude;
+            var lng = position.coords.longitude;
+            var userLocation = L.latLng(lat, lng);
+
+            // Update marker user
+            userMarker.setLatLng(userLocation).bindPopup('Lokasi Anda').openPopup();
+
+            // Update map supaya ikut geser
+            map.setView(userLocation, 18);
+
+            // Hitung jarak ke pusat radius
+            var distance = userLocation.distanceTo(center);
+            console.log('Jarak ke pusat: ' + distance + ' meter');
+
+    // Cek apakah dalam radius atau tidak
+    if (distance > radius) {
+        // alert('⚠️ Anda belum masuk ke dalam radius!');
+        $('#capture').prop('disabled', true);
+    } else {
+        // alert('✅ Anda berada di dalam radius.');
+        $('#capture').prop('disabled', false);
+    }
+
+	}, function(error) {
+            alert('Gagal mendapatkan lokasi: ' + error.message);
+        }, {
+            enableHighAccuracy: true,
+            maximumAge: 1000
+        });
+    } else {
+        alert('Geolocation tidak didukung di browser ini.');
+    }
 
 $('#capture').click(function (e) {
 	Webcam.snap(function (uri) {

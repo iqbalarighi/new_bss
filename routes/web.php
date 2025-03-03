@@ -19,8 +19,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/absen/store',[AbsenController::class, 'store']);
 
     Route::get('/tenant', [MasterController::class, 'tenant'])->name('tenant');
-    Route::post('/tenant/tambah', [MasterController::class, 'tambah']);
+    Route::post('/tenant/tambah', [MasterController::class, 'tambahtenant']);
     Route::get('/kantor', [MasterController::class, 'kantor'])->name('kantor');
+    Route::post('/kantor/tambah', [MasterController::class, 'tambahkantor']);
 });
 
 Route::post('/loginabsen', [AuthController::class, 'loginabsen']);
