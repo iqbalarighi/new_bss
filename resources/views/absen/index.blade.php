@@ -26,7 +26,7 @@
                                 <span class="text-center">Profil</span>
                             </div>
                         </div>
-                        <div class="item-menu text-center">
+                        {{-- <div class="item-menu text-center">
                             <div class="menu-icon">
                                 <a href="" class="danger" style="font-size: 40px;">
                                     <ion-icon name="calendar-number"></ion-icon>
@@ -35,7 +35,7 @@
                             <div class="menu-name">
                                 <span class="text-center">Cuti</span>
                             </div>
-                        </div>
+                        </div> --}}
                         <div class="item-menu text-center">
                             <div class="menu-icon">
                                 <a href="" class="warning" style="font-size: 40px;">

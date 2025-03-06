@@ -8,6 +8,9 @@ use App\Http\Controllers\MasterController;
 Route::get('/', function () {
     return view('welcome');
 });
+Route::get('/main', function () {
+    return view('maintenance');
+});
 
 Auth::routes();
 
@@ -20,8 +23,12 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/tenant', [MasterController::class, 'tenant'])->name('tenant');
     Route::post('/tenant/tambah', [MasterController::class, 'tambahtenant']);
+
     Route::get('/kantor', [MasterController::class, 'kantor'])->name('kantor');
     Route::post('/kantor/tambah', [MasterController::class, 'tambahkantor']);
+
+    Route::get('/satker', [MasterController::class, 'satker'])->name('satker');
+    Route::post('/satker/tambah', [MasterController::class, 'tambahsatker']);
 });
 
 Route::post('/loginabsen', [AuthController::class, 'loginabsen']);

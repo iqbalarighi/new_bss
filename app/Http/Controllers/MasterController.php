@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\JabatanModel;
 use App\Models\KantorModel;
 use App\Models\PerusahaanModel;
+use App\Models\SatkerModel;
 use Illuminate\Http\Request;
 
 class MasterController extends Controller
@@ -37,7 +38,7 @@ class MasterController extends Controller
     public function kantor()
     {
         $perusahaan = PerusahaanModel::get();
-        $kantor = KantorModel::paginate(10);
+        $kantor = KantorModel::with('perusa')->paginate(15);
 
         return view('master.kantor', compact('kantor', 'perusahaan'));
     }
@@ -57,5 +58,25 @@ class MasterController extends Controller
 
         return back()
             ->with('status', 'berhasil');
+    }
+    
+    public function satker()
+    {
+        $satker = SatkerModel::paginate(15);
+
+        return view('master.satker', compact('satker'));
+    }
+
+    public function tambahsatker(Request $request)
+    {
+
+        $satker = new SatkerModel;
+
+        $satker->satuan_kerja = $request->satker;
+
+        $satker->save();
+
+        return back()
+        ->with('status', 'berhasil');
     }
 }

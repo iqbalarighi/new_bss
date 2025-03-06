@@ -34,7 +34,10 @@
         .modal.show .modal-dialog {
             transform: scale(1);
         }
-        #map { height: 200px; }.
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
     </style>
     <!-- Modal Bootstrap -->                    
     <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -51,7 +54,7 @@
                         <div class="mb-3">
                             <label for="tenantName" class="form-label">Nama Perusahaan</label>
                             {{-- <input type="text" class="form-control"name="usaha" placeholder="Masukkan nama kantor" required> --}}
-                            <select name="usaha" class="form-control" required>
+                            <select name="usaha" id="tenantName" class="form-select" required>
                                 <option selected disabled value="">Pilih Perusahaan</option>
                                 @foreach($perusahaan as $usaha)
                                 <option value="{{$usaha->id}}">{{$usaha->perusahaan}}</option>
@@ -59,43 +62,54 @@
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label for="tenantName" class="form-label">Nama Kantor</label>
-                            <input type="text" class="form-control" name="kantor" placeholder="Masukkan nama kantor" required>
+                            <label for="kantor" class="form-label">Nama Kantor</label>
+                            <input type="text" class="form-control" id="kantor" name="kantor" placeholder="Masukkan nama kantor" required>
                         </div>
                         <div class="mb-3">
-                            <label for="tenantAddress" class="form-label">Alamat</label>
-                            <input type="text" class="form-control"name="alamat" placeholder="Masukkan alamat" required>
+                            <label for="alamat" class="form-label">Alamat</label>
+                            <input type="text" id="alamat" class="form-control"name="alamat" placeholder="Masukkan alamat" required>
                         </div>
                         <div class="mb-3">
-                            <label for="tenantAddress" class="form-label">Radius</label>
-                            <input type="text" class="form-control" name="radius" placeholder="Jarak lokasi absen (meter)" required>
+                            <label for="radius" class="form-label">Radius</label>
+                            <input type="text" id="radius" class="form-control" name="radius" placeholder="Jarak lokasi absen (meter)" required>
                         </div>
                         <div class="mb-3">
-                            <label for="tenantAddress" class="form-label">lokasi</label>
-                            <input type="text" class="form-control" id="lokasi" name="lokasi" placeholder="lokasi" readonly required>
+                            <label for="lokasi" class="form-label">lokasi</label>
+                            <input type="text" id="lokasi" class="form-control" id="lokasi" name="lokasi" placeholder="lokasi" readonly required>
                         </div>
                         <div class="mb-3">
                             <div id="map"></div>
 
 <script>
-    var map = L.map('map').setView([-6.176560963605854, 106.82827323675157], 18); // Titik awal map
+    var map = L.map('map').setView([-6.1754024,106.8271691649727], 18); // Titik awal map
 
     // Tambah tile map
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // Tambah fitur pencarian lokasi
-      var geocoder = L.Control.geocoder({
+    // Variabel marker utama
+    var currentMarker = null;
+
+    // Variabel untuk marker hasil geocoder
+    var geocodeMarker = null;
+
+    // Tambahkan Geocoder (search lokasi)
+    var geocoder = L.Control.geocoder({
         defaultMarkGeocode: false
     })
     .on('markgeocode', function(e) {
         var latlng = e.geocode.center;
-        // alert("Hasil Pencarian:\nLatitude: " + latlng.lat + "\nLongitude: " + latlng.lng);
-        $('#lokasi').val(latlng.lat+','+latlng.lng);
-        L.marker(latlng).addTo(map)
+
+        // Reset marker geocode sebelumnya
+        if (geocodeMarker) {
+            map.removeLayer(geocodeMarker);
+        }
+
+        geocodeMarker = L.marker(latlng).addTo(map)
             .bindPopup(e.geocode.name)
             .openPopup();
+
         map.setView(latlng, 15);
     })
     .addTo(map);
@@ -105,9 +119,29 @@
         var lat = e.latlng.lat;
         var lng = e.latlng.lng;
         // alert("Latitude: " + lat  "\nLongitude: " + lng);
+    // Hapus marker sebelumnya jika ada
+        if (currentMarker) {
+            map.removeLayer(currentMarker);
+        }
+
+        // Hapus marker hasil geocoder jika ada
+        if (geocodeMarker) {
+            map.removeLayer(geocodeMarker);
+            geocodeMarker = null;
+        }
+
+        // Tambahkan marker baru
+        currentMarker = L.marker([lat, lng]).addTo(map);
 
         $('#lokasi').val(lat+','+lng);
     });
+
+    setTimeout(function () {
+  map.invalidateSize();
+  map.fitBounds(myBounds2, {
+    maxZoom: 10
+  });
+}, 1000); // Adjust the value (in ms)
 </script>
                         </div>
                         {{-- <div class="mb-3">
@@ -125,7 +159,7 @@
         </div>
     </div>
     <!-- Modal Bootstrap -->
-
+    <div style="overflow: auto;">
             <table class="table table-striped table-bordered table-hover">
             <thead class="table-dark">
                 <tr>
@@ -137,11 +171,11 @@
                     <th>Aksi</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody> 
                 @foreach($kantor as $key => $kan)
                 <tr>
                     <td>{{$kantor->firstitem()+$key}}</td>
-                    <td>{{$kan->perusahaan}}</td>
+                    <td>{{$kan->perusa->perusahaan}}</td>
                     <td>{{$kan->nama_kantor}}</td>
                     <td>{{$kan->alamat}}</td>
                     <td>{{$kan->radius}} meter</td>
@@ -153,6 +187,7 @@
                 @endforeach
             </tbody>
         </table>
+    </div>
                 </div>
             </div>
         </div>
