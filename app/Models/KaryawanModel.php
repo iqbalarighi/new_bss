@@ -19,13 +19,21 @@ class KaryawanModel extends Authenticatable
 protected $table = 'karyawan';
 
     protected $fillable = [
-        'nip',
-        'nama_lengkap',
         'perusahaan',
         'nama_kantor',
         'jabatan',
-        'no_hp',
+        'satker',
+        'nip',
         'password',
+        'nama_lengkap',
+        'tgl_lahir',
+        'alamat',
+        'domisili',
+        'no_hp',
+        'ko_drat',
+        'bpjs_tk',
+        'bpjs_sehat',
+        'status',
     ];
 
     protected $hidden = [
@@ -37,7 +45,7 @@ protected $table = 'karyawan';
         'email_verified_at' => 'datetime',
     ];
 
-    protected $appends = [
-        'profile_photo_url',
-    ];
+    // protected $appends = [
+    //     'profile_photo_url',
+    // ];
 }

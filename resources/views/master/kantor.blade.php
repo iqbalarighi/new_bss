@@ -36,7 +36,7 @@
         }
         #map {
             width: 100%;
-            height: 100vh;
+            height: 50vh;
         }
     </style>
     <!-- Modal Bootstrap -->                    
@@ -62,7 +62,7 @@
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label for="kantor" class="form-label">Nama Kantor</label>
+                            <label for="kantor" class="form-label">Nama Kantor / Gedung</label>
                             <input type="text" class="form-control" id="kantor" name="kantor" placeholder="Masukkan nama kantor" required>
                         </div>
                         <div class="mb-3">
@@ -79,15 +79,25 @@
                         </div>
                         <div class="mb-3">
                             <div id="map"></div>
+                        </div>
 
 <script>
-    var map = L.map('map').setView([-6.1754024,106.8271691649727], 18); // Titik awal map
+    var map = L.map('map').setView([-6.174767872117399,106.82602018117908], 15); // Titik awal map
 
     // Tambah tile map
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
+        maxZoom: 19,
+      minZoom: 5,
+      attribution: '© OpenStreetMap',
+      subdomains: ['a', 'b', 'c'],
+      errorTileUrl: 'https://example.com/error-tile.png',
+      opacity: 0.9,
+      detectRetina: true
     }).addTo(map);
 
+setTimeout(function() {
+  map.invalidateSize();
+}, 100);
     // Variabel marker utama
     var currentMarker = null;
 
@@ -110,7 +120,10 @@
             .bindPopup(e.geocode.name)
             .openPopup();
 
-        map.setView(latlng, 15);
+        map.setView(latlng, 18);
+
+        $('#lokasi').val(latlng.lat+','+latlng.lng);
+        // $('#alamat').val(e.geocode.name);
     })
     .addTo(map);
 
@@ -136,14 +149,10 @@
         $('#lokasi').val(lat+','+lng);
     });
 
-    setTimeout(function () {
-  map.invalidateSize();
-  map.fitBounds(myBounds2, {
-    maxZoom: 10
-  });
-}, 1000); // Adjust the value (in ms)
+    
+ // Adjust the value (in ms)
 </script>
-                        </div>
+                        
                         {{-- <div class="mb-3">
                             <label for="tenantPhone" class="form-label">Nomor Telepon</label>
                             <input type="tel" class="form-control" name="telp" placeholder="Masukkan nomor telepon" required>
@@ -164,9 +173,9 @@
             <thead class="table-dark">
                 <tr>
                     <th>No</th>
+                    <th>Tenant</th>
                     <th>Nama Kantor</th>
                     <th>Alamat</th>
-                    <th>No. Telepon</th>
                     <th>Jarak Absen</th>
                     <th>Aksi</th>
                 </tr>

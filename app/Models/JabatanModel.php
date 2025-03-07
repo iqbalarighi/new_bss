@@ -12,4 +12,9 @@ class JabatanModel extends Model
         'perusahaan',
         'jabatan',
     ];
+
+public function perusa()
+    {
+        return $this->belongsTo(PerusahaanModel::class, 'perusahaan');
+    }  
 }

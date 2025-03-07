@@ -11,8 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('kantor', function (Blueprint $table) {
-           $table->string('radius')->after('lokasi');
+        Schema::create('kantor', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedInteger('perusahaan');
+            $table->string('nama_kantor');
+            $table->text('alamat');
+            $table->text('radius');
+            $table->text('lokasi');
+            $table->timestamps();
         });
     }
 
@@ -21,8 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('kantor', function (Blueprint $table) {
-            $table->dropColumn('radius');
-        });
+        Schema::dropIfExists('kantor');
     }
 };

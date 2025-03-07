@@ -79,4 +79,24 @@ class MasterController extends Controller
         return back()
         ->with('status', 'berhasil');
     }
+
+    public function jabatan()
+    {
+        $perusahaan = PerusahaanModel::get();
+        $jabatan = JabatanModel::paginate(15);
+
+        return view('master.jabatan', compact('perusahaan','jabatan'));
+    }
+
+    public function tambahjabatan(Request $request)
+    {
+        $jabatan = new JabatanModel;
+
+        $jabatan->perusahaan = $request->usaha;
+        $jabatan->jabatan = $request->jabatan;
+         $jabatan->save();
+
+        return back()
+        ->with('status', 'berhasil');
+    }
 }
