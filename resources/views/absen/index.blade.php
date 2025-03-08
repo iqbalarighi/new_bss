@@ -1,13 +1,19 @@
-@extends('layouts..absen.absen')
+@extends('layouts.absen.absen')
 @section('content')
     <div class="section" id="user-section">
+            <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <button class="btn btn-danger p-1 float-right mt-2">logout</button>
+            </a>
+            <form id="logout-form" action="{{ route('pegawai.logout') }}" method="POST" style="display: none;">
+                @csrf
+            </form>
             <div id="user-detail">
                 <div class="avatar">
                     <img src={{asset("assets/img/sample/avatar/avatar1.jpg")}} alt="avatar" class="imaged w64 rounded">
                 </div>
                 <div id="user-info">
-                    <h2 id="user-name">{{Auth::user()->name}}</h2>
-                    <span id="user-role">Head of IT</span>
+                    <h2 id="user-name">{{Auth::guard('pegawai')->user()->nama_lengkap}}</h2>
+                    <span id="user-role">{{$pegawai->jabat->jabatan}}</span>
                 </div>
             </div>
         </div>
@@ -66,15 +72,17 @@
                     <div class="col-6">
                         <div class="card gradasigreen">
                             <div class="card-body">
-                                <div class="presencecontent">
-                                    <div class="iconpresence">
-                                        <ion-icon name="camera"></ion-icon>
+                                <a href="{{url('/absen/create')}}">
+                                    <div class="presencecontent">
+                                        <div class="iconpresence">
+                                            <ion-icon name="camera"></ion-icon>
+                                        </div>
+                                        <div class="presencedetail">
+                                            <h4 class="presencetitle">Masuk</h4>
+                                            <span>07:00</span>
+                                        </div>
                                     </div>
-                                    <div class="presencedetail">
-                                        <h4 class="presencetitle">Masuk</h4>
-                                        <span>07:00</span>
-                                    </div>
-                                </div>
+                                </a>
                             </div>
                         </div>
                     </div>

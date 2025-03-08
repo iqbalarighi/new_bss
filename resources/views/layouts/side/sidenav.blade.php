@@ -18,7 +18,7 @@
                     </div> 
                 </div>
             </div>
-    <a href="#" class="list-group-item list-group-item-action bg-light">Karyawan</a>
+    <a href="{{route('pegawai.index')}}" class="list-group-item list-group-item-action bg-light">Pegawai</a>
 
     <a onclick="cekDown()" class="list-group-item list-group-item-action bg-light" data-bs-toggle="collapse"  href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
         Laporan 

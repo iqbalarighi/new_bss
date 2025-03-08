@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PegawaiModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -10,12 +11,21 @@ class AbsenController extends Controller
 {
     public function index()
     {
-        return view('absen.index');
+        $id = Auth::guard('pegawai')->user()->id;
+
+        $pegawai = PegawaiModel::with('perusa', 'kantor', 'jabat', 'sat' )->findOrFail($id);
+
+
+        return view('absen.index', compact('pegawai'));
     }
 
     public function create()
     {
-        return view('absen.create');
+        $id = Auth::guard('pegawai')->user()->id;
+
+        $pegawai = PegawaiModel::with('perusa', 'kantor', 'jabat', 'sat' )->findOrFail($id);
+        
+        return view('absen.create', compact('pegawai'));
     }
 
     public function store(Request $request)

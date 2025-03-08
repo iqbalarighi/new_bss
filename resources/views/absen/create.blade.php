@@ -76,10 +76,11 @@ var map = L.map('map').setView([-6.200000, 106.816666], 18);
     maxZoom: 19,
 	}).addTo(map);
 
-	var center = L.latLng(-6.3061955,106.850382); //lokasi radius kantor -6.1697879,106.8381454 -6.2963703,106.5934415
-	var radius = 10; //ganti dengan value dari database
 
-	var circle = L.circle(center, { //-6.1697879,106.8381454 ganti lokasi kantor dengan value dari database
+	var center = L.latLng({{$pegawai->kantor->lokasi}}); //ganti dengan value dari database
+	var radius = {{$pegawai->kantor->radius}}; //ganti dengan value dari database
+
+	var circle = L.circle(center, { 
 	    color: 'blue',
         fillColor: '#blue',
         fillOpacity: 0.2,
