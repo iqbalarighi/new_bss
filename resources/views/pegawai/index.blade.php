@@ -10,24 +10,26 @@
             <table class="table table-striped table-bordered">
                 <thead class="table-danger">
                     <tr>
-                        <th>Perusahaan</th>
+                        <th>No.</th>
+                        <th>NIP</th>
+                        <th>Nama</th>
                         <th>Kantor</th>
+                        <th>Perusahaan</th>
                         <th>Jabatan</th>
                         <th>Satker</th>
-                        <th>Nama</th>
-                        <th>NIP</th>
                         <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($pegawais as $pegawai)
+                    @foreach($pegawais as $num => $pegawai)
                         <tr>
-                            <td>{{ $pegawai->perusahaan }}</td>
-                            <td>{{ $pegawai->kantor }}</td>
-                            <td>{{ $pegawai->jabatan }}</td>
-                            <td>{{ $pegawai->satker }}</td>
-                            <td>{{ $pegawai->nama }}</td>
+                            <td>{{ $pegawais->firstitem()+$num }}</td>
                             <td>{{ $pegawai->nip }}</td>
+                            <td>{{ $pegawai->nama_lengkap }}</td>
+                            <td>{{ $pegawai->kantor->nama_kantor }}</td>
+                            <td>{{ $pegawai->perusa->perusahaan }}</td>
+                            <td>{{ $pegawai->jabat->jabatan }}</td>
+                            <td>{{ $pegawai->sat->satuan_kerja }}</td>
                             <td>{{ $pegawai->status }}</td>
                         </tr>
                     @endforeach

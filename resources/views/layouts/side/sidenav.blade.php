@@ -11,14 +11,29 @@
             <div class="collapse {{ Route::is('tenant')||Route::is('kantor')||Route::is('satker')|| Route::is('jabatan')? 'show' : '' }}" id="master">
                 <div class="card card-body p-1">
                     <div class="list-group list-group-flush" style="width: 100%;">
+                @if(Auth::user()->role == 0)
                         <a href="{{route('tenant')}}" class="list-group-item list-group-item-action bg-light {{ Route::is('tenant') ? 'active' : '' }}">Tenant</a>
+                @endif
                         <a href="{{route('kantor')}}" class="list-group-item list-group-item-action bg-light {{ Route::is('kantor') ? 'active' : '' }}">Kantor</a>
                         <a href="{{route('satker')}}" class="list-group-item list-group-item-action bg-light {{ Route::is('satker') ? 'active' : '' }}">Satuan Kerja</a>
                         <a href="{{route('jabatan')}}" class="list-group-item list-group-item-action bg-light {{ Route::is('jabatan') ? 'active' : '' }}">Jabatan</a>
                     </div> 
                 </div>
             </div>
-    <a href="{{route('pegawai.index')}}" class="list-group-item list-group-item-action bg-light">Pegawai</a>
+    {{-- <a href="{{route('pegawai.index')}}" class="list-group-item list-group-item-action bg-light">Pegawai</a> --}}
+    <a onclick="cekPeg()" class="list-group-item list-group-item-action bg-light {{Request::is('pegawai')||Request::is('pegawai/*')? 'active' : ''}}" data-bs-toggle="collapse"  href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+        Pegawai 
+                <i id="peg" class="bi bi-caret-right-fill"></i>
+      </a>
+        <div id="collapseExample" class="collapse {{ Request::is('pegawai')||Request::is('pegawai/*')? 'show' : '' }}">
+            <div class="card card-body">
+                <div class="list-group list-group-flush" style="width: 100%;">
+                    <a href="{{route('pegawai.index')}}" class="list-group-item list-group-item-action bg-light {{ Request::is('pegawai')||Request::is('pegawai/input') ? 'active' : '' }}">Daftar Pegawai</a>
+                    <a href="#" class="list-group-item list-group-item-action bg-light">Absensi</a>
+                    <a href="#" class="list-group-item list-group-item-action bg-light">Insiden/Kejadian</a>
+                </div> 
+            </div>
+        </div>
 
     <a onclick="cekDown()" class="list-group-item list-group-item-action bg-light" data-bs-toggle="collapse"  href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
         Laporan 

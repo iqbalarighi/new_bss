@@ -4,17 +4,18 @@ use App\Http\Controllers\AbsenController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MasterController;
+use App\Http\Controllers\PegawaiController;
 use App\Http\Middleware\RedirectIfNotAuthenticated;
 use App\Http\Middleware\RedirectIfPegawaiAuthenticated;
+use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PegawaiController;
 
 
 
 
 
 Route::get('/', function () {
-    return view('auth.login');
+    return redirect('/login');
 });
 Route::get('/main', function () {
     return view('maintenance');
@@ -26,11 +27,24 @@ Auth::routes([
 ]);
 
 
+
+Route::get('/home', function () {
+    return auth()->user()->role === 0
+        ? redirect()->route('tenant')
+        : redirect()->route('kantor');
+})->middleware('auth:web');
+
+// Route khusus Admin
+Route::middleware(['auth:web'])->group(function () {
+});
+
+
 Route::middleware(['auth:web'])->group(function () {
     Route::get('/home', [HomeController::class, 'index']);
 
-    Route::get('/tenant', [MasterController::class, 'tenant'])->name('tenant');
-    Route::post('/tenant/tambah', [MasterController::class, 'tambahtenant']);
+    Route::get('/tenant', [MasterController::class, 'tenant'])->name('tenant')->middleware(RoleMiddleware::class.':0');
+        Route::post('/tenant/tambah', [MasterController::class, 'tambahtenant']);
+    
 
     Route::get('/kantor', [MasterController::class, 'kantor'])->name('kantor');
     Route::post('/kantor/tambah', [MasterController::class, 'tambahkantor']);
@@ -56,11 +70,11 @@ Route::middleware([RedirectIfNotAuthenticated::class . ':pegawai'])->group(funct
     Route::get('/absen',[AbsenController::class, 'index'])->name('absen');
     Route::get('/absen/create',[AbsenController::class, 'create']);
     Route::post('/absen/store',[AbsenController::class, 'store']);
+    Route::post('/pegawai/logout', [AuthController::class, 'logout'])->name('pegawai.logout');
 });
 
 
 Route::post('/pegawai/login', [AuthController::class, 'login'])->middleware('guest');
-Route::post('/pegawai/logout', [AuthController::class, 'logout'])->name('pegawai.logout');
 
 
 

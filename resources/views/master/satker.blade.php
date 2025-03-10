@@ -51,6 +51,18 @@
                             <label for="satker" class="form-label">Satuan Kerja</label>
                             <input type="text" class="form-control" id="satker" name="satker" placeholder="Satuan Kerja" required>
                         </div>
+                        @if(Auth::user()->role == 0)
+                        <div class="mb-3">
+                            <label for="tenantName" class="form-label">Nama Perusahaan</label>
+                            {{-- <input type="text" class="form-control"name="usaha" placeholder="Masukkan nama kantor" required> --}}
+                            <select name="perusahaan" id="tenantName" class="form-select" required>
+                                <option selected disabled value="">Pilih Perusahaan</option>
+                                @foreach($perusahaan as $usaha)
+                                <option value="{{$usaha->id}}">{{$usaha->perusahaan}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @endif
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
@@ -66,6 +78,9 @@
             <thead class="table-dark">
                 <tr>
                     <th>No</th>
+                @if(Auth::user()->role == 0)       
+                    <th>Perusahaan</th>
+                @endif     
                     <th>Satuan Kerja</th>
                     <th>Aksi</th>
                 </tr>
@@ -74,6 +89,9 @@
                 @foreach($satker as $key => $ker)
                 <tr>
                     <td class="align-middle text-center">{{$satker->firstitem()+$key}}</td>
+                 @if(Auth::user()->role == 0)
+                    <td>{{$ker->perusa->perusahaan}}</td>
+                @endif 
                     <td>{{$ker->satuan_kerja}}</td>
                     <td class="align-middle text-center">
                         <button class="btn btn-primary btn-sm cen">Edit</button>

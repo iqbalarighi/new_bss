@@ -47,6 +47,8 @@
                     <form action="/jabatan/tambah" method="POST">
                         @csrf
 
+                    @if(Auth::user()->role == 0)
+                        <div class="mb-3">
                         <label for="tenantName" class="form-label">Nama Perusahaan</label>
                             {{-- <input type="text" class="form-control"name="usaha" placeholder="Masukkan nama kantor" required> --}}
                             <select name="usaha" id="tenantName" class="form-select" required>
@@ -55,6 +57,8 @@
                                 <option value="{{$usaha->id}}">{{$usaha->perusahaan}}</option>
                                 @endforeach
                             </select>
+                        </div>
+                    @endif
                         <div class="mb-3">
                             <label for="jabatan" class="form-label">Jabatan</label>
                             <input type="text" class="form-control" id="jabatan" name="jabatan" placeholder="Jabatan" required>
@@ -74,7 +78,9 @@
             <thead class="table-dark">
                 <tr>
                     <th>No</th>
-                    <th>Perusahaan</th>
+                @if(Auth::user()->role == 0)
+                    <th>Tenant</th>
+                @endif
                     <th>Jabatan</th>
                     <th>Aksi</th>
                 </tr>
@@ -83,7 +89,9 @@
                 @foreach($jabatan as $key => $item)
                 <tr>
                     <td class="align-middle text-center">{{$jabatan->firstitem()+$key}}</td>
+                @if(Auth::user()->role == 0)
                     <td>{{$item->perusa->perusahaan}}</td>
+                @endif
                     <td>{{$item->jabatan}}</td>
                     <td class="align-middle text-center">
                         <button class="btn btn-primary btn-sm cen">Edit</button>

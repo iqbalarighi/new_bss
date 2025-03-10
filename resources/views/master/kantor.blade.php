@@ -51,6 +51,7 @@
                     <form action="/kantor/tambah" method="POST">
                         @csrf
 
+                    @if(Auth::user()->role == 0)
                         <div class="mb-3">
                             <label for="tenantName" class="form-label">Nama Perusahaan</label>
                             {{-- <input type="text" class="form-control"name="usaha" placeholder="Masukkan nama kantor" required> --}}
@@ -61,6 +62,7 @@
                                 @endforeach
                             </select>
                         </div>
+                    @endif
                         <div class="mb-3">
                             <label for="kantor" class="form-label">Nama Kantor / Gedung</label>
                             <input type="text" class="form-control" id="kantor" name="kantor" placeholder="Masukkan nama kantor" required>
@@ -173,7 +175,9 @@ setTimeout(function() {
             <thead class="table-dark">
                 <tr>
                     <th>No</th>
+                @if(Auth::user()->role == 0)
                     <th>Tenant</th>
+                @endif
                     <th>Nama Kantor</th>
                     <th>Alamat</th>
                     <th>Jarak Absen</th>
@@ -184,7 +188,9 @@ setTimeout(function() {
                 @foreach($kantor as $key => $kan)
                 <tr>
                     <td>{{$kantor->firstitem()+$key}}</td>
+                @if(Auth::user()->role == 0)
                     <td>{{$kan->perusa->perusahaan}}</td>
+                @endif
                     <td>{{$kan->nama_kantor}}</td>
                     <td>{{$kan->alamat}}</td>
                     <td>{{$kan->radius}} meter</td>

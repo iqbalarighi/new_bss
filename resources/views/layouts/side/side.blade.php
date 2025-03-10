@@ -128,4 +128,15 @@
   }
 }
 </script>
+
+<script>
+    function cekPeg() {
+  var x = document.getElementById("peg");
+  if (x.className === "bi bi-caret-right-fill") {
+    x.className = "bi bi-caret-down-fill";
+  } else {
+    x.className = "bi bi-caret-right-fill";
+  }
+}
+</script>
 <!-- JavaScript -->

@@ -2,31 +2,55 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pegawai;
+use App\Models\JabatanModel;
+use App\Models\KantorModel;
 use App\Models\PegawaiModel;
+use App\Models\PerusahaanModel;
+use App\Models\SatkerModel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class PegawaiController extends Controller
 {
     public function index()
     {
-        $pegawais = PegawaiModel::paginate(15);
 
-        return view('pegawai.index', compact('pegawais'));
+    if(Auth::user()->role === 0){
+        $pegawais = PegawaiModel::with('perusa', 'kantor', 'jabat', 'sat')
+        ->paginate(15);
+
+    return view('pegawai.index', compact('pegawais'));
+    } else {
+        $pegawais = PegawaiModel::with('perusa', 'kantor', 'jabat', 'sat')
+        ->where('perusahaan', Auth::user()->perusahaan)
+        ->paginate(15);
+
+    return view('pegawai.index', compact('pegawais'));
+    }
+
+        
     }
 
     public function input()
     {
-        return view('pegawai.input');
+        $id = Auth::user()->perusahaan;
+
+        $tenant = PerusahaanModel::get();
+        $kantor = KantorModel::where('perusahaan', $id)->get();
+        $jabatan = JabatanModel::where('perusahaan', $id)->get();
+        $satker = SatkerModel::get();
+
+        return view('pegawai.input', compact('tenant', 'kantor', 'jabatan', 'satker'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
             'nama' => 'required|string|max:255',
-            'nip' => 'required|string|max:50|unique:pegawais',
+            'nip' => 'required|string|max:50|unique:karyawan',
             'password' => 'required|string|min:6',
             'tgl_lahir' => 'required|date',
             'alamat' => 'required|string',
@@ -67,19 +91,22 @@ class PegawaiController extends Controller
         $fotoNama = Str::random(20) . '.' . $foto->getClientOriginalExtension();
         $fotoPath = $foto->storeAs('foto_pegawai', $fotoNama, 'public');
 
-        Pegawai::create([
-            'nama' => $request->nama,
+        $id = Auth::user()->perusahaan;
+
+        PegawaiModel::create([
+            'perusahaan' => $id,
+            'nama_lengkap' => $request->nama,
             'nip' => $request->nip,
             'password' => Hash::make($request->password),
             'tgl_lahir' => $request->tgl_lahir,
             'alamat' => $request->alamat,
-            'alamat_domisili' => $request->alamat_domisili,
-            'no_telepon' => $request->no_telepon,
+            'domisili' => $request->alamat_domisili,
+            'no_hp' => $request->no_telepon,
             'jabatan' => $request->jabatan,
             'bpjs_tk' => $request->bpjs_tk,
-            'bpjs_kesehatan' => $request->bpjs_kesehatan,
-            'kontak_darurat' => $request->kontak_darurat,
-            'penempatan_kerja' => $request->penempatan_kerja,
+            'bpjs_sehat' => $request->bpjs_kesehatan,
+            'ko_drat' => $request->kontak_darurat,
+            'nama_kantor' => $request->penempatan_kerja,
             'satker' => $request->satker,
             'status_pegawai' => $request->status_pegawai,
             'foto' => $fotoPath,

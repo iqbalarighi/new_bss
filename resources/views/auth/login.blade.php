@@ -2,9 +2,9 @@
 @section('content')
 <div class="container d-flex justify-content-center align-items-center min-vh-100" style="background: linear-gradient(135deg, #b71c1c, #d32f2f);">
     <div class="col-md-6 col-sm-8 col-10" style="margin-top: -50px;">
-        <div class="text-center mb-4" style="margin-top: -50px;">
+        {{-- <div class="text-center mb-4" style="margin-top: -50px;">
             <img src="{{ asset('storage/img/logo.png') }}" alt="Logo" width="100" class="animated fadeIn">
-        </div>
+        </div> --}}
         <div class="card shadow-lg rounded-lg animated fadeInUp" style="border: none;">
             <div class="card-header bg-danger text-white text-center fw-bold">{{ __('Login Pegawai') }}</div>
             <div class="card-body">
@@ -36,7 +36,7 @@
                         <div class="spinner-border spinner-border-sm text-light ms-2 d-none" role="status" id="loadingSpinner"></div>
                     </button>
                     <div class="text-center mt-3">
-                        <a class="btn btn-light text-danger border-danger w-100" href="{{ route('pegawai.login') }}">{{ __('Login sebagai Pegawai') }}</a>
+                        <a class="btn btn-light text-danger border-danger w-100" href="{{ route('pegawai.login') }}">{{ __('Login Absensi') }}</a>
                     </div>
                     @if (Route::has('password.request'))
                         <div class="text-center mt-3">

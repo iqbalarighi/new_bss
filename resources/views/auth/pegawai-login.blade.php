@@ -79,7 +79,7 @@
 <body>
     <div class="container d-flex justify-content-center align-items-center min-vh-100">
         <div class="col-md-4 col-sm-8 col-10 login-container">
-            <img src="{{ asset('storage/img/logo.png') }}" alt="Logo" width="100" class="mb-3">
+            {{-- <img src="{{ asset('storage/img/logo.png') }}" alt="Logo" width="100" class="mb-3"> --}}
             <h3 class="text-center text-danger fw-bold">Absensi Pegawai</h3>
             <form id="loginForm" action="{{ route('pegawai.login') }}" method="POST">
                 @csrf

@@ -46,10 +46,6 @@
                     <input type="text" class="form-control" name="no_telepon" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Jabatan</label>
-                    <input type="text" class="form-control" name="jabatan" required>
-                </div>
-                <div class="mb-3">
                     <label class="form-label">BPJS TK</label>
                     <input type="text" class="form-control" name="bpjs_tk" required>
                 </div>
@@ -61,13 +57,47 @@
                     <label class="form-label">Kontak Darurat</label>
                     <input type="text" class="form-control" name="kontak_darurat" required>
                 </div>
-                <div class="mb-3">
+{{--                 <div class="mb-3">
                     <label class="form-label">Penempatan Kerja</label>
                     <input type="text" class="form-control" name="penempatan_kerja" required>
-                </div>
+                </div> --}}
                 <div class="mb-3">
+                    <label for="tenantName" class="form-label">Penempatan Kerja</label>
+                    {{-- <input type="text" class="form-control"name="usaha" placeholder="Masukkan nama kantor" required> --}}
+                    <select name="penempatan_kerja" id="tenantName" class="form-select" required>
+                        <option selected disabled value="">Pilih Kantor</option>
+                        @foreach($kantor as $item)
+                        <option value="{{$item->id}}">{{$item->nama_kantor}}</option>
+                        @endforeach
+                    </select>
+                </div>
+               {{--  <div class="mb-3">
+                    <label class="form-label">Jabatan</label>
+                    <input type="text" class="form-control" name="jabatan" required>
+                </div> --}}
+                {{-- <div class="mb-3">
                     <label class="form-label">Satker</label>
                     <input type="text" class="form-control" name="satker" required>
+                </div> --}}
+                <div class="mb-3">
+                    <label for="satker" class="form-label">Satuan Kerja</label>
+                    {{-- <input type="text" class="form-control"name="usaha" placeholder="Masukkan nama kantor" required> --}}
+                    <select name="satker" id="satker" class="form-select" required>
+                        <option selected disabled value="">Pilih Satuan Kerja</option>
+                        @foreach($satker as $item)
+                        <option value="{{$item->id}}">{{$item->satuan_kerja}}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="jabatan" class="form-label">Jabatan</label>
+                    {{-- <input type="text" class="form-control"name="usaha" placeholder="Masukkan nama kantor" required> --}}
+                    <select name="jabatan" id="jabatan" class="form-select" required>
+                        <option selected disabled value="">Pilih Jabatan</option>
+                        @foreach($jabatan as $item)
+                        <option value="{{$item->id}}">{{$item->jabatan}}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Status Pegawai</label>
@@ -78,7 +108,7 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Foto</label>
-                    <input type="file" class="form-control" name="foto" required>
+                    <input type="file" class="form-control" name="foto"  accept=".jpg, .jpeg, .png" required>
                 </div>
                 <div class="text-center">
                     <button type="submit" class="btn btn-danger">Simpan</button>
