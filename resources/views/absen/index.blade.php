@@ -9,7 +9,7 @@
             </form>
             <div id="user-detail">
                 <div class="avatar">
-                    <img src={{asset("assets/img/sample/avatar/avatar1.jpg")}} alt="avatar" class="imaged w64 rounded">
+                    <img src={{asset('storage/'.$pegawai->foto)}} alt="avatar" class="imaged w64 rounded">
                 </div>
                 <div id="user-info">
                     <h2 id="user-name">{{Auth::guard('pegawai')->user()->nama_lengkap}}</h2>

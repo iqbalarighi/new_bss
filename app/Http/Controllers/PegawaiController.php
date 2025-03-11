@@ -62,7 +62,7 @@ class PegawaiController extends Controller
             'kontak_darurat' => 'required|string|max:15',
             'penempatan_kerja' => 'required|string',
             'satker' => 'required|string',
-            'status_pegawai' => 'required|string|in:Aktif,Tidak Aktif',
+            'status' => 'required|string|in:Aktif,Tidak Aktif',
             'foto' => 'required|image|mimes:jpeg,png,jpg|max:2048',
         ], [
             'nama.required' => 'Nama pegawai wajib diisi.',
@@ -80,7 +80,7 @@ class PegawaiController extends Controller
             'kontak_darurat.required' => 'Kontak darurat wajib diisi.',
             'penempatan_kerja.required' => 'Penempatan kerja wajib diisi.',
             'satker.required' => 'Satker wajib diisi.',
-            'status_pegawai.required' => 'Status pegawai wajib diisi.',
+            'status.required' => 'Status pegawai wajib diisi.',
             'foto.required' => 'Foto wajib diunggah.',
             'foto.image' => 'File harus berupa gambar.',
             'foto.mimes' => 'Format gambar harus jpeg, png, atau jpg.',
@@ -108,7 +108,7 @@ class PegawaiController extends Controller
             'ko_drat' => $request->kontak_darurat,
             'nama_kantor' => $request->penempatan_kerja,
             'satker' => $request->satker,
-            'status_pegawai' => $request->status_pegawai,
+            'status' => $request->status,
             'foto' => $fotoPath,
         ]);
 

@@ -37,7 +37,6 @@
         <!-- /#sidebar-wrapper -->
 
 
-
         <!-- Page Content -->
         <div id="page-content-wrapper" class="d-flex flex-column min-vh-100">
         <nav class="navbar navbar-expand-lg navbar-light border-bottom sticky-top" style="background: linear-gradient(135deg, #8B0000, #FF6347);">
@@ -107,36 +106,5 @@
 }
 </script>
 
-<script>
-    function cekMaster() {
-  var x = document.getElementById("mas");
-  if (x.className === "bi bi-caret-right-fill") {
-    x.className = "bi bi-caret-down-fill";
-  } else {
-    x.className = "bi bi-caret-right-fill";
-  }
-}
-</script>
 
-<script>
-    function cekdown() {
-  var x = document.getElementById("ubah");
-  if (x.className === "bi bi-caret-right-fill") {
-    x.className = "bi bi-caret-down-fill";
-  } else {
-    x.className = "bi bi-caret-right-fill";
-  }
-}
-</script>
-
-<script>
-    function cekPeg() {
-  var x = document.getElementById("peg");
-  if (x.className === "bi bi-caret-right-fill") {
-    x.className = "bi bi-caret-down-fill";
-  } else {
-    x.className = "bi bi-caret-right-fill";
-  }
-}
-</script>
 <!-- JavaScript -->

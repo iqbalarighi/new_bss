@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::get('/', function () {
-    return redirect('/login');
+    return view('auth.login');
 });
 Route::get('/main', function () {
     return view('maintenance');
@@ -25,18 +25,6 @@ Auth::routes([
     'register' => false,
     // 'login' => false
 ]);
-
-
-
-Route::get('/home', function () {
-    return auth()->user()->role === 0
-        ? redirect()->route('tenant')
-        : redirect()->route('kantor');
-})->middleware('auth:web');
-
-// Route khusus Admin
-Route::middleware(['auth:web'])->group(function () {
-});
 
 
 Route::middleware(['auth:web'])->group(function () {
@@ -61,12 +49,12 @@ Route::middleware(['auth:web'])->group(function () {
 });
 
 
-Route::middleware(RedirectIfPegawaiAuthenticated::class)->group(function () {
+Route::middleware('ifnotpeg')->group(function () {
     Route::get('/pegawai/login', [AuthController::class, 'showLogin'])->name('pegawai.login');
 });
 
 
-Route::middleware([RedirectIfNotAuthenticated::class . ':pegawai'])->group(function () {
+Route::middleware(['redirif:pegawai'])->group(function () {
     Route::get('/absen',[AbsenController::class, 'index'])->name('absen');
     Route::get('/absen/create',[AbsenController::class, 'create']);
     Route::post('/absen/store',[AbsenController::class, 'store']);

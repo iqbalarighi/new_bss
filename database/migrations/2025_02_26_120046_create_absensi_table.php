@@ -13,13 +13,14 @@ return new class extends Migration
     {
         Schema::create('absensi', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('nip');
+            $table->string('nip');
             $table->string('tgl_absen');
             $table->string('jam_in');
-            $table->string('Jam_out');
+            $table->string('jam_out')->nullable();
             $table->text('foto_in');
-            $table->text('foto_out');
-            $table->text('lokasi');
+            $table->text('foto_out')->nullable();
+            $table->text('lokasi_in');
+            $table->text('lokasi_out')->nullable();
             $table->timestamps();
         });
     }

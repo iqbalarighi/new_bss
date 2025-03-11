@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PegawaiModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 
 class AuthController extends Controller
@@ -15,18 +17,25 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $request->validate([
+        $credentials = $request->validate([
             'nip' => 'required',
             'password' => 'required',
         ]);
 
-        if (Auth::guard('pegawai')->attempt($request->only('nip', 'password'))) {
-            return redirect()->intended('/absen');
+        $remember = $request->has('remember');
+        
+        $pegawai = PegawaiModel::where('nip', $request->nip)->first();
+
+        if ($pegawai && Hash::check($request->password, $pegawai->password)) {
+            if ($pegawai->status === 'Aktif') {
+                Auth::guard('pegawai')->attempt($credentials, $remember);
+                return redirect()->intended('/absen');
+            } else {
+                return back()->with('error', 'Akun Anda tidak aktif. Silakan hubungi admin.');
+            }
         }
 
-        return back()->withErrors([
-            'nip' => 'NIP atau password salah.',
-        ]);
+        return redirect()->back()->with('error', 'NIP atau Password salah!');
     }
 
     public function logout()
@@ -36,3 +45,4 @@ class AuthController extends Controller
     }
 
 }
+

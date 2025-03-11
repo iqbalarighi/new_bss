@@ -13,9 +13,10 @@ class AbsenModel extends Model
         'nip',
         'tgl_absen',
         'jam_in',
-        'jam_out',
         'foto_in',
+        'lokasi_in',
+        'jam_out',
         'foto_out',
-        'lokasi',
+        'lokasi_out',
     ];
 }

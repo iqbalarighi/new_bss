@@ -18,7 +18,7 @@
 		display: inline-block;
 		width: 100% !important;
 		margin: auto;
-		height: auto !important;
+		height: 95% !important;
 		border-radius: 15px;
 	}
 
@@ -35,15 +35,31 @@
     <div class="wide-block pt-2 pb-2">
     	<div class="row">
     		<div class="col">
-		    	<input type="text" id="lokasi">
+		    	<input type="hidden" id="lokasi">
 		        <div class="webcam-capture"></div>
     		</div>
 		</div>
 		<div class="row">
     		<div class="col">
-    			<button id="capture" class="btn btn-primary btn-block" disabled>
+    			
+    		@if($cek == 1)
+    			@if($cek2->jam_out == null)
+    				<button id="capture" class="btn btn-danger btn-block" disabled>
     				<ion-icon name="camera-outline"></ion-icon>
-    			Absen Masuk</button>
+    				Absen Pulang
+    			</button>
+    			@else
+				<button class="btn btn-secondary btn-block" disabled>
+    				Terima Kasih &nbsp;
+    				<ion-icon name="thumbs-up"></ion-icon>
+    			</button>
+    			@endif
+    		@else
+				<button id="capture" class="btn btn-primary btn-block" disabled>
+    				<ion-icon name="camera-outline"></ion-icon>
+    				Absen Masuk
+    			</button>
+    			@endif
     		</div>
     	</div>
     	<div class="row mt-2">
@@ -117,13 +133,25 @@ if(navigator.geolocation){
     }
 
 	}, function(error) {
-            alert('Gagal mendapatkan lokasi: ' + error.message);
+            // alert('Gagal mendapatkan lokasi: ' + error.message);
+            Swal.fire({
+		  title: 'Peringatan!',
+		  text: 'Gagal mendapatkan lokasi: ' + error.message + '. Aktifkan lokasi dan refresh halaman ini',
+		  icon: 'warning',
+		  confirmButtonText: 'Cool'
+		})
         }, {
             enableHighAccuracy: true,
             maximumAge: 1000
         });
     } else {
-        alert('Geolocation tidak didukung di browser ini.');
+        // alert('Geolocation tidak didukung di browser ini. Aktifkan lokasi dan refresh halaman ini');
+        Swal.fire({
+		  title: 'Error!',
+		  text: 'Geolocation tidak didukung di browser ini. ',
+		  icon: 'error',
+		  confirmButtonText: 'Cool'
+		})
     }
 
 $('#capture').click(function (e) {
@@ -143,19 +171,26 @@ var lokasi = $('#lokasi').val();
 		},
 		cache:false,
 		success:function(respond){
-			if(respond == 0){
+			var status = respond.split("|");
+			if(status[0] == "success"){
 				Swal.fire({
-					  title: 'Sukses',
-					  text: 'Do you want to continue',
-					  icon: 'success',
-					  confirmButtonText: 'Cool'
-					})
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: status[1],
+                    allowOutsideClick: false,
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        history.back(); // Redirect ke halaman sebelumnya
+                    }
+                });
 
 				//nanti set timeout ke halaman depan absensi
 				} else {
 				Swal.fire({
 					  title: 'Error!',
-					  text: 'Do you want to continue',
+					  text: 'Gagal Absen, Mohon hubungi Admin',
 					  icon: 'error',
 					  confirmButtonText: 'Cool'
 					})

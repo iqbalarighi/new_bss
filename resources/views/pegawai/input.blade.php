@@ -13,7 +13,9 @@
     </div>
     @endif
 
-        <div class="card-header bg-danger text-white text-center fw-bold">Tambah Pegawai</div>
+        <div class="card-header bg-danger text-white text-center fw-bold">Tambah Pegawai
+            <button class="float-right btn btn-sm btn-secondary" onclick="history.back()">Kembali</button>
+        </div>
         <div class="card-body">
             <form method="POST" action="{{ route('pegawai.store') }}" enctype="multipart/form-data">
                 @csrf
@@ -101,7 +103,7 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Status Pegawai</label>
-                    <select class="form-control" name="status_pegawai" required>
+                    <select class="form-control" name="status" required>
                         <option value="Aktif">Aktif</option>
                         <option value="Tidak Aktif">Tidak Aktif</option>
                     </select>

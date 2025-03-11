@@ -123,7 +123,6 @@ class MasterController extends Controller
 
         return view('master.jabatan', compact('jabatan'));
         }
-
     }
 
     public function tambahjabatan(Request $request)
