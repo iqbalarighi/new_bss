@@ -63,7 +63,7 @@ class PegawaiController extends Controller
             'penempatan_kerja' => 'required|string',
             'satker' => 'required|string',
             'status' => 'required|string|in:Aktif,Tidak Aktif',
-            'foto' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'foto' => 'image|mimes:jpeg,png,jpg|max:2048',
         ], [
             'nama.required' => 'Nama pegawai wajib diisi.',
             'nip.required' => 'NIP wajib diisi.',
@@ -81,15 +81,18 @@ class PegawaiController extends Controller
             'penempatan_kerja.required' => 'Penempatan kerja wajib diisi.',
             'satker.required' => 'Satker wajib diisi.',
             'status.required' => 'Status pegawai wajib diisi.',
-            'foto.required' => 'Foto wajib diunggah.',
             'foto.image' => 'File harus berupa gambar.',
             'foto.mimes' => 'Format gambar harus jpeg, png, atau jpg.',
             'foto.max' => 'Ukuran gambar maksimal 2MB.',
         ]);
 
         $foto = $request->file('foto');
+if($foto != null){
         $fotoNama = Str::random(20) . '.' . $foto->getClientOriginalExtension();
         $fotoPath = $foto->storeAs('foto_pegawai', $fotoNama, 'public');
+} else {
+    $fotoPath = null;
+}
 
         $id = Auth::user()->perusahaan;
 

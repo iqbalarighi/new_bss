@@ -25,7 +25,7 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label">NIP</label>
-                    <input type="text" class="form-control" name="nip" required>
+                    <input type="tel" class="form-control" name="nip" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Password</label>
@@ -45,19 +45,19 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label">No. Telepon</label>
-                    <input type="text" class="form-control" name="no_telepon" required>
+                    <input type="tel" class="form-control" name="no_telepon" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">BPJS TK</label>
-                    <input type="text" class="form-control" name="bpjs_tk" required>
+                    <input type="tel" class="form-control" name="bpjs_tk" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">BPJS Kesehatan</label>
-                    <input type="text" class="form-control" name="bpjs_kesehatan" required>
+                    <input type="tel" class="form-control" name="bpjs_kesehatan" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Kontak Darurat</label>
-                    <input type="text" class="form-control" name="kontak_darurat" required>
+                    <input type="tel" class="form-control" name="kontak_darurat" required>
                 </div>
 {{--                 <div class="mb-3">
                     <label class="form-label">Penempatan Kerja</label>
@@ -110,7 +110,7 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Foto</label>
-                    <input type="file" class="form-control" name="foto"  accept=".jpg, .jpeg, .png" required>
+                    <input type="file" class="form-control" name="foto"  accept=".jpg, .jpeg, .png">
                 </div>
                 <div class="text-center">
                     <button type="submit" class="btn btn-danger">Simpan</button>

@@ -9,7 +9,11 @@
             </form>
             <div id="user-detail">
                 <div class="avatar">
-                    <img src={{asset('storage/'.$pegawai->foto)}} alt="avatar" class="imaged w64 rounded">
+                    @if($pegawai->foto == null)
+                        <img src="https://ui-avatars.com/api/?name={{$pegawai->nama_lengkap}}" alt="avatar" class="imaged w64 rounded">
+                    @else
+                        <img src={{asset('storage/'.$pegawai->foto)}} alt="avatar" class="imaged w64 rounded">
+                    @endif
                 </div>
                 <div id="user-info">
                     <h2 id="user-name">{{Auth::guard('pegawai')->user()->nama_lengkap}}</h2>
