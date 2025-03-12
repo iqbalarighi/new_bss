@@ -142,4 +142,10 @@ class MasterController extends Controller
         return back()
         ->with('status', 'berhasil');
     }
+
+
+    public function adduser()
+    {
+        return view('master.akun');
+    }
 }

@@ -3,7 +3,7 @@
     <div class="list-group list-group-flush sticky-top" style="background-color: darkgrey;">
         <div class="sidebar-heading text-center text-white" style="background: linear-gradient(135deg, #8B0000, #FF6347);">BPBSmartSystem</div>
         
-        <?php $masterActive = request()->is('tenant') || request()->is('kantor') || request()->is('satker') || request()->is('jabatan'); ?>
+        <?php $masterActive = request()->is('tenant') ||request()->is('adduser') || request()->is('kantor') || request()->is('satker') || request()->is('jabatan'); ?>
         <a class="list-group-item list-group-item-action bg-light {{ $masterActive ? 'active' : '' }}" style="width: 100%;" data-bs-toggle="collapse" href="#master" role="button" aria-expanded="false" aria-controls="master" onclick="toggleIcon('mas')">
             Master Data <i id="mas" class="bi {{ $masterActive ? 'bi-caret-down-fill' : 'bi-caret-right-fill' }}"></i>
         </a>
@@ -12,6 +12,7 @@
                 <div class="list-group list-group-flush">
                     @if(Auth::user()->role == 0)
                         <a href="{{ route('tenant') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('tenant') ? 'active' : '' }}" style="width: 95%;">Tenant</a>
+                        <a href="{{ route('adduser') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('adduser') ? 'active' : '' }}" style="width: 95%;">Tambah User</a>
                     @endif
                     <a href="{{ route('kantor') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('kantor') ? 'active' : '' }}" style="width: 95%;">Kantor</a>
                     <a href="{{ route('satker') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('satker') ? 'active' : '' }}" style="width: 95%;">Satuan Kerja</a>
