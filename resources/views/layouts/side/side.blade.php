@@ -31,7 +31,7 @@
     </head>
     <body>
 
-        <div class="d-flex " id="wrapper" style="background-color: darkgrey;">
+        <div class="d-flex " id="wrapper" style="background-color: #ff4d4d;">
         <!-- Sidebar -->
         @include('layouts.side.sidenav')
         <!-- /#sidebar-wrapper -->

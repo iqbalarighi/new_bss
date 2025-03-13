@@ -47,7 +47,7 @@ Route::middleware(['auth:web'])->group(function () {
     Route::get('/pegawai/input', [PegawaiController::class, 'input'])->name('pegawai.input');
     Route::post('/pegawai/store', [PegawaiController::class, 'store'])->name('pegawai.store');
 
-    Route::get('/adduser', [MasterController::class, 'adduser'])->name('adduser');
+    Route::get('/adduser', [MasterController::class, 'adduser'])->name('adduser')->middleware(RoleMiddleware::class.':0');
 });
 
 

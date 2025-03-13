@@ -146,6 +146,6 @@ class MasterController extends Controller
 
     public function adduser()
     {
-        return view('master.akun');
+        return view('master.adduser');
     }
 }
