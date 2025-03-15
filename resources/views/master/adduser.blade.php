@@ -57,47 +57,83 @@
 <table class="table table-bordered table-striped">
                 <thead class="table-dark">
                     <tr>
-                        <th>#</th>
-                        <th>Nama</th>
-                        <th>Email</th>
-                        <th>Perusahaan</th>
-                        <th>Kantor</th>
-                        <th>Jabatan</th>
-                        <th>Role</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
+                            <th>#</th>
+                            <th>Nama</th>
+                            <th>Email</th>
+                        @if(Auth::user()->role == 0)
+                            <th>Perusahaan</th>
+                        @endif
+                        @if(Auth::user()->role == 1 || Auth::user()->role == 0)
+                            <th>Kantor</th>
+                        @endif
+                            <th>Jabatan</th>
+                            <th>Satker</th>
+                            <th>Role</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
                 <tbody>
                     <!-- Contoh data, nanti bisa diganti dengan loop dari backend -->
+                    @foreach($users as $key => $item)
                     <tr>
-                        <td>1</td>
-                        <td>John Doe</td>
-                        <td>john@example.com</td>
-                        <td>Perusahaan A</td>
-                        <td>Kantor Pusat</td>
-                        <td>Manager</td>
-                        <td>Admin</td>
+                        <td>{{$users->firstItem() + $key}}</td>
+                        <td>{{$item->name}}</td>
+                        <td>{{$item->email}}</td>
+                    @if(Auth::user()->role == 0)
+                        <td>
+                            @if ($item->perusahaan == 0)
+                            -
+                            @else
+                               {{$item->perusa->perusahaan}}
+                            @endif
+                        </td>
+                    @endif
+                        
+                    @if(Auth::user()->role == 1 || Auth::user()->role == 0)
+                        <td>
+                            @if ($item->kantor == 0)
+                            -
+                            @else
+                               {{$item->kant->nama_kantor}}
+                            @endif
+                    @endif
+                        </td>
+                        <td>
+                            @if ($item->jabatan == 0)
+                            -
+                            @else
+                               {{$item->jabat->jabatan}}
+                            @endif
+                        </td>
+                        <td>
+                            @if ($item->satker == 0)
+                            -
+                            @else
+                               {{$item->sat->satuan_kerja}}
+                            @endif
+                        </td>
+                        <td>
+                            @if($item->role == 0)
+                                Superadmin
+                            @elseif($item->role == 1)
+                                Admin Pusat
+                            @elseif($item->role == 3)
+                                Admin Kantor
+                            @else
+                                User
+                            @endif
+                        </td>
                         <td class="align-middle text-center">
                             <button class="btn btn-primary btn-sm cen">Edit</button>
                             <button class="btn btn-danger btn-sm cen">Hapus</button>
                         </td>
                     </tr>
-                    <tr>
-                        <td>2</td>
-                        <td>Jane Doe</td>
-                        <td>jane@example.com</td>
-                        <td>Perusahaan B</td>
-                        <td>Cabang 1</td>
-                        <td>Staff</td>
-                        <td>User</td>
-                        <td class="align-middle text-center">
-                            <button class="btn btn-primary btn-sm cen">Edit</button>
-                            <button class="btn btn-danger btn-sm cen">Hapus</button>
-                        </td>
-                    </tr>
+                    @endforeach
                 </tbody>
             </table>
-
+ <div class="d-flex justify-content-center">
+                {{ $users->links('pagination::bootstrap-5') }}
+            </div>
                 </div>
             </div>
         </div>
@@ -113,7 +149,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form method="POST" action="">
+                    <form method="POST" action="{{ route('adduser') }}">
                         @csrf
                         <div class="mb-3">
                             <label for="name" class="form-label">Nama Lengkap</label>
@@ -131,47 +167,161 @@
                             <label for="role" class="form-label">Daftar sebagai</label>
                             <select id="role" name="role" class="form-select" required>
                                 <option value="2">User</option>
-                                @if(Auth::user()->role == 0)<option value="1">Admin</option>@endif
+                                @if(Auth::user()->role == 0)<option value="1">Admin Pusat</option>@endif
+                                @if(Auth::user()->role == 0 || Auth::user()->role == 1)<option value="3">Admin Cabang</option>@endif
                             </select>
                         </div>
-                        @if(Auth::user()->role == 0)
+                    @if(Auth::user()->role == 0)
                         <div class="mb-3">
                             <label for="company" class="form-label">Perusahaan</label>
                             <select id="company" name="company" class="form-select" required>
                                 <option value="">Pilih Perusahaan</option>
-                                <option value="company1">Perusahaan A</option>
-                                <option value="company2">Perusahaan B</option>
+                                @foreach($perusa as $usa)
+                                    <option value="{{$usa->id}}">{{$usa->perusahaan}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
+                    @if(Auth::user()->role == 0 || Auth::user()->role == 1)
+                        <div class="mb-3" id="office-container">
+                            <label for="office" class="form-label">Kantor</label>
+                            <select id="office" name="office" class="form-select">
+
                             </select>
                         </div>
                         @endif
-                        <div class="mb-3">
-                            <label for="office" class="form-label">Kantor</label>
-                            <select id="office" name="office" class="form-select" required>
-                                <option value="">Pilih Kantor</option>
-                                <option value="office1">Kantor Pusat</option>
-                                <option value="office2">Cabang 1</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
+                        <div class="mb-3" id="satker-container">
                             <label for="satker" class="form-label">Satuan Kerja</label>
-                            <select id="satker" name="satker" class="form-select" required>
-                                <option value="">Pilih Satuan Kerja</option>
-                                <option value="manager">Manager</option>
-                                <option value="staff">Staff</option>
+                            <select id="satker" name="satker" class="form-select">
                             </select>
                         </div>
-                        <div class="mb-3">
+                        <div class="mb-3" id="position-container">
                             <label for="position" class="form-label">Jabatan</label>
-                            <select id="position" name="position" class="form-select" required>
-                                <option value="">Pilih Jabatan</option>
-                                <option value="manager">Manager</option>
-                                <option value="staff">Staff</option>
+                            <select id="position" name="position" class="form-select">
                             </select>
                         </div>
                         <button type="submit" class="btn btn-custom w-100">Daftar</button>
                     </form>
                 </div>
+    <!-- jQuery untuk menonaktifkan dan menyembunyikan Satker & Jabatan jika memilih Admin -->
+    <script>
+        $(document).ready(function() {
+            function toggleFields() {
+                if ($('#role').val() == "3") { // Jika memilih Admin
+                    $('#satker-container, #position-container').hide();
+                    $('#satker, #position').prop("disabled", true);
+                    $('#office-container').show();
+                    $('#office').prop("disabled", false);
+                    $('#office').prop("required", true);
+                } else if ($('#role').val() == "1") { // Jika memilih Admin
+                    $('#satker-container, #position-container, #office-container').hide();
+                    $('#satker, #position, #office').prop("disabled", true);
+                    $('#office').prop("required", false);
+                    $('#satker').prop("required", false);
+                    $('#position').prop("required", false);
+                } else { // Jika memilih User
+                    $('#satker-container, #position-container, #office-container').show();
+                    $('#satker, #position, #office').prop("disabled", false);
+                    $('#office').prop("required", true);
+                    $('#satker').prop("required", true);
+                    $('#position').prop("required", true);
+                }
+            }
+            $('#role').change(function() {
+                toggleFields();
+            });
+            
+            // Panggil fungsi saat halaman dimuat pertama kali
+            toggleFields();
+        });
+    </script>
             </div>
         </div>
     </div>
+
+@if(Auth::user()->role == 0)
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#company').change(function() {
+            var companyId = $(this).val();
+            
+            if (companyId) {
+                $.ajax({
+                    url: '/get-konten/' + companyId,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        $('#office').empty();
+                        $('#office').append('<option value="">Pilih Kantor</option>');
+                        
+                        $.each(response.offices, function(key, office) {
+                            $('#office').append('<option value="' + office.id + '">' + office.nama_kantor + '</option>');
+                        });
+
+                        $('#satker').empty();
+                        $('#satker').append('<option value="">Pilih Satuan Kerja</option>');
+                        
+                        $.each(response.satkers, function(key, satker) {
+                            $('#satker').append('<option value="' + satker.id + '">' + satker.satuan_kerja + '</option>');
+                        });
+
+                        $('#position').empty();
+                        $('#position').append('<option value="">Pilih Jabatan</option>');
+                        
+                        $.each(response.positions, function(key, position) {
+                            $('#position').append('<option value="' + position.id + '">' + position.jabatan + '</option>');
+                        });
+
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(error);
+                    }
+                });
+            } else {
+                $('#office').empty().append('<option value="">Pilih Kantor</option>');
+                $('#satker').empty().append('<option value="">Pilih Satuan Kerja</option>');
+                $('#position').empty().append('<option value="">Pilih Jabatan</option>');
+            }
+        });
+    });
+</script>
+@else
+<script type="text/javascript">
+    $(document).ready(function() {
+    $.ajax({
+        url: '/get-konten/' + {{Auth::user()->perusahaan}},
+        type: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            $('#office').empty();
+            $('#office').append('<option value="">Pilih Kantor</option>');
+            
+            $.each(response.offices, function(key, office) {
+                $('#office').append('<option value="' + office.id + '">' + office.nama_kantor + '</option>');
+            });
+
+            $('#satker').empty();
+            $('#satker').append('<option value="">Pilih Satuan Kerja</option>');
+            
+            $.each(response.satkers, function(key, satker) {
+                $('#satker').append('<option value="' + satker.id + '">' + satker.satuan_kerja + '</option>');
+            });
+
+            $('#position').empty();
+            $('#position').append('<option value="">Pilih Jabatan</option>');
+            
+            $.each(response.positions, function(key, position) {
+                $('#position').append('<option value="' + position.id + '">' + position.jabatan + '</option>');
+            });
+
+        },
+        error: function(xhr, status, error) {
+            console.error(error);
+        }
+    });
+});
+
+</script>
+
+@endif
 @endsection

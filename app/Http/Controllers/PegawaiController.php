@@ -23,9 +23,20 @@ class PegawaiController extends Controller
         ->paginate(15);
 
     return view('pegawai.index', compact('pegawais'));
-    } else {
+    }
+
+    if(Auth::user()->role === 1){
         $pegawais = PegawaiModel::with('perusa', 'kantor', 'jabat', 'sat')
         ->where('perusahaan', Auth::user()->perusahaan)
+        ->paginate(15);
+
+    return view('pegawai.index', compact('pegawais'));
+    } 
+
+    if(Auth::user()->role === 3){
+        $pegawais = PegawaiModel::with('perusa', 'kantor', 'jabat', 'sat')
+        ->where('perusahaan', Auth::user()->perusahaan)
+        ->where('nama_kantor', Auth::user()->kantor)
         ->paginate(15);
 
     return view('pegawai.index', compact('pegawais'));
@@ -36,12 +47,21 @@ class PegawaiController extends Controller
 
     public function input()
     {
+        if(Auth::user()->role === 0){
+        $tenant = PerusahaanModel::get();
+        $kantor = KantorModel::get();
+        $jabatan = JabatanModel::get();
+        $satker = SatkerModel::get();
+        } else {
         $id = Auth::user()->perusahaan;
+        $knt = Auth::user()->kantor;
 
         $tenant = PerusahaanModel::get();
-        $kantor = KantorModel::where('perusahaan', $id)->get();
+        $kantor = KantorModel::where('perusahaan', $id)->where('id', $knt)->get();
         $jabatan = JabatanModel::where('perusahaan', $id)->get();
-        $satker = SatkerModel::get();
+        $satker = SatkerModel::where('perusahaan', $id)->get();
+        }
+
 
         return view('pegawai.input', compact('tenant', 'kantor', 'jabatan', 'satker'));
     }
@@ -60,7 +80,6 @@ class PegawaiController extends Controller
             'bpjs_tk' => 'required|string',
             'bpjs_kesehatan' => 'required|string',
             'kontak_darurat' => 'required|string|max:15',
-            'penempatan_kerja' => 'required|string',
             'satker' => 'required|string',
             'status' => 'required|string|in:Aktif,Tidak Aktif',
             'foto' => 'image|mimes:jpeg,png,jpg|max:2048',
@@ -78,7 +97,6 @@ class PegawaiController extends Controller
             'bpjs_tk.required' => 'BPJS TK wajib diisi.',
             'bpjs_kesehatan.required' => 'BPJS Kesehatan wajib diisi.',
             'kontak_darurat.required' => 'Kontak darurat wajib diisi.',
-            'penempatan_kerja.required' => 'Penempatan kerja wajib diisi.',
             'satker.required' => 'Satker wajib diisi.',
             'status.required' => 'Status pegawai wajib diisi.',
             'foto.image' => 'File harus berupa gambar.',
@@ -94,7 +112,14 @@ if($foto != null){
     $fotoPath = null;
 }
 
+if(Auth::user()->role === 1){
         $id = Auth::user()->perusahaan;
+         $kantor = $request->penempatan_kerja;
+} 
+if(Auth::user()->role === 3){
+        $id = Auth::user()->perusahaan;
+        $kantor = Auth::user()->kantor;
+}
 
         PegawaiModel::create([
             'perusahaan' => $id,
@@ -109,7 +134,7 @@ if($foto != null){
             'bpjs_tk' => $request->bpjs_tk,
             'bpjs_sehat' => $request->bpjs_kesehatan,
             'ko_drat' => $request->kontak_darurat,
-            'nama_kantor' => $request->penempatan_kerja,
+            'nama_kantor' => $kantor,
             'satker' => $request->satker,
             'status' => $request->status,
             'foto' => $fotoPath,

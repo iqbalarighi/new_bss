@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             background: linear-gradient(135deg, #ff0000, #ff4d4d, #ff8080);
@@ -50,11 +51,20 @@
             transform: translateY(-50%);
             cursor: pointer;
         }
+
+        .login-container {
+        margin-top: -30px; 
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        animation: fadeIn 1s ease-in-out;
+        text-align: center;
+        width: 100%;
+        max-width: 400px; /* Batasi ukuran maksimal */
+    }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="col-md-6 col-sm-8 col-10 mx-auto">
+        <div class="col-md-6 col-sm-8 col-10 mx-auto login-container">
             
             <div class="card">
                 <div class="card-header bg-white text-danger text-center fw-bold">
@@ -63,15 +73,19 @@
                     </div>
                 </div>
                 <div class="card-body">
-                     @if ($errors->any())
-                        <div class="alert alert-danger">
-                            <ul class="mb-0">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
+
+                @error('email')
+                <script type="text/javascript">
+                            Swal.fire({
+                                icon: 'error',
+                                title: "{{ $errors->get('email')[0] }}",
+                                confirmButtonColor: '#d33',
+                                confirmButtonText: 'OK',
+                                allowOutsideClick: false // Mencegah klik di luar untuk menutup
+                            });
+                </script>
+                @enderror
+
                     <form method="POST" action="{{ route('login') }}" id="loginForm">
                         @csrf
                         <div class="mb-3">
@@ -80,7 +94,7 @@
                         </div>
                         <div class="mb-3 password-wrapper">
                             <label for="password" class="form-label text-danger">Password</label>
-                            <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required>
+                            <input id="password" type="password" class="form-control @error('email') is-invalid @enderror" name="password" required>
                             <i id="togglePassword" class="bi bi-eye mt-3"></i>
                         </div>
                         <div class="mb-3 form-check">

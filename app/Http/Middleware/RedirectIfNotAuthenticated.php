@@ -18,7 +18,7 @@ class RedirectIfNotAuthenticated
             }
 
             // Redirect default ke login user biasa
-            return redirect()->route('login');
+            return redirect('/');
         }
 
         return $next($request);

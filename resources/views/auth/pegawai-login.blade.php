@@ -73,7 +73,6 @@
             border-top: 2px solid transparent;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-left: 8px;
         }
         .btn-login:disabled {
             background-color: #ff0000 !important; /* Tetap merah */
@@ -140,21 +139,23 @@
             @csrf
             <div class="mb-3">
                 <label for="nip" class="form-label">NIP</label>
-                <input type="tel" class="form-control" id="nip" name="nip" required autofocus>
+                <input type="tel" class="form-control" id="nip" name="nip" oninput="validateInput(event)" placeholder="Nomor Induk Pegawai" required autofocus>
             </div>
             <div class="mb-3 password-wrapper">
                     <label for="password" class="form-label">Password</label>
-                    <input type="password" class="form-control" id="password" name="password" required>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
                     <i id="togglePassword" class="bi bi-eye mt-3"></i>
             </div>
             <div class="mb-3 form-check text-start">
                 <input type="checkbox" class="form-check-input" id="remember" name="remember">
                 <label class="form-check-label" for="remember">Remember Me</label>
             </div>
-            <button type="submit" class="btn btn-login w-100">
-                <span class="btn-text">Login</span>
-                <span class="loading-spinner"></span>
-            </button>
+            <div class="d-flex justify-content-center">
+                <button type="submit" class="btn btn-login">
+                    <span class="btn-text">Login</span>
+                    <span class="loading-spinner"></span>
+                </button>
+            </div>
         </form>
     </div>
 </body>
@@ -166,4 +167,16 @@
         $(this).toggleClass("bi-eye bi-eye-slash");
     });
 </script>
+    <script>
+        function validateInput(event) {
+            let input = event.target;
+            input.value = input.value.replace(/\D/g, ''); // Hanya izinkan angka
+        }
+    </script>    <script>
+        function validateInput(event) {
+            let input = event.target;
+            input.value = input.value.replace(/\D/g, ''); // Hanya izinkan angka
+        }
+    </script>
+
 </html>

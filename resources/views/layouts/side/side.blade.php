@@ -61,14 +61,14 @@
 
               <ul class=" py-1 dropdown-menu" aria-labelledby="dropdownMenuLink">
                 <li>
-                    <a class="dropdown-item font-weight-bold text-center" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <a class="dropdown-item font-weight-bold ps-2" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                         {{ __('Logout') }}
                     </a>
                     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                         @csrf
                     </form>
                 </li>
-                {{-- <li><a href="#" class="dropdown-item font-weight-bold ps-2"> </a></li> --}}
+                <li><a href="#" class="dropdown-item font-weight-bold ps-2">Profile</a></li>
               </ul>
             </div>
             </div>

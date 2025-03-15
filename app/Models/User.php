@@ -22,6 +22,7 @@ class User extends Authenticatable
         'password',
         'jabatan',
         'kantor',
+        'satker',
         'perusahaan',
         'role',
 
@@ -48,5 +49,26 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+
+     public function perusa()
+    {
+        return $this->belongsTo(PerusahaanModel::class, 'perusahaan');
+    }
+
+public function kant()
+    {
+        return $this->belongsTo(KantorModel::class, 'kantor');
+    }
+
+public function jabat()
+    {
+        return $this->belongsTo(JabatanModel::class, 'jabatan');
+    }
+
+public function sat()
+    {
+        return $this->belongsTo(SatkerModel::class, 'satker');
     }
 }

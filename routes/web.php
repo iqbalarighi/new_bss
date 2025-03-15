@@ -9,14 +9,17 @@ use App\Http\Middleware\RedirectIfNotAuthenticated;
 use App\Http\Middleware\RedirectIfPegawaiAuthenticated;
 use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Support\Facades\Route;
-
-
-
-
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
-    return view('auth.login');
-});
+        if(Auth::guard('web')->check()){
+            return redirect('home');
+        }
+        else {
+            return view('auth.login');
+        }
+    });
+
 Route::get('/main', function () {
     return view('maintenance');
 });
@@ -28,14 +31,14 @@ Auth::routes([
 
 
 Route::middleware(['auth:web'])->group(function () {
-    Route::get('/home', [HomeController::class, 'index']);
+    Route::get('/home', [HomeController::class, 'index'])->name('home');
 
     Route::get('/tenant', [MasterController::class, 'tenant'])->name('tenant')->middleware(RoleMiddleware::class.':0');
-        Route::post('/tenant/tambah', [MasterController::class, 'tambahtenant']);
+    Route::post('/tenant/tambah', [MasterController::class, 'tambahtenant'])->middleware(RoleMiddleware::class.':0');
     
-
-    Route::get('/kantor', [MasterController::class, 'kantor'])->name('kantor');
+    Route::get('/kantor', [MasterController::class, 'kantor'])->name('kantor')->middleware(RoleMiddleware::class.':'.('0'||'1'));
     Route::post('/kantor/tambah', [MasterController::class, 'tambahkantor']);
+    Route::get('/get-konten/{companyId}', [MasterController::class, 'getkonten']);
 
     Route::get('/satker', [MasterController::class, 'satker'])->name('satker');
     Route::post('/satker/tambah', [MasterController::class, 'tambahsatker']);
@@ -47,7 +50,8 @@ Route::middleware(['auth:web'])->group(function () {
     Route::get('/pegawai/input', [PegawaiController::class, 'input'])->name('pegawai.input');
     Route::post('/pegawai/store', [PegawaiController::class, 'store'])->name('pegawai.store');
 
-    Route::get('/adduser', [MasterController::class, 'adduser'])->name('adduser')->middleware(RoleMiddleware::class.':0');
+    Route::get('/users', [MasterController::class, 'user'])->name('users');
+    Route::post('/users/add', [MasterController::class, 'adduser'])->name('adduser');
 });
 
 
