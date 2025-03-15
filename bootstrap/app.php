@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'redirif' => RedirectIfNotAuthenticated::class,
             'ifnotpeg' => RedirectIfPegawaiAuthenticated::class,
+            'role' => \App\Http\Middleware\RoleMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
