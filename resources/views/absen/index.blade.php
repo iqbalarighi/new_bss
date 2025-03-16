@@ -83,7 +83,7 @@
                                         </div>
                                         <div class="presencedetail">
                                             <h4 class="presencetitle">Masuk</h4>
-                                            <span>{{$absen->jam_in}}</span>
+                                            <span>{{$absen == null ? '' : $absen->jam_in}}</span>
                                         </div>
                                     </div>
                                 {{-- </a> --}}
@@ -99,7 +99,7 @@
                                     </div>
                                     <div class="presencedetail">
                                         <h4 class="presencetitle">Pulang</h4>
-                                        <span>{{$absen->jam_out}}</span>
+                                        <span>{{$absen == null || $absen->jam_out == null ? '' : $absen->jam_out}}</span>
                                     </div>
                                 </div>
                             </div>
