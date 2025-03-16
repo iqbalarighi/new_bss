@@ -37,7 +37,7 @@ Route::middleware(['auth:web'])->group(function () {
     Route::post('/tenant/tambah', [MasterController::class, 'tambahtenant'])->middleware('role:0');
 
     // if(Auth::guard())
-    Route::get('/kantor', [MasterController::class, 'kantor'])->name('kantor')->middleware('role:1,0');
+    Route::get('/kantor', [MasterController::class, 'kantor'])->name('kantor')->middleware('role:1', 'role:0');
     Route::post('/kantor/tambah', [MasterController::class, 'tambahkantor']);
 
     Route::get('/get-konten/{companyId}', [MasterController::class, 'getkonten']);
