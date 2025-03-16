@@ -11,12 +11,14 @@ class RoleMiddleware
 {
     public function handle(Request $request, Closure $next, $roles): Response
     {   
-        $allowedRoles = explode(',', $roles); 
-
+        
+        // Ambil role user
         $userRole = Auth::user()->role;
+         $allowedRoles = explode('|', $roles);
 
+        // Cek apakah role user ada dalam daftar yang diperbolehkan
         if (!in_array($userRole, $allowedRoles)) {
-            return redirect('/home'); // Redirect ke halaman utama jika tidak punya akses
+            return redirect('/home')->with('error', 'Anda tidak memiliki akses ke halaman ini.');
         }
         return $next($request);
     }
