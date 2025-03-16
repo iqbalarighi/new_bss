@@ -104,17 +104,11 @@ class PegawaiController extends Controller
             'foto.max' => 'Ukuran gambar maksimal 2MB.',
         ]);
 
-        $foto = $request->file('foto');
-if($foto != null){
-        $fotoNama = Str::random(20) . '.' . $foto->getClientOriginalExtension();
-        $fotoPath = $foto->storeAs('foto_pegawai', $fotoNama, 'public');
-} else {
-    $fotoPath = null;
-}
+
 
 if(Auth::user()->role === 1){
         $id = Auth::user()->perusahaan;
-         $kantor = $request->penempatan_kerja;
+         $kantor = $request->kantor;
 } 
 if(Auth::user()->role === 3){
         $id = Auth::user()->perusahaan;
@@ -122,9 +116,17 @@ if(Auth::user()->role === 3){
 }
 if(Auth::user()->role === 0){
         $id = $request->perusahaan;
-        $kantor = Auth::user()->kantor;
+        $kantor = $request->kantor;
 }
 
+$foto = $request->file('foto');
+
+if($foto != null){
+        $fotoNama = Str::random(20) . '.' . $foto->getClientOriginalExtension();
+        $fotoPath = $foto->storeAs('foto_pegawai', $fotoNama, 'public');
+} else {
+    $fotoPath = null;
+}
         PegawaiModel::create([
             'perusahaan' => $id,
             'nama_lengkap' => $request->nama,
@@ -143,6 +145,10 @@ if(Auth::user()->role === 0){
             'status' => $request->status,
             'foto' => $fotoPath,
         ]);
+
+    
+
+
 
         return redirect()->route('pegawai.index')->with('success', 'Pegawai berhasil ditambahkan.');
     }

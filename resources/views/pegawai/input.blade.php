@@ -87,7 +87,7 @@
                 <div class="mb-3">
                     <label for="office" class="form-label">Penempatan Kerja</label>
                     {{-- <input type="text" class="form-control"name="usaha" placeholder="Masukkan nama kantor" required> --}}
-                    <select name="penempatan_kerja" id="office" class="form-select" required>
+                    <select name="kantor" id="office" class="form-select" required>
 
                     </select>
                 </div>
