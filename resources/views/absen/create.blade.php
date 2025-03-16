@@ -13,16 +13,23 @@
 <!-- * App Header -->
 
 <style type="text/css">
-	.webcam-capture,
-	.webcam-capture video{
-		display: inline-block;
-		width: 100% !important;
-		margin: auto;
-		height: 95% !important;
-		border-radius: 15px;
-	}
+    .webcam-capture,
+    .webcam-capture video{
+        display: inline-block;
+        width: 100% !important;
+        margin: auto;
+        height: 95% !important;
+        border-radius: 15px;
+        position: relative;
+        transform: scaleX(-1); /* Membalik webcam menjadi mirror */
+    }
 
-	#map { height: 200px; }
+    .webcam-capture video {
+        object-fit: cover;
+        aspect-ratio: 3 / 4;
+    }
+
+    #map { height: 200px; }
 </style>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -34,53 +41,53 @@
 <div class="section full mt-2">
     <div class="section-title">Title</div>
     <div class="wide-block pt-2 pb-2">
-    	<div class="row">
-    		<div class="col">
-    			<input type="hidden" id="lokasi">
-	        <div class="webcam-capture"></div>
-    		</div>
-		</div>
-		<div class="row">
-    		<div class="col">
-    			@if($cek == 1)
-    				@if($cek2->jam_out == null)
-    					<button id="capture" class="btn btn-danger btn-block" disabled>
-    					<ion-icon name="camera-outline"></ion-icon>
-    					Absen Pulang
-    				</button>
-    			@else
-				<button class="btn btn-secondary btn-block" disabled>
-    				Terima Kasih &nbsp;
-    				<ion-icon name="thumbs-up"></ion-icon>
-    			</button>
-    			@endif
-    		@else
-				<button id="capture" class="btn btn-primary btn-block" disabled>
-    				<ion-icon name="camera-outline"></ion-icon>
-    				Absen Masuk
-    			</button>
-    		@endif
-    	</div>
-    	</div>
-    	<div class="row mt-2">
-    		<div class="col">
-    			<div id="map"></div>
-    		</div>
-    	</div>
+        <div class="row">
+            <div class="col">
+                <input type="hidden" id="lokasi">
+            <div class="webcam-capture"></div>
+            </div>
+        </div>
+        <div class="row" style="margin-top: -80px;">
+            <div class="col">
+                @if($cek == 1)
+                    @if($cek2->jam_out == null)
+                        <button id="capture" class="btn btn-danger btn-block" disabled>
+                        <ion-icon name="camera-outline"></ion-icon>
+                        Absen Pulang
+                    </button>
+                @else
+                <button class="btn btn-secondary btn-block" disabled>
+                    Terima Kasih &nbsp;
+                    <ion-icon name="thumbs-up"></ion-icon>
+                </button>
+                @endif
+            @else
+                <button id="capture" class="btn btn-primary btn-block" disabled>
+                    <ion-icon name="camera-outline"></ion-icon>
+                    Absen Masuk
+                </button>
+            @endif
+        </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col">
+                <div id="map"></div>
+            </div>
+        </div>
     </div>
 </div>
 @endsection
 
 @push('myscript')
 <script>
-	Webcam.set({
-		height: 480,
-		width: 640,
-		image_format:'jpeg',
-		jpeg_quality: 80
-	});
+    Webcam.set({
+        height: 640,
+        width: 480,
+        image_format:'png',
+        flip_horiz: true // Membalik webcam menjadi mirror
+    });
 
-	Webcam.attach('.webcam-capture');
+    Webcam.attach('.webcam-capture');
 
 var lokasi = document.getElementById('lokasi');
 
@@ -103,42 +110,42 @@ var circle = L.circle(center, {
 var userMarker = L.marker(center).addTo(map).bindPopup('Menunggu lokasi...');
 
 if(navigator.geolocation){
-	navigator.geolocation.watchPosition(function (position) {
-	lokasi.value = position.coords.latitude + "," + position.coords.longitude;
+    navigator.geolocation.watchPosition(function (position) {
+    lokasi.value = position.coords.latitude + "," + position.coords.longitude;
 
-	var lat = position.coords.latitude;
-	var lng = position.coords.longitude;
-	var userLocation = L.latLng(lat, lng);
+    var lat = position.coords.latitude;
+    var lng = position.coords.longitude;
+    var userLocation = L.latLng(lat, lng);
 
-	userMarker.setLatLng(userLocation).bindPopup('Lokasi Anda').openPopup();
-	map.setView(userLocation, 18);
+    userMarker.setLatLng(userLocation).bindPopup('Lokasi Anda').openPopup();
+    map.setView(userLocation, 18);
 
-	var distance = userLocation.distanceTo(center);
+    var distance = userLocation.distanceTo(center);
 
-	if (distance > radius) {
-	    $('#capture').prop('disabled', true);
-	} else {
-	    $('#capture').prop('disabled', false);
-	}
+    if (distance > radius) {
+        $('#capture').prop('disabled', true);
+    } else {
+        $('#capture').prop('disabled', false);
+    }
 
-	}, function(error) {
-	    Swal.fire({
-		  title: 'Peringatan!',
-		  text: 'Gagal mendapatkan lokasi: ' + error.message + '. Aktifkan lokasi dan refresh halaman ini',
-		  icon: 'warning',
-		  confirmButtonText: 'OK'
-		})
-	}, {
-	    enableHighAccuracy: true,
-	    maximumAge: 1000
-	});
+    }, function(error) {
+        Swal.fire({
+          title: 'Peringatan!',
+          text: 'Gagal mendapatkan lokasi: ' + error.message + '. Aktifkan lokasi dan refresh halaman ini',
+          icon: 'warning',
+          confirmButtonText: 'OK'
+        })
+    }, {
+        enableHighAccuracy: true,
+        maximumAge: 1000
+    });
 } else {
     Swal.fire({
-	  title: 'Error!',
-	  text: 'Geolocation tidak didukung di browser ini.',
-	  icon: 'error',
-	  confirmButtonText: 'OK'
-	})
+      title: 'Error!',
+      text: 'Geolocation tidak didukung di browser ini.',
+      icon: 'error',
+      confirmButtonText: 'OK'
+    })
 }
 
 $('#capture').click(function (e) {
