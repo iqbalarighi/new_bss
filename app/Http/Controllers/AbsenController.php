@@ -13,11 +13,12 @@ class AbsenController extends Controller
     public function index()
     {
         $id = Auth::guard('pegawai')->user()->id;
-
+        $nip = Auth::guard('pegawai')->user()->nip;
+        $harini = date('Y-m-d');
         $pegawai = PegawaiModel::with('perusa', 'kantor', 'jabat', 'sat' )->findOrFail($id);
+        $absen = AbsenModel::where('tgl_absen', $harini)->where('nip', $nip)->first();
 
-
-        return view('absen.index', compact('pegawai'));
+        return view('absen.index', compact('pegawai', 'absen'));
     }
 
     public function create()

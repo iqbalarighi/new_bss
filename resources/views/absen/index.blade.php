@@ -76,17 +76,17 @@
                     <div class="col-6">
                         <div class="card gradasigreen">
                             <div class="card-body">
-                                <a href="{{url('/absen/create')}}">
+                                {{-- <a href="{{url('/absen/create')}}"> --}}
                                     <div class="presencecontent">
                                         <div class="iconpresence">
                                             <ion-icon name="camera"></ion-icon>
                                         </div>
                                         <div class="presencedetail">
                                             <h4 class="presencetitle">Masuk</h4>
-                                            <span>07:00</span>
+                                            <span>{{$absen->jam_in}}</span>
                                         </div>
                                     </div>
-                                </a>
+                                {{-- </a> --}}
                             </div>
                         </div>
                     </div>
@@ -99,7 +99,7 @@
                                     </div>
                                     <div class="presencedetail">
                                         <h4 class="presencetitle">Pulang</h4>
-                                        <span>12:00</span>
+                                        <span>{{$absen->jam_out}}</span>
                                     </div>
                                 </div>
                             </div>
@@ -108,8 +108,8 @@
                 </div>
             </div>
 
-            <div class="rekappresence">
-                <div id="chartdiv"></div>
+            {{-- <div class="rekappresence"> --}}
+                {{-- <div id="chartdiv"></div> --}}
                 <!-- <div class="row">
                     <div class="col-6">
                         <div class="card">
@@ -174,7 +174,7 @@
                         </div>
                     </div>
                 </div> -->
-            </div>
+            {{-- </div> --}}
             <div class="presencetab mt-2">
                 <div class="tab-pane fade show active" id="pilled" role="tabpanel">
                     <ul class="nav nav-tabs style1" role="tablist">
