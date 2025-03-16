@@ -74,7 +74,7 @@
                 <div class="mb-3">
                     <label for="tenant" class="form-label">Perusahaan</label>
                     {{-- <input type="text" class="form-control"name="usaha" placeholder="Masukkan nama kantor" required> --}}
-                    <select name="penempatan_kerja" id="tenant" class="form-select" required>
+                    <select name="perusahaan" id="tenant" class="form-select" required>
                         <option selected disabled value="">Pilih Perusahaan</option>
                         @foreach($tenant as $item)
                         <option value="{{$item->id}}">{{$item->perusahaan}}</option>
