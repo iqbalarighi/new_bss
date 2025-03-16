@@ -113,13 +113,12 @@ if($foto != null){
 }
 
 if(Auth::user()->role === 1){
-        $id = Auth::user()->perusahaan;
          $kantor = $request->penempatan_kerja;
 } 
 if(Auth::user()->role === 3){
-        $id = Auth::user()->perusahaan;
         $kantor = Auth::user()->kantor;
 }
+        $id = Auth::user()->perusahaan;
 
         PegawaiModel::create([
             'perusahaan' => $id,
