@@ -14,7 +14,7 @@
 
 <style type="text/css">
     .webcam-capture,
-    .webcam-capture video{
+    .webcam-capture video {
         display: inline-block;
         width: 100% !important;
         margin: auto;
@@ -81,129 +81,148 @@
 @push('myscript')
 <script>
     Webcam.set({
-        height: 640,
         width: 480,
-        image_format:'png',
-        flip_horiz: true // Membalik webcam menjadi mirror
+        height: 640,
+        image_format: 'png',
+        png_quality: 90,
+        constraints: {
+            video: true // Biarkan browser memilih pengaturan terbaik
+        }
     });
 
     Webcam.attach('.webcam-capture');
 
-var lokasi = document.getElementById('lokasi');
+    var lokasi = document.getElementById('lokasi');
 
-var map = L.map('map').setView([-6.200000, 106.816666], 18);
+    var map = L.map('map').setView([-6.200000, 106.816666], 18);
 
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-}).addTo(map);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+    }).addTo(map);
 
-var center = L.latLng({{ $pegawai->kantor->lokasi ?? '-6.200000, 106.816666' }});
-var radius = {{ $pegawai->kantor->radius ?? 100 }};
+    var center = L.latLng({{ $pegawai->kantor->lokasi ?? '-6.200000, 106.816666' }});
+    var radius = {{ $pegawai->kantor->radius ?? 100 }};
 
-var circle = L.circle(center, { 
-    color: 'blue',
-    fillColor: '#0000FF',
-    fillOpacity: 0.2,
-    radius: radius
-}).addTo(map);
+    var circle = L.circle(center, { 
+        color: 'blue',
+        fillColor: '#0000FF',
+        fillOpacity: 0.2,
+        radius: radius
+    }).addTo(map);
 
-var userMarker = L.marker(center).addTo(map).bindPopup('Menunggu lokasi...');
+    var userMarker = L.marker(center).addTo(map).bindPopup('Menunggu lokasi...');
 
-if(navigator.geolocation){
-    navigator.geolocation.watchPosition(function (position) {
-    lokasi.value = position.coords.latitude + "," + position.coords.longitude;
+    if(navigator.geolocation){
+        navigator.geolocation.watchPosition(function (position) {
+            lokasi.value = position.coords.latitude + "," + position.coords.longitude;
 
-    var lat = position.coords.latitude;
-    var lng = position.coords.longitude;
-    var userLocation = L.latLng(lat, lng);
+            var lat = position.coords.latitude;
+            var lng = position.coords.longitude;
+            var userLocation = L.latLng(lat, lng);
 
-    userMarker.setLatLng(userLocation).bindPopup('Lokasi Anda').openPopup();
-    map.setView(userLocation, 18);
+            userMarker.setLatLng(userLocation).bindPopup('Lokasi Anda').openPopup();
+            map.setView(userLocation, 18);
 
-    var distance = userLocation.distanceTo(center);
+            var distance = userLocation.distanceTo(center);
 
-    if (distance > radius) {
-        $('#capture').prop('disabled', true);
+            if (distance > radius) {
+                $('#capture').prop('disabled', true);
+            } else {
+                $('#capture').prop('disabled', false);
+            }
+
+        }, function(error) {
+            Swal.fire({
+                title: 'Peringatan!',
+                text: 'Gagal mendapatkan lokasi: ' + error.message + '. Aktifkan lokasi dan refresh halaman ini',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
+        }, {
+            enableHighAccuracy: true,
+            maximumAge: 1000
+        });
     } else {
-        $('#capture').prop('disabled', false);
+        Swal.fire({
+            title: 'Error!',
+            text: 'Geolocation tidak didukung di browser ini.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
     }
 
-    }, function(error) {
-        Swal.fire({
-          title: 'Peringatan!',
-          text: 'Gagal mendapatkan lokasi: ' + error.message + '. Aktifkan lokasi dan refresh halaman ini',
-          icon: 'warning',
-          confirmButtonText: 'OK'
-        })
-    }, {
-        enableHighAccuracy: true,
-        maximumAge: 1000
-    });
-} else {
-    Swal.fire({
-      title: 'Error!',
-      text: 'Geolocation tidak didukung di browser ini.',
-      icon: 'error',
-      confirmButtonText: 'OK'
-    })
-}
+    $('#capture').click(function (e) {
+        Webcam.snap(function (uri) {
+            let canvas = document.createElement("canvas");
+            let ctx = canvas.getContext("2d");
+            let img = new Image();
 
-$('#capture').click(function (e) {
-    Webcam.snap(function (uri) {
-        Swal.fire({
-            title: 'Preview Foto',
-            imageUrl: uri,
-            imageWidth: 300,
-            imageAlt: 'Preview Foto',
-            showCancelButton: true,
-            confirmButtonText: 'Kirim',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
+            img.onload = function() {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.translate(img.width, 0);
+                ctx.scale(-1, 1);
+                ctx.drawImage(img, 0, 0);
+
+                let mirroredImage = canvas.toDataURL('image/png');
+
                 Swal.fire({
-                    title: 'Mengirim Data...',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
+                    title: 'Preview Foto',
+                    imageUrl: mirroredImage,
+                    imageWidth: 300,
+                    imageAlt: 'Preview Foto',
+                    showCancelButton: true,
+                    confirmButtonText: 'Kirim',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Mengirim Data...',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        var lokasi = $('#lokasi').val();
+
+                        $.ajax({
+                            type: 'POST',
+                            url: '/absen/store',
+                            data: {
+                                _token: '{{ csrf_token() }}',
+                                image: mirroredImage,
+                                lokasi: lokasi
+                            },
+                            cache: false,
+                            success: function (respond) {
+                                Swal.close();
+                                var status = respond.split("|");
+                                if (status[0] == "success") {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Berhasil!',
+                                        text: status[1],
+                                        confirmButtonText: 'OK'
+                                    }).then(() => {
+                                        window.location.href = '{{ url('/absen') }}';
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        title: 'Error!',
+                                        text: status[1] || 'Gagal Absen, Mohon hubungi Admin',
+                                        icon: 'error',
+                                        confirmButtonText: 'OK'
+                                    });
+                                }
+                            }
+                        });
                     }
                 });
+            };
 
-                var lokasi = $('#lokasi').val();
-
-                $.ajax({
-                    type: 'POST',
-                    url: '/absen/store',
-                    data: {
-                        _token: '{{ csrf_token() }}',
-                        image: uri,
-                        lokasi: lokasi
-                    },
-                    cache: false,
-                    success: function (respond) {
-                        Swal.close();
-                        var status = respond.split("|");
-                        if (status[0] == "success") {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil!',
-                                text: status[1],
-                                confirmButtonText: 'OK'
-                            }).then(() => {
-                                window.location.href = '{{ url('/absen') }}';
-                            });
-                        } else {
-                            Swal.fire({
-                                title: 'Error!',
-                                text: status[1] || 'Gagal Absen, Mohon hubungi Admin',
-                                icon: 'error',
-                                confirmButtonText: 'OK'
-                            });
-                        }
-                    }
-                });
-            }
+            img.src = uri;
         });
     });
-});
 </script>
 @endpush

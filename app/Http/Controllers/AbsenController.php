@@ -42,15 +42,25 @@ class AbsenController extends Controller
         $jam_foto = date("His");
         $lokasi = $request->lokasi;
         $image = $request->image;
-        $folderPath = ('uploads/absensi/'. $nip .'/');
-        $formatName = $tgl_absen . "-" . $jam_foto;
-        $image_parts = explode(";base64", $image);
-        $image_base64 = base64_decode($image_parts[1]);
-        $fileName = $formatName . ".png";
-        $file= $folderPath . $fileName;
+        $folderPath = ('storage/absensi/'. $nip .'/');
+        
+        if (!file_exists($folderPath)) {
+            mkdir($folderPath, 0777, true);
+        }
+
+        $image_parts = explode(";base64,", $image);
+        if (count($image_parts) == 2) {
+            $image_base64 = base64_decode($image_parts[1]);
+        } else {
+            echo "error|Format base64 tidak valid";
+            return;
+        }
 
         $cek = AbsenModel::where('tgl_absen', $tgl_absen)->where('nip', $nip)->count();
         if ($cek > 0) {
+            $formatName = $tgl_absen . "-" . $jam_foto . "-out";
+            $fileName = $formatName . ".png";
+            $file= $folderPath . $fileName;
 
             $update = AbsenModel::where('nip', $nip)->where('tgl_absen', $tgl_absen)->update([
             'jam_out' => $jam_absen,
@@ -58,12 +68,15 @@ class AbsenController extends Controller
             'lokasi_out' => $lokasi,
         ]);
             if($update){
-                $stor = Storage::put($file, $image_base64);
+                file_put_contents($file, $image_base64);
                 echo "success|Terima Kasih, Absen Pulang Berhasil|out";
             } else {
                 echo 1;       
             }
         } else {
+            $formatName = $tgl_absen . "-" . $jam_foto . "-in";
+            $fileName = $formatName . ".png";
+            $file= $folderPath . $fileName;
 
             $simpan = AbsenModel::create([
             'nip' => $nip,
@@ -73,7 +86,7 @@ class AbsenController extends Controller
             'lokasi_in' => $lokasi,
         ]);
             if($simpan){
-                $stor = Storage::put($file, $image_base64);
+                file_put_contents($file, $image_base64);
                 echo "success|Terima Kasih, Absen Masuk Berhasil|in";
             } else {
                 echo 1;       
