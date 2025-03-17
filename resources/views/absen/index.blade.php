@@ -99,7 +99,7 @@
                             <div class="card-body p-1 m-1">
                                 <div class="presencecontent">
                                     <div class="iconpresence">
-                                        @if($absen != null || $absen->foto_out != null)
+                                        @if($absen != null && $absen->foto_out != null)
                                             <img src="{{ asset('storage/absensi/'.$absen->nip.'/'.$absen->foto_out) }}" class="imaged w64">
                                             @else
                                             <ion-icon name="camera"></ion-icon>
