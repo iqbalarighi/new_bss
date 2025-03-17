@@ -79,7 +79,7 @@
                                 {{-- <a href="{{url('/absen/create')}}"> --}}
                                     <div class="presencecontent">
                                         <div class="iconpresence">
-                                            @if($absen->foto_in != null)
+                                            @if($absen != null || $absen->foto_in != null)
                                             <img src="{{ asset('storage/absensi/'.$absen->nip.'/'.$absen->foto_in) }}" class="imaged w64">
                                             @else
                                             <ion-icon name="camera"></ion-icon>
@@ -96,10 +96,14 @@
                     </div>
                     <div class="col-6">
                         <div class="card gradasired">
-                            <div class="card-body">
+                            <div class="card-body p-1 m-1">
                                 <div class="presencecontent">
                                     <div class="iconpresence">
-                                        <ion-icon name="camera"></ion-icon>
+                                        @if($absen != null || $absen->foto_out != null)
+                                            <img src="{{ asset('storage/absensi/'.$absen->nip.'/'.$absen->foto_out) }}" class="imaged w64">
+                                            @else
+                                            <ion-icon name="camera"></ion-icon>
+                                            @endif
                                     </div>
                                     <div class="presencedetail">
                                         <h4 class="presencetitle">Pulang</h4>
