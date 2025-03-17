@@ -79,7 +79,7 @@
                                 {{-- <a href="{{url('/absen/create')}}"> --}}
                                     <div class="presencecontent">
                                         <div class="iconpresence">
-                                            @if($absen != null || $absen->foto_in != null)
+                                            @if($absen != null)
                                             <img src="{{ asset('storage/absensi/'.$absen->nip.'/'.$absen->foto_in) }}" class="imaged w64">
                                             @else
                                             <ion-icon name="camera"></ion-icon>
