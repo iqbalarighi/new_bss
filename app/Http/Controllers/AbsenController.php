@@ -17,8 +17,9 @@ class AbsenController extends Controller
         $harini = date('Y-m-d');
         $pegawai = PegawaiModel::with('perusa', 'kantor', 'jabat', 'sat' )->findOrFail($id);
         $absen = AbsenModel::where('tgl_absen', $harini)->where('nip', $nip)->first();
+        $absens = AbsenModel::where('nip', $nip)->get();
 
-        return view('absen.index', compact('pegawai', 'absen'));
+        return view('absen.index', compact('pegawai', 'absen', 'absens'));
     }
 
     public function create()

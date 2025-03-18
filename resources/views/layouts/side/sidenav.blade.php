@@ -37,7 +37,7 @@
                 <div class="list-group list-group-flush">
                     <a href="{{ route('pegawai.index') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('pegawai') ? 'active' : '' }}" style="width: 95%;">Daftar Pegawai</a>
                     <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Absensi</a>
-                    <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Insiden/Kejadian</a>
+                    {{-- <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Insiden/Kejadian</a> --}}
                 </div>
             </div>
         </div>
@@ -51,11 +51,12 @@
         <div class="collapse {{ $laporanActive ? 'show' : '' }}" id="laporan">
             <div class="card card-body p-1">
                 <div class="list-group list-group-flush">
-                    <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Kegiatan</a>
-                    <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Serah Terima Jaga</a>
-                    <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Insiden/Kejadian</a>
-                    <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%; cursor: not-allowed;"><s>Bencana</s></a>
-                    <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%; cursor: not-allowed;"><s>Temuan Patroli</s></a>
+                    <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Admin</a>
+                    <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">MEP</a>
+                    <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Sipil</a>
+                    <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Cleaning Service</a>
+                    <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Pengemudi</a>
+                    <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Facad</a>
                 </div>
             </div>
         </div>

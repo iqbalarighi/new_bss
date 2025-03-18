@@ -35,10 +35,14 @@ Route::middleware(['auth:web'])->group(function () {
 
     Route::get('/tenant', [MasterController::class, 'tenant'])->name('tenant')->middleware('role:0');
     Route::post('/tenant/tambah', [MasterController::class, 'tambahtenant'])->middleware('role:0');
+    Route::put('/tenant/edit/{id}', [MasterController::class, 'edittenant'])->middleware('role:0');
+    Route::get('/tenant/hapus/{id}', [MasterController::class, 'destroy'])->middleware('role:0');
 
     // if(Auth::guard())
     Route::get('/kantor', [MasterController::class, 'kantor'])->name('kantor')->middleware('role:0|1');
-    Route::post('/kantor/tambah', [MasterController::class, 'tambahkantor']);
+    Route::post('/kantor/tambah', [MasterController::class, 'tambahkantor'])->middleware('role:0|1');
+    Route::get('/kantor/edit/{id}', [MasterController::class, 'kantoredit'])->middleware('role:0|1');
+    Route::put('/kantor/edit/{id}', [MasterController::class, 'kantorupdate'])->middleware('role:0|1');
 
     Route::get('/get-konten/{companyId}', [MasterController::class, 'getkonten']);
 

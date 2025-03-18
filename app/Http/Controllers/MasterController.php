@@ -37,6 +37,32 @@ class MasterController extends Controller
             ->with('status', 'berhasil');
     }
 
+    public function edittenant(Request $request, $id)
+    {
+        $request->validate([
+            'tenant' => 'required|string|max:255',
+            'alamat' => 'required|string|max:255',
+            'telp' => 'required|string|max:15',
+        ]);
+
+        $tenant = PerusahaanModel::findOrFail($id);
+        $tenant->update([
+            'perusahaan' => $request->tenant,
+            'alamat' => $request->alamat,
+            'no_tlp' => $request->telp,
+        ]);
+
+        return redirect()->back()->with('status', 'Tenant berhasil diperbarui!');
+    }
+
+    public function destroy($id)
+    {
+        $tenant = PerusahaanModel::findOrFail($id);
+        $tenant->delete();
+
+        return redirect()->back()->with('status', 'Tenant berhasil dihapus!');
+    }
+
 
     public function kantor()
     {
@@ -74,6 +100,33 @@ class MasterController extends Controller
 
         return back()
             ->with('status', 'berhasil');
+    }
+
+    public function kantoredit($id)
+    {
+        $kantor = KantorModel::findOrFail($id);
+        return view('master.kantoredit', compact('kantor'));
+    }
+
+    public function kantorupdate(Request $request, $id)
+        {
+        $request->validate([
+            'tenant_name' => 'required|string|max:255',
+            'office_name' => 'required|string|max:255',
+            'address' => 'required|string',
+            'attendance_distance' => 'required|numeric',
+            'location' => 'required|string', // Format: "latitude,longitude"
+        ]);
+
+        $kantor = KantorModel::findOrFail($id);
+        $kantor->perusahaan = $request->tenant_name;
+        $kantor->nama_kantor = $request->office_name;
+        $kantor->alamat = $request->address;
+        $kantor->radius = $request->attendance_distance;
+        $kantor->lokasi = $request->location;
+        $kantor->save();
+
+        return redirect()->route('kantor')->with('status', 'Data kantor berhasil diperbarui.');
     }
     
     public function satker()

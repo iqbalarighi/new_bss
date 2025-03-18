@@ -16,7 +16,7 @@
                             <i class="bi bi-building-add"></i>
                         </button>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body" style="overflow-x: auto;">
                         @if (Session::get('status'))
                         <script>
                             Swal.fire({
@@ -153,7 +153,7 @@
                                     <td>{{$kan->alamat}}</td>
                                     <td>{{$kan->radius}} meter</td>
                                     <td>
-                                        <button class="btn btn-primary btn-sm">Edit</button>
+                                        <button class="btn btn-primary btn-sm" onclick="location.href ='/kantor/edit/'+{{$kan->id}}">Edit</button>
                                         <button class="btn btn-danger btn-sm">Hapus</button>
                                     </td>
                                 </tr>
