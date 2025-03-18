@@ -205,7 +205,7 @@
                             <li>
                                 <div class="item">
                                     <div class="icon-box">
-                                        <img src="{{ asset('storage/absensi/'.$absen->nip.'/'.$absen->foto_in) }}" style="height: 37px;" class="imaged w32 rounded">
+                                        <img src="{{ asset('storage/absensi/'.$item->nip.'/'.$item->foto_in) }}" style="height: 37px;" class="imaged w32 rounded">
                                     </div>
                                     <div class="in">
                                         <div></div>
