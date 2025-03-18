@@ -44,9 +44,7 @@
             margin-left: -15rem;
         }
         }
-        </style>    
 
-            <style>
         html, body {
             height: 100%;
             margin: 0;
@@ -68,9 +66,7 @@
         a {text-decoration: none;}
 
         
-    </style>
 
-    <style type="text/css">
     .list-group-item.active {
     z-index: 2;
     color: #000000;
@@ -78,4 +74,7 @@
     border-color: #ffffff;
     font-weight: bolder;
 }
+    th, td {
+        vertical-align: middle !important;
+    }
 </style>

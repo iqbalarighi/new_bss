@@ -14,7 +14,7 @@
     <div class="card shadow-lg rounded-lg">
         <div class="card-body" style="overflow: auto;">
             <table class="table table-striped table-bordered table-hover"> 
-                <thead class="table-danger">
+                <thead class="table-danger text-center">
                     <tr>
                         <th>No.</th>
                         <th>NIP</th>
@@ -43,12 +43,12 @@
                         @if(Auth::user()->role == 1 || Auth::user()->role == 0)
                             <td>{{ $pegawai->kantor->nama_kantor }}</td>
                         @endif
-                            <td>{{ $pegawai->jabat->jabatan }}</td>
+                            <td style="white-space: wrap;">{{ $pegawai->jabat->jabatan }}</td>
                             <td>{{ $pegawai->sat->satuan_kerja }}</td>
                             <td>{{ $pegawai->status}}</td>
                             <td class="align-middle text-center">
-                                <button class="btn btn-primary btn-sm">Edit</button>
-                                <button class="btn btn-danger btn-sm">Hapus</button>
+                                <button class="btn btn-primary btn-sm px-1">Edit</button>
+                                <button class="btn btn-danger btn-sm px-1">Hapus</button>
                             </td>
                         </tr>
                     @endforeach

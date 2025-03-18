@@ -130,9 +130,9 @@
                         </div>
 
                         <table class="table table-striped table-bordered table-hover">
-                            <thead class="table-dark">
+                            <thead class="text-center table-dark">
                                 <tr>
-                                    <th>No</th>
+                                    <th >No</th>
                                     @if(Auth::user()->role == 0)
                                         <th>Tenant</th>
                                     @endif
@@ -155,7 +155,7 @@
                                     <td>{{$kan->alamat}}</td>
                                     <td>{{$kan->radius}} meter</td>
                                 @if(Auth::user()->role == 0 || Auth::user()->role == 1)
-                                    <td class="d-flex justify-content-center">
+                                    <td class="align-middle text-center">
                                         <button class="btn btn-primary btn-sm" onclick="location.href ='/kantor/edit/'+{{$kan->id}}">Edit</button>
                                         <button class="btn btn-danger btn-sm">Hapus</button>
                                     </td>
