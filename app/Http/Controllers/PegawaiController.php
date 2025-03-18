@@ -119,7 +119,7 @@ if(Auth::user()->role === 0){
         $kantor = $request->kantor;
 }
 
-$foto = $request->file('foto');
+$foto = $request->file('foto'); 
 
 if($foto != null){
         $fotoNama = Str::random(20) . '.' . $foto->getClientOriginalExtension();
