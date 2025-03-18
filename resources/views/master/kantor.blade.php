@@ -16,7 +16,7 @@
                             <i class="bi bi-building-add"></i>
                         </button>
                     </div>
-                    <div class="card-body" style="overflow-x: auto;">
+                    <div class="card-body" style="overflow: auto;"> 
                         @if (Session::get('status'))
                         <script>
                             Swal.fire({
