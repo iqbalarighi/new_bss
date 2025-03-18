@@ -64,7 +64,7 @@ class MasterController extends Controller
     //     return redirect()->back()->with('status', 'Tenant berhasil dihapus!');
     // }
 
-public function destroy(Request $request, $id)
+public function destroytenant(Request $request, $id)
     {
         $request->validate([
             'password' => 'required'
@@ -79,7 +79,6 @@ public function destroy(Request $request, $id)
     $satker = SatkerModel::where('perusahaan', $id)->delete();
     $jabatan = JabatanModel::where('perusahaan', $id)->delete();
     $pegawai = PegawaiModel::where('perusahaan', $id)->delete();
-
 
 
         $tenant = PerusahaanModel::findOrFail($id);
@@ -200,6 +199,34 @@ public function destroy(Request $request, $id)
 
         return back()
         ->with('status', 'berhasil');
+    }
+
+    public function updatesatker(Request $request, $id)
+    {
+        if (Auth::user()->role == 1 || Auth::user()->role == 3) {
+            $perusahaan = Auth::user()->perusahaan;
+        } else {
+            $perusahaan = $request->perusahaan;
+        }
+
+        $request->validate([
+            'satker' => 'required|string|max:255',
+        ]);
+
+        $satker = SatkerModel::findOrFail($id);
+        $satker->update([
+            'satuan_kerja' => $request->satker,
+            'perusahaan' => $perusahaan
+        ]);
+
+        return redirect()->back()->with('status', 'Satuan Kerja berhasil diperbarui!');
+    }
+
+    public function destroysatker($id)
+    {
+        $satker = SatkerModel::findOrFail($id);
+        $satker->delete();
+        return redirect()->back()->with('status', 'Satuan Kerja berhasil dihapus!');
     }
 
     public function jabatan()

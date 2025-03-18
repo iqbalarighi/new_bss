@@ -36,7 +36,7 @@ Route::middleware(['auth:web'])->group(function () {
     Route::get('/tenant', [MasterController::class, 'tenant'])->name('tenant')->middleware('role:0');
     Route::post('/tenant/tambah', [MasterController::class, 'tambahtenant'])->middleware('role:0');
     Route::put('/tenant/edit/{id}', [MasterController::class, 'edittenant'])->middleware('role:0');
-    Route::delete('/tenant/hapus/{id}', [MasterController::class, 'destroy'])->middleware('role:0');
+    Route::delete('/tenant/hapus/{id}', [MasterController::class, 'destroytenant'])->middleware('role:0');
 
     // if(Auth::guard())
     Route::get('/kantor', [MasterController::class, 'kantor'])->name('kantor')->middleware('role:0|1');
@@ -48,6 +48,7 @@ Route::middleware(['auth:web'])->group(function () {
 
     Route::get('/satker', [MasterController::class, 'satker'])->name('satker');
     Route::post('/satker/tambah', [MasterController::class, 'tambahsatker']);
+    Route::put('/satker/edit/{id}', [MasterController::class, 'updatesatker']);
  
     Route::get('/jabatan', [MasterController::class, 'jabatan'])->name('jabatan');
     Route::post('/jabatan/tambah', [MasterController::class, 'tambahjabatan']);

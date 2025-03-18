@@ -139,23 +139,27 @@
                                     <th>Nama Kantor</th>
                                     <th>Alamat</th>
                                     <th>Jarak Absen</th>
+                                @if(Auth::user()->role == 0 || Auth::user()->role == 1)
                                     <th>Aksi</th>
+                                @endif
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($kantor as $key => $kan)
                                 <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    @if(Auth::user()->role == 0)
-                                        <td>{{$kan->perusa->perusahaan}}</td>
-                                    @endif
+                                    <td>{{ $kantor->firstitem() + $key }}</td>
+                                @if(Auth::user()->role == 0)
+                                    <td>{{$kan->perusa->perusahaan}}</td>
+                                @endif
                                     <td>{{$kan->nama_kantor}}</td>
                                     <td>{{$kan->alamat}}</td>
                                     <td>{{$kan->radius}} meter</td>
-                                    <td>
+                                @if(Auth::user()->role == 0 || Auth::user()->role == 1)
+                                    <td class="d-flex justify-content-center">
                                         <button class="btn btn-primary btn-sm" onclick="location.href ='/kantor/edit/'+{{$kan->id}}">Edit</button>
                                         <button class="btn btn-danger btn-sm">Hapus</button>
                                     </td>
+                                @endif
                                 </tr>
                                 @endforeach
                             </tbody>

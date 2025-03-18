@@ -115,7 +115,7 @@
             </thead>
             <tbody>
                 @foreach($perusahaan as $key => $usaha)
-                <tr>
+                <tr id="row-{{ $usaha->id }}">
                     <td class="align-middle text-center">{{$perusahaan->firstitem()+$key}}</td>
                     <td>{{$usaha->perusahaan}}</td>
                     <td>{{$usaha->alamat}}</td>
@@ -205,7 +205,7 @@
                     }).then((result) => {
                         if (result.isConfirmed) {
                             Swal.fire('Berhasil!', 'Data telah dihapus.', 'success');
-                            document.getElementById(`row-${id}`).remove();
+                            document.getElementById(`row-${tenantId}`).remove();
                         }
                     });
                 }

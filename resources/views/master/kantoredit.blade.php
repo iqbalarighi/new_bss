@@ -25,7 +25,8 @@
                         @else
                         <div class="mb-3">
                             <label class="form-label">Tenant</label>
-                            <input type="text" name="tenant_name" class="form-control" value="{{ $kantor->perusa->perusahaan }}" required>
+                            <input type="text" class="form-control" value="{{ $kantor->perusa->perusahaan }}" required>
+                            <input type="text" name="tenant_name" value="{{ $kantor->perusahaan }}" hidden required>
                         </div>
                         @endif
                         <div class="mb-3">

@@ -35,7 +35,7 @@
             vertical-align: middle;
         }
     </style>
-    <!-- Modal Bootstrap -->                    
+    <!-- Modal Tambah Bootstrap -->                    
     <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered animate__animated animate__zoomIn">
             <div class="modal-content">
@@ -54,7 +54,6 @@
                         @if(Auth::user()->role == 0)
                         <div class="mb-3">
                             <label for="tenantName" class="form-label">Nama Perusahaan</label>
-                            {{-- <input type="text" class="form-control"name="usaha" placeholder="Masukkan nama kantor" required> --}}
                             <select name="perusahaan" id="tenantName" class="form-select" required>
                                 <option selected disabled value="">Pilih Perusahaan</option>
                                 @foreach($perusahaan as $usaha)
@@ -66,13 +65,50 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                    <button type="submmit" class="btn btn-primary">Simpan</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
                 </div> 
             </form>
             </div>
         </div>
     </div>
-    <!-- Modal Bootstrap -->
+    <!-- Modal Edit Bootstrap -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered animate__animated animate__zoomIn">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel">Edit Satuan Kerja</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editForm" method="POST">
+                        @csrf
+                        @method('PUT')
+                        <input type="hidden" id="edit_id" name="id">
+                        <div class="mb-3">
+                            <label for="edit_satker" class="form-label">Satuan Kerja</label>
+                            <input type="text" class="form-control" id="edit_satker" name="satker" required>
+                        </div>
+                        @if(Auth::user()->role == 0)
+                        <div class="mb-3">
+                            <label for="edit_tenantName" class="form-label">Nama Perusahaan</label>
+                            <select name="perusahaan" id="edit_tenantName" class="form-select" required>
+                                <option selected disabled value="">Pilih Perusahaan</option>
+                                @foreach($perusahaan as $usaha)
+                                <option value="{{$usaha->id}}">{{$usaha->perusahaan}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @endif
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div> 
+            </form>
+            </div>
+        </div>
+    </div>
+    <!-- Modal Edit Bootstrap -->
     <div>
             <table class="table table-striped table-bordered table-hover">
             <thead class="table-dark">
@@ -94,7 +130,10 @@
                 @endif 
                     <td>{{$ker->satuan_kerja}}</td>
                     <td class="align-middle text-center">
-                        <button class="btn btn-primary btn-sm cen">Edit</button>
+                        <button class="btn btn-primary btn-sm cen edit-btn" 
+                        data-id="{{$ker->id}}" 
+                        data-satker="{{$ker->satuan_kerja}}" 
+@if(Auth::user()->role == 0) data-perusahaan="{{$ker->perusahaan}}" @endif>Edit</button>
                         <button class="btn btn-danger btn-sm cen">Hapus</button>
                     </td>
                 </tr>
@@ -110,4 +149,23 @@
         </div>
     </div>
 </div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".edit-btn").forEach(button => {
+            button.addEventListener("click", function () {
+                let id = this.getAttribute("data-id");
+                let satker = this.getAttribute("data-satker");
+                let perusahaan = this.getAttribute("data-perusahaan");
+                
+                document.getElementById("edit_id").value = id;
+                document.getElementById("edit_satker").value = satker;
+@if(Auth::user()->role == 0) document.getElementById("edit_tenantName").value = perusahaan; @endif
+                document.getElementById("editForm").action = "/satker/edit/" + id;
+
+                let editModal = new bootstrap.Modal(document.getElementById("editModal"));
+                editModal.show();
+            });
+        });
+    });
+</script>
 @endsection
