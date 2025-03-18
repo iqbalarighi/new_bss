@@ -161,7 +161,7 @@
             const tenantId = this.dataset.id;
             Swal.fire({
                 title: "Apakah Anda yakin?",
-                text: "Data tenant ini akan dihapus!",
+                text: "Data tenant ini akan dihapus dan seluruh tabel terkait tenant akan dihapus!",
                 icon: "warning",
                 showCancelButton: true,
                 confirmButtonColor: "#d33",
@@ -170,7 +170,44 @@
                 cancelButtonText: "Batal"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    document.location.href = `/tenant/hapus/${tenantId}`;
+                    Swal.fire({
+                        title: 'Konfirmasi Hapus',
+                        text: "Masukkan password untuk menghapus data! ",
+                        input: 'password',
+                        inputAttributes: {
+                            autocapitalize: 'off',
+                            placeholder: 'Masukkan password'
+                        },
+                        showCancelButton: true,
+                        confirmButtonText: 'Hapus',
+                        cancelButtonText: 'Batal',
+                        showLoaderOnConfirm: true,
+                        preConfirm: (password) => {
+                            return fetch(`/tenant/hapus/${tenantId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ password: password })
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    return response.json().then(err => { throw new Error(err.message) });
+                                }
+                                return response.json();
+                            })
+                            .catch(error => {
+                                Swal.showValidationMessage(`Error: ${error.message}`);
+                            });
+                        },
+                        allowOutsideClick: () => !Swal.isLoading()
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            Swal.fire('Berhasil!', 'Data telah dihapus.', 'success');
+                            document.getElementById(`row-${id}`).remove();
+                        }
+                    });
                 }
             });
         });

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\JabatanModel;
 use App\Models\KantorModel;
+use App\Models\PegawaiModel;
 use App\Models\PerusahaanModel;
 use App\Models\SatkerModel;
 use App\Models\User;
@@ -55,12 +56,37 @@ class MasterController extends Controller
         return redirect()->back()->with('status', 'Tenant berhasil diperbarui!');
     }
 
-    public function destroy($id)
+    // public function destroy($id)
+    // {
+    //     $tenant = PerusahaanModel::findOrFail($id);
+    //     $tenant->delete();
+
+    //     return redirect()->back()->with('status', 'Tenant berhasil dihapus!');
+    // }
+
+public function destroy(Request $request, $id)
     {
+        $request->validate([
+            'password' => 'required'
+        ]);
+
+        if (!Hash::check($request->password, Auth::user()->password)) {
+            // return redirect()->back()->with('error', 'Password salah!');
+            return response()->json(['status' => 'error', 'message' => 'Password salah!'], 403);
+        }
+
+    $kantor = KantorModel::where('perusahaan', $id)->delete();
+    $satker = SatkerModel::where('perusahaan', $id)->delete();
+    $jabatan = JabatanModel::where('perusahaan', $id)->delete();
+    $pegawai = PegawaiModel::where('perusahaan', $id)->delete();
+
+
+
         $tenant = PerusahaanModel::findOrFail($id);
         $tenant->delete();
 
-        return redirect()->back()->with('status', 'Tenant berhasil dihapus!');
+        // return redirect()->back()->with('status', 'Tenant berhasil dihapus!');
+        return response()->json(['status' => 'success', 'message' => 'Data berhasil dihapus!']);
     }
 
 
