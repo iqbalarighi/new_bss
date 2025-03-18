@@ -224,9 +224,14 @@ public function destroytenant(Request $request, $id)
 
     public function destroysatker($id)
     {
-        $satker = SatkerModel::findOrFail($id);
-        $satker->delete();
-        return redirect()->back()->with('status', 'Satuan Kerja berhasil dihapus!');
+        try {
+            $satker = SatkerModel::findOrFail($id);
+            $satker->delete();
+
+            return response()->json(['success' => true, 'message' => 'Data berhasil dihapus.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Gagal menghapus data.'], 500);
+        }
     }
 
     public function jabatan()

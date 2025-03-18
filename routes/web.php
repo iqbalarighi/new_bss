@@ -43,12 +43,14 @@ Route::middleware(['auth:web'])->group(function () {
     Route::post('/kantor/tambah', [MasterController::class, 'tambahkantor'])->middleware('role:0|1');
     Route::get('/kantor/edit/{id}', [MasterController::class, 'kantoredit'])->middleware('role:0|1');
     Route::put('/kantor/edit/{id}', [MasterController::class, 'kantorupdate'])->middleware('role:0|1');
+    Route::delete('/kantor/hapus/{id}', [MasterController::class, 'kantorhapus'])->middleware('role:0|1');
 
-    Route::get('/get-konten/{companyId}', [MasterController::class, 'getkonten']);
+    Route::get('/get-konten/{companyId}', [MasterController::class, 'getkonten'])->middleware('role:0|1');
 
-    Route::get('/satker', [MasterController::class, 'satker'])->name('satker');
-    Route::post('/satker/tambah', [MasterController::class, 'tambahsatker']);
-    Route::put('/satker/edit/{id}', [MasterController::class, 'updatesatker']);
+    Route::get('/satker', [MasterController::class, 'satker'])->name('satker')->middleware('role:0|1|3');
+    Route::post('/satker/tambah', [MasterController::class, 'tambahsatker'])->middleware('role:0|1|3');
+    Route::put('/satker/edit/{id}', [MasterController::class, 'updatesatker'])->middleware('role:0|1|3');
+    Route::delete('/satker/hapus/{id}', [MasterController::class, 'destroysatker'])->middleware('role:0|1');
  
     Route::get('/jabatan', [MasterController::class, 'jabatan'])->name('jabatan');
     Route::post('/jabatan/tambah', [MasterController::class, 'tambahjabatan']);

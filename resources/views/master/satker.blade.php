@@ -123,7 +123,7 @@
             </thead>
             <tbody>
                 @foreach($satker as $key => $ker)
-                <tr>
+                <tr id="row-{{$ker->id}}">
                     <td class="align-middle text-center">{{$satker->firstitem()+$key}}</td>
                  @if(Auth::user()->role == 0)
                     <td>{{$ker->perusa->perusahaan}}</td>
@@ -134,7 +134,7 @@
                         data-id="{{$ker->id}}" 
                         data-satker="{{$ker->satuan_kerja}}" 
 @if(Auth::user()->role == 0) data-perusahaan="{{$ker->perusahaan}}" @endif>Edit</button>
-                        <button class="btn btn-danger btn-sm cen">Hapus</button>
+                        <button class="btn btn-danger btn-sm cen delete-btn" data-id="{{$ker->id}}">Hapus</button>
                     </td>
                 </tr>
                 @endforeach
@@ -167,5 +167,51 @@
             });
         });
     });
+</script>
+<script>
+document.querySelectorAll(".delete-btn").forEach(button => {
+            button.addEventListener("click", function () {
+                let id = this.getAttribute("data-id");
+                Swal.fire({
+                    title: "Apakah Anda yakin?",
+                    text: "Data yang dihapus tidak dapat dikembalikan!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#d33",
+                    cancelButtonColor: "#3085d6",
+                    confirmButtonText: "Ya, hapus!",
+
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: "Menghapus...",
+                            text: "Mohon tunggu",
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                        fetch("/satker/hapus/" + id, {
+                            method: "DELETE",
+                            headers: {
+                                "X-CSRF-TOKEN": '{{ csrf_token() }}'
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire("Terhapus!", "Data telah dihapus.", "success");
+                                document.getElementById("row-" + id).remove();
+                            } else {
+                                Swal.fire("Gagal!", "Terjadi kesalahan.", "error");
+                            }
+                        })
+                        .catch(error => {
+                            Swal.fire("Error!", "Gagal menghapus data.", "error");
+                        });
+                    }
+                });
+            });
+        });
 </script>
 @endsection
