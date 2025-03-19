@@ -33,34 +33,43 @@ Auth::routes([
 Route::middleware(['auth:web'])->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-    Route::get('/tenant', [MasterController::class, 'tenant'])->name('tenant')->middleware('role:0');
-    Route::post('/tenant/tambah', [MasterController::class, 'tambahtenant'])->middleware('role:0');
-    Route::put('/tenant/edit/{id}', [MasterController::class, 'edittenant'])->middleware('role:0');
-    Route::delete('/tenant/hapus/{id}', [MasterController::class, 'destroytenant'])->middleware('role:0');
+    Route::middleware('role:0')->group(function () {
+        Route::get('/tenant', [MasterController::class, 'tenant'])->name('tenant');
+        Route::post('/tenant/tambah', [MasterController::class, 'tambahtenant']);
+        Route::put('/tenant/edit/{id}', [MasterController::class, 'edittenant']);
+        Route::delete('/tenant/hapus/{id}', [MasterController::class, 'destroytenant']);
+    });
 
     // if(Auth::guard())
-    Route::get('/kantor', [MasterController::class, 'kantor'])->name('kantor')->middleware('role:0|1');
-    Route::post('/kantor/tambah', [MasterController::class, 'tambahkantor'])->middleware('role:0|1');
-    Route::get('/kantor/edit/{id}', [MasterController::class, 'kantoredit'])->middleware('role:0|1');
-    Route::put('/kantor/edit/{id}', [MasterController::class, 'kantorupdate'])->middleware('role:0|1');
-    Route::delete('/kantor/hapus/{id}', [MasterController::class, 'kantorhapus'])->middleware('role:0|1');
+    Route::middleware('role:0|1')->group(function () {
+        Route::get('/kantor', [MasterController::class, 'kantor'])->name('kantor');
+        Route::post('/kantor/tambah', [MasterController::class, 'tambahkantor']);
+        Route::get('/kantor/edit/{id}', [MasterController::class, 'kantoredit']);
+        Route::put('/kantor/edit/{id}', [MasterController::class, 'kantorupdate']);
+        Route::delete('/kantor/hapus/{id}', [MasterController::class, 'kantorhapus']);
+    });
 
-    Route::get('/get-konten/{companyId}', [MasterController::class, 'getkonten'])->middleware('role:0|1');
+    Route::middleware('role:0|1|3')->group(function () {
+        Route::get('/get-konten/{companyId}', [MasterController::class, 'getkonten']);
+        
+        Route::get('/satker', [MasterController::class, 'satker'])->name('satker');
+        Route::post('/satker/tambah', [MasterController::class, 'tambahsatker']);
+        Route::put('/satker/edit/{id}', [MasterController::class, 'updatesatker']);
+        Route::delete('/satker/hapus/{id}', [MasterController::class, 'destroysatker']);
+    
+        Route::get('/jabatan', [MasterController::class, 'jabatan'])->name('jabatan');
+        Route::post('/jabatan/tambah', [MasterController::class, 'tambahjabatan']);
+        Route::delete('/jabatan/hapus/{id}', [MasterController::class, 'destroyjabatan']);
+        Route::put('/jabatan/edit/{id}', [MasterController::class, 'updatejabatan']);
 
-    Route::get('/satker', [MasterController::class, 'satker'])->name('satker')->middleware('role:0|1|3');
-    Route::post('/satker/tambah', [MasterController::class, 'tambahsatker'])->middleware('role:0|1|3');
-    Route::put('/satker/edit/{id}', [MasterController::class, 'updatesatker'])->middleware('role:0|1|3');
-    Route::delete('/satker/hapus/{id}', [MasterController::class, 'destroysatker'])->middleware('role:0|1');
- 
-    Route::get('/jabatan', [MasterController::class, 'jabatan'])->name('jabatan');
-    Route::post('/jabatan/tambah', [MasterController::class, 'tambahjabatan']);
+        Route::get('/pegawai', [PegawaiController::class, 'index'])->name('pegawai.index');
+        Route::get('/pegawai/input', [PegawaiController::class, 'input'])->name('pegawai.input');
+        Route::post('/pegawai/store', [PegawaiController::class, 'store'])->name('pegawai.store');
 
-    Route::get('/pegawai', [PegawaiController::class, 'index'])->name('pegawai.index');
-    Route::get('/pegawai/input', [PegawaiController::class, 'input'])->name('pegawai.input');
-    Route::post('/pegawai/store', [PegawaiController::class, 'store'])->name('pegawai.store');
+        Route::get('/users', [MasterController::class, 'user'])->name('users');
+        Route::post('/users/add', [MasterController::class, 'adduser'])->name('adduser');
 
-    Route::get('/users', [MasterController::class, 'user'])->name('users');
-    Route::post('/users/add', [MasterController::class, 'adduser'])->name('adduser');
+});
 });
 
 

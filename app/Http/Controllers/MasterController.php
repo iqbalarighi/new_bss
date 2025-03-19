@@ -130,7 +130,9 @@ public function destroytenant(Request $request, $id)
     public function kantoredit($id)
     {
         $kantor = KantorModel::findOrFail($id);
-        return view('master.kantoredit', compact('kantor'));
+        $kantors = KantorModel::get();
+        $perusahaan = PerusahaanModel::get();
+        return view('master.kantoredit', compact('kantor', 'kantors', 'perusahaan'));
     }
 
     public function kantorupdate(Request $request, $id)
@@ -149,6 +151,11 @@ public function destroytenant(Request $request, $id)
         $kantor->alamat = $request->address;
         $kantor->radius = $request->attendance_distance;
         $kantor->lokasi = $request->location;
+
+        $karyawan = PegawaiModel::where('nama_kantor', $id);
+        $karyawan->update([
+            'perusahaan' => $request->tenant_name,
+        ]);
         $kantor->save();
 
         return redirect()->route('kantor')->with('status', 'Data kantor berhasil diperbarui.');
@@ -273,7 +280,36 @@ public function destroytenant(Request $request, $id)
          $jabatan->save();
 
         return back()
-        ->with('status', 'berhasil');
+        ->with('status', 'Jabatan berhasil ditambahkan!');
+    }
+
+    public function updatejabatan(Request $request, $id)
+    {
+        if(Auth::user()->role === 0){
+            $perusa = $request->perusahaan;
+        } else {
+            $perusa = Auth::user()->perusahaan;
+        }
+
+        $request->validate([
+            'jabatan' => 'required|string|max:255',
+        ]);
+
+        $jabatan = JabatanModel::findOrFail($id);
+        $jabatan->update([
+            'perusahaan' => $perusa,
+            'jabatan' => $request->jabatan
+        ]);
+
+        return response()->json(['message' => 'Data berhasil diperbarui']);
+    }
+
+    public function destroyjabatan($id)
+    {
+        $jabatan = JabatanModel::findOrFail($id);
+        $jabatan->delete();
+
+        return response()->json(['message' => 'Data berhasil dihapus']);
     }
 
 

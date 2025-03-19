@@ -5,7 +5,7 @@
     <div class="row justify-content-center">
         <div class="col mw-100">
             <div class="card">
-                <div class="card-header">{{ __('Edit Tenant') }}
+                <div class="card-header fw-bold text-uppercase">{{ __('Edit Data Kantor') }}
                     <button class="btn btn-sm btn-primary float-right" onclick="history.back()">Kembali</button>
                 </div>
 
@@ -19,14 +19,21 @@
                         @method('PUT')
                         @if(Auth::user()->role != 0)
                         <div class="mb-3" hidden>
+                            {{-- ini untuk level 1&3 --}}
                             <label class="form-label">Tenant</label>
                             <input type="text" name="tenant_name" class="form-control" value="{{ Auth::user()->perusahaan }}" required>
                         </div>
                         @else
                         <div class="mb-3">
                             <label class="form-label">Tenant</label>
-                            <input type="text" class="form-control" value="{{ $kantor->perusa->perusahaan }}" required>
-                            <input type="text" name="tenant_name" value="{{ $kantor->perusahaan }}" hidden required>
+                            {{-- <input type="text" class="form-control" value="{{ $kantor->perusa->perusahaan }}" required>
+                            <input type="text" name="tenant_name" value="{{ $kantor->perusahaan }}" hidden required> --}}
+                        <select class="form-select" name="tenant_name">
+                            <option value="" disabled>Pilih Tenant</option>
+                        @foreach($perusahaan as $item)
+                            <option @if($kantor->perusahaan == $item->id) selected @endif value="{{$item->id}}">{{$item->perusahaan}}</option>
+                        @endforeach
+                        </select>
                         </div>
                         @endif
                         <div class="mb-3">
