@@ -1,7 +1,7 @@
 {
-    "name": "Mobilekit",
-    "short_name": "Mobilekit",
-    "start_url": "index.html",
+    "name": "BPBSmartSystem",
+    "short_name": "BPBSmartSystem",
+    "start_url": "/pegawai/login",
     "display": "standalone",
     "scope" : "/",
     "background_color": "#000000",
