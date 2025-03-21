@@ -69,7 +69,7 @@ Route::middleware(['auth:web'])->group(function () {
         Route::get('/users', [MasterController::class, 'user'])->name('users');
         Route::post('/users/add', [MasterController::class, 'adduser'])->name('adduser');
 
-});
+    });
 });
 
 

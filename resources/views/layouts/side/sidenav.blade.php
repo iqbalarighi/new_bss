@@ -43,7 +43,7 @@
         </div>
     @endif
 
-@if(Auth::user()->role == 2 || Auth::user()->role == 1 || Auth::user()->role == 0)
+{{-- @if(Auth::user()->role == 2 || Auth::user()->role == 1 || Auth::user()->role == 0) --}}
         <?php $laporanActive = request()->is('laporan*'); ?>
         <a class="list-group-item list-group-item-action bg-light {{ $laporanActive ? 'active' : '' }}" style="width: 100%;" data-bs-toggle="collapse" href="#laporan" role="button" aria-expanded="false" aria-controls="laporan" onclick="toggleIcon('ubah')">
             Laporan <i id="ubah" class="bi {{ $laporanActive ? 'bi-caret-down-fill' : 'bi-caret-right-fill' }}"></i>
@@ -60,7 +60,7 @@
                 </div>
             </div>
         </div>
-@endif
+{{-- @endif --}}
         <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 100%;">Unras</a>
     </div>
 </div>

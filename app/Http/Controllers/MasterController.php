@@ -235,9 +235,9 @@ public function destroytenant(Request $request, $id)
             $satker = SatkerModel::findOrFail($id);
             $satker->delete();
 
-            return response()->json(['success' => true, 'message' => 'Data berhasil dihapus.']);
+            return response()->json(['success' => true, 'message' => 'Data berhasil dihapus'], 200);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Gagal menghapus data.'], 500);
+            return response()->json(['success' => false, 'message' => 'Gagal menghapus data'], 500);
         }
     }
 
@@ -306,10 +306,14 @@ public function destroytenant(Request $request, $id)
 
     public function destroyjabatan($id)
     {
-        $jabatan = JabatanModel::findOrFail($id);
-        $jabatan->delete();
+        try {
+             $jabatan = JabatanModel::findOrFail($id);
+             $jabatan->delete();
 
-        return response()->json(['message' => 'Data berhasil dihapus']);
+            return response()->json(['success' => true, 'message' => 'Data berhasil dihapus.'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Gagal menghapus data.'], 500);
+        }
     }
 
 
