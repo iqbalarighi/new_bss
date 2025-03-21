@@ -9,7 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 
-class KaryawanModel extends Authenticatable
+class PegawaiModel extends Authenticatable
 {
     use HasApiTokens;
     use HasFactory;
@@ -17,6 +17,7 @@ class KaryawanModel extends Authenticatable
     use Notifiable;
 
 protected $table = 'karyawan';
+protected $guard = 'karyawan';
 
     protected $fillable = [
         'perusahaan',
@@ -34,6 +35,7 @@ protected $table = 'karyawan';
         'bpjs_tk',
         'bpjs_sehat',
         'status',
+        'foto',
     ];
 
     protected $hidden = [
@@ -48,4 +50,25 @@ protected $table = 'karyawan';
     // protected $appends = [
     //     'profile_photo_url',
     // ];
+ public function perusa()
+    {
+        return $this->belongsTo(PerusahaanModel::class, 'perusahaan');
+    }
+
+public function kantor()
+    {
+        return $this->belongsTo(KantorModel::class, 'nama_kantor');
+    }
+
+public function jabat()
+    {
+        return $this->belongsTo(JabatanModel::class, 'jabatan');
+    }
+
+public function sat()
+    {
+        return $this->belongsTo(SatkerModel::class, 'satker');
+    }
+
+
 }

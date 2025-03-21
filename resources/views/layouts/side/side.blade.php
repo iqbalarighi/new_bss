@@ -31,11 +31,10 @@
     </head>
     <body>
 
-        <div class="d-flex " id="wrapper" style="background-color: darkgrey;">
+        <div class="d-flex " id="wrapper" style="background-color: #ff4d4d;">
         <!-- Sidebar -->
         @include('layouts.side.sidenav')
         <!-- /#sidebar-wrapper -->
-
 
 
         <!-- Page Content -->
@@ -62,14 +61,14 @@
 
               <ul class=" py-1 dropdown-menu" aria-labelledby="dropdownMenuLink">
                 <li>
-                    <a class="dropdown-item font-weight-bold text-center" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <a class="dropdown-item font-weight-bold ps-2" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                         {{ __('Logout') }}
                     </a>
                     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                         @csrf
                     </form>
                 </li>
-                {{-- <li><a href="#" class="dropdown-item font-weight-bold ps-2"> </a></li> --}}
+                <li><a href="#" class="dropdown-item font-weight-bold ps-2">Profile</a></li>
               </ul>
             </div>
             </div>
@@ -107,25 +106,5 @@
 }
 </script>
 
-<script>
-    function cekMaster() {
-  var x = document.getElementById("mas");
-  if (x.className === "bi bi-caret-right-fill") {
-    x.className = "bi bi-caret-down-fill";
-  } else {
-    x.className = "bi bi-caret-right-fill";
-  }
-}
-</script>
 
-<script>
-    function cekdown() {
-  var x = document.getElementById("ubah");
-  if (x.className === "bi bi-caret-right-fill") {
-    x.className = "bi bi-caret-down-fill";
-  } else {
-    x.className = "bi bi-caret-right-fill";
-  }
-}
-</script>
 <!-- JavaScript -->

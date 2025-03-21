@@ -8,8 +8,7 @@ var CACHE_NAME = 'cache-version-1';
 
 // Files required to make this app work offline
 var REQUIRED_FILES = [
-  'index.php',
-  '/',
+  '/pegawai/login',
   'https://fonts.googleapis.com/css?family=Inter:400,500,700&display=swap',
   'https://unpkg.com/ionicons@5.0.0/dist/ionicons.js',
   'assets/js/lib/jquery-3.4.1.min.js',
