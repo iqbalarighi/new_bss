@@ -75,13 +75,13 @@
         
         <div class="section mt-2" id="presence-section">
             <div class="todaypresence">
-                    <h4><i class="bi bi-lock"></i> Kehadiran Terakhir</h4>
+                    <h5><ion-icon name="person"></ion-icon> Kehadiran Terakhir</h5>
         @if($absen != null)
         <div class="card p-1 mb-1">
             <h5>{{Carbon\carbon::parse($absen->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}}</h5>
             <div class="d-flex justify-content-around align-items-center">
                 <div class="d-flex align-items-center gap-2">
-                    <img src="{{ asset('storage/absensi/'.$absen->nip.'/'.$absen->foto_in) }}" alt="Foto Masuk" class="rounded" width="50">
+                    <img src="{{ asset('storage/absensi/'.$absen->pegawai->nip.'/'.$absen->foto_in) }}" alt="Foto Masuk" class="rounded" width="50">
                     <div class="text-center pl-1">
                         <span class="d-block">Masuk</span>
                         <strong>{{$absen->jam_in}}</strong>
@@ -97,7 +97,7 @@
                 </div>
                 @else
                 <div class="d-flex align-items-center gap-2">
-                    <img src="{{ asset('storage/absensi/'.$absen->nip.'/'.$absen->foto_out) }}" alt="Foto Masuk" class="rounded" width="50">
+                    <img src="{{ asset('storage/absensi/'.$absen->pegawai->nip.'/'.$absen->foto_out) }}" alt="Foto Masuk" class="rounded" width="50">
                     <div class="text-center pl-1">
                         <span class="d-block">Pulang</span>
                         <strong>{{$absen->jam_out}}</strong>
@@ -267,8 +267,8 @@
     <div id="rekappresensi">
                 <div class="row">
                     <div class="container px-2">
-                        <div class="text-center mb-1">
-                            <h5 class="text-dark">Rekap Presensi Bulan {{Carbon\Carbon::now()->locale('id')->isoFormat('MMMM');}} Tahun {{Carbon\Carbon::now()->format('Y');}}</h5>
+                        <div class="text-left mt-1">
+                            <h5 class="text-dark"><ion-icon name="list"></ion-icon> Rekap Presensi Bulan {{Carbon\Carbon::now()->locale('id')->isoFormat('MMMM');}} Tahun {{Carbon\Carbon::now()->format('Y');}}</h5>
                         </div>
                         <div class="container-card d-flex justify-content-center p-1">
                             <div class="card-presensi">
@@ -277,12 +277,12 @@
                                 <p class="mb-0 text-dark">Hadir</p>
                             </div>
                             <div class="card-presensi">
-                                <div class="badge-presensi">10</div>
+                                <div class="badge-presensi">0</div>
                                 <ion-icon name="document-text-outline" size="large" style="color: green;"></ion-icon>
                                 <p class="mb-0 text-dark">Izin</p>
                             </div>
                             <div class="card-presensi">
-                                <div class="badge-presensi">10</div>
+                                <div class="badge-presensi">0</div>
                                 <ion-icon name="medkit-outline" size="large" style="color: orange;"></ion-icon>
                                 <p class="mb-0 text-dark">Sakit</p>
                             </div>
@@ -319,7 +319,7 @@
                                     <h5>{{Carbon\carbon::parse($item->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}}</h5>
                                     <div class="d-flex justify-content-around align-items-center">
                                         <div class="d-flex align-items-center gap-2">
-                                            <img src="{{ asset('storage/absensi/'.$item->nip.'/'.$item->foto_in) }}" alt="Foto Masuk" class="rounded" width="50">
+                                            <img src="{{ asset('storage/absensi/'.$item->pegawai->nip.'/'.$item->foto_in) }}" alt="Foto Masuk" class="rounded" width="50">
                                             <div class="text-center pl-1">
                                                 <span class="d-block">Masuk</span>
                                                 <strong>{{$item->jam_in}}</strong>
@@ -335,7 +335,7 @@
                                         </div>
                                         @else
                                         <div class="d-flex align-items-center gap-2">
-                                            <img src="{{ asset('storage/absensi/'.$item->nip.'/'.$item->foto_out) }}" alt="Foto Masuk" class="rounded" width="50">
+                                            <img src="{{ asset('storage/absensi/'.$item->pegawai->nip.'/'.$item->foto_out) }}" alt="Foto Masuk" class="rounded" width="50">
                                             <div class="text-center pl-1">
                                                 <span class="d-block">Pulang</span>
                                                 <strong>{{$item->jam_out}}</strong>
@@ -350,48 +350,22 @@
                     </div>
                     <div class="tab-pane fade" id="profile" role="tabpanel">
                         <ul class="listview image-listview">
+                            @foreach($leaderboard as $d)
                             <li>
-                                <div class="item">
-                                    <img src="assets/img/sample/avatar/avatar1.jpg" alt="image" class="image">
+                                <div class="item ">
+                                    <img src="{{ asset('storage/absensi/'.$d->pegawai->nip.'/'.$d->foto_in) }}" alt="image" class="image rounded-circle" width="30">
                                     <div class="in">
-                                        <div>Edward Lindgren</div>
-                                        <span class="text-muted">Designer</span>
+                                        <div>
+                                            <b>{{ $d->pegawai->nama_lengkap }}</b><br>
+                                            <small class="text-muted">{{ $d->pegawai->jabat->jabatan }}</small>
+                                        </div>
+                                    <span class="badge {{ $d->jam_in < '07:00' ? 'bg-success' : 'bg-danger' }}">
+                                        {{ $d->jam_in }}
+                                    </span>
                                     </div>
                                 </div>
                             </li>
-                            <li>
-                                <div class="item">
-                                    <img src="assets/img/sample/avatar/avatar1.jpg" alt="image" class="image">
-                                    <div class="in">
-                                        <div>Emelda Scandroot</div>
-                                        <span class="badge badge-primary">3</span>
-                                    </div>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="item">
-                                    <img src="assets/img/sample/avatar/avatar1.jpg" alt="image" class="image">
-                                    <div class="in">
-                                        <div>Henry Bove</div>
-                                    </div>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="item">
-                                    <img src="assets/img/sample/avatar/avatar1.jpg" alt="image" class="image">
-                                    <div class="in">
-                                        <div>Henry Bove</div>
-                                    </div>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="item">
-                                    <img src="assets/img/sample/avatar/avatar1.jpg" alt="image" class="image">
-                                    <div class="in">
-                                        <div>Henry Bove</div>
-                                    </div>
-                                </div>
-                            </li>
+                            @endforeach
                         </ul>
                     </div>
 
