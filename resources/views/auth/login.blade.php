@@ -107,7 +107,7 @@
                         </button>
                     </form>
                     <div class="mt-3 text-center">
-                        <a href="{{ route('pegawai.login') }}" class="btn btn-secondary w-100">Login Absen</a>
+                        <a href="{{ route('absen.login') }}" class="btn btn-secondary w-100">Login Absen</a>
                     </div>
                 </div>
             </div>

@@ -34,18 +34,18 @@
                 <tbody>
                     @foreach($pegawais as $num => $pegawai)
                         <tr>
-                            <td>{{ $pegawais->firstitem()+$num }}</td>
-                            <td>{{ $pegawai->nip }}</td>
-                            <td>{{ $pegawai->nama_lengkap }}</td>
+                            <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;">{{ $pegawais->firstitem()+$num }}</td>
+                            <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;">{{ $pegawai->nip }}</td>
+                            <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;">{{ $pegawai->nama_lengkap }}</td>
                         @if(Auth::user()->role == 0)
-                            <td>{{ $pegawai->perusa->perusahaan }}</td>
+                            <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;">{{ $pegawai->perusa->perusahaan }}</td>
                         @endif
                         @if(Auth::user()->role == 1 || Auth::user()->role == 0)
-                            <td>{{ $pegawai->kantor->nama_kantor }}</td>
+                            <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;">{{ $pegawai->kantor->nama_kantor }}</td>
                         @endif
-                            <td style="white-space: wrap;">{{ $pegawai->jabat->jabatan }}</td>
-                            <td>{{ $pegawai->sat->satuan_kerja }}</td>
-                            <td>{{ $pegawai->status}}</td>
+                            <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;white-space: wrap;">{{ $pegawai->jabat->jabatan }}</td>
+                            <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;">{{ $pegawai->sat->satuan_kerja }}</td>
+                            <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;">{{ $pegawai->status}}</td>
                             <td class="align-middle text-center">
                                 <button class="btn btn-primary btn-sm px-1">Edit</button>
                                 <button class="btn btn-danger btn-sm px-1">Hapus</button>

@@ -2,7 +2,7 @@
 @section('content')
     <div class="section p-2" id="user-section">
             
-            <form id="logout-form" action="{{ route('pegawai.logout') }}" method="POST" style="display: none;">
+            <form id="logout-form" action="{{ route('absen.logout') }}" method="POST" style="display: none;">
                 @csrf
             </form>
             <div id="user-detail">

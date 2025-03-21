@@ -146,10 +146,44 @@ if($foto != null){
             'foto' => $fotoPath,
         ]);
 
-    
-
-
 
         return redirect()->route('pegawai.index')->with('success', 'Pegawai berhasil ditambahkan.');
+    }
+
+    public function detail($id)
+    {
+
+        $detail = PegawaiModel::findOrFail($id);
+
+        return view('pegawai.detail', compact('detail'));
+    }
+
+
+    public function cekNip(Request $request)
+    {
+        $nip = $request->nip;
+        // $exists = DB::table('pegawai')->where('nip', $nip)->exists();
+        $exists = PegawaiModel::where('nip', $nip)->exists();
+
+        return response()->json(['exists' => $exists]);
+    }
+
+
+    public function ubahpass(Request $request)
+    {
+        $request->validate([
+            'password' => 'required|min:6',
+            'pegawai_id' => 'required|exists:karyawan,id'
+        ]);
+
+        try {
+            $pegawai = PegawaiModel::findOrFail($request->pegawai_id);
+            $pegawai->password = Hash::make($request->password);
+            $pegawai->save();
+
+            return response()->json(['message' => 'Password berhasil diperbarui'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Terjadi kesalahan saat memperbarui password'], 500);
+        }
     }
 }
