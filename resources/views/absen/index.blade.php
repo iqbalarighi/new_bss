@@ -263,35 +263,36 @@
             font-size: 12px;
             font-weight: bold;
         }
-    </style>           <div id="rekappresensi">
+    </style>           
+    <div id="rekappresensi">
                 <div class="row">
                     <div class="container px-2">
-        <div class="text-center mb-1">
-            <h5 class="text-dark">Rekap Presensi Bulan {{Carbon\Carbon::now()->locale('id')->isoFormat('MMMM');}} Tahun {{Carbon\Carbon::now()->format('Y');}}</h5>
-        </div>
-        <div class="container-card d-flex justify-content-center p-1">
-            <div class="card-presensi">
-                <div class="badge-presensi">10</div>
-                <ion-icon name="accessibility-outline" size="large" style="color: blue;"></ion-icon>
-                <p class="mb-0 text-dark">Hadir</p>
-            </div>
-            <div class="card-presensi">
-                <div class="badge-presensi">10</div>
-                <ion-icon name="document-text-outline" size="large" style="color: green;"></ion-icon>
-                <p class="mb-0 text-dark">Izin</p>
-            </div>
-            <div class="card-presensi">
-                <div class="badge-presensi">10</div>
-                <ion-icon name="medkit-outline" size="large" style="color: orange;"></ion-icon>
-                <p class="mb-0 text-dark">Sakit</p>
-            </div>
-            <div class="card-presensi">
-                <div class="badge-presensi">10</div>
-                <ion-icon name="alarm-outline" size="large" style="color: red;"></ion-icon>
-                <p class="mb-0 text-dark">Telat</p>
-            </div>
-        </div>
-    </div>
+                        <div class="text-center mb-1">
+                            <h5 class="text-dark">Rekap Presensi Bulan {{Carbon\Carbon::now()->locale('id')->isoFormat('MMMM');}} Tahun {{Carbon\Carbon::now()->format('Y');}}</h5>
+                        </div>
+                        <div class="container-card d-flex justify-content-center p-1">
+                            <div class="card-presensi">
+                                <div class="badge-presensi">{{$rekap->jmlhadir}}</div>
+                                <ion-icon name="accessibility-outline" size="large" style="color: blue;"></ion-icon>
+                                <p class="mb-0 text-dark">Hadir</p>
+                            </div>
+                            <div class="card-presensi">
+                                <div class="badge-presensi">10</div>
+                                <ion-icon name="document-text-outline" size="large" style="color: green;"></ion-icon>
+                                <p class="mb-0 text-dark">Izin</p>
+                            </div>
+                            <div class="card-presensi">
+                                <div class="badge-presensi">10</div>
+                                <ion-icon name="medkit-outline" size="large" style="color: orange;"></ion-icon>
+                                <p class="mb-0 text-dark">Sakit</p>
+                            </div>
+                            <div class="card-presensi">
+                                <div class="badge-presensi">{{$rekap->jmltelat}}</div>
+                                <ion-icon name="alarm-outline" size="large" style="color: red;"></ion-icon>
+                                <p class="mb-0 text-dark">Telat</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
         </div>
             <div class="presencetab mt-2">

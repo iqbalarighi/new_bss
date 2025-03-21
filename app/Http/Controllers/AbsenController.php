@@ -7,6 +7,7 @@ use App\Models\PegawaiModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use carbon\Carbon;
 
 class AbsenController extends Controller
 {
@@ -17,9 +18,14 @@ class AbsenController extends Controller
         $harini = date('Y-m-d');
         $pegawai = PegawaiModel::with('perusa', 'kantor', 'jabat', 'sat' )->findOrFail($id);
         $absen = AbsenModel::where('tgl_absen', $harini)->where('nip', $nip)->first();
-        $absens = AbsenModel::where('nip', $nip)->latest()->get();
+        $absens = AbsenModel::where('nip', $nip)->where('tgl_absen', 'LIKE', '%'.carbon::now()->format('m').'%')->latest()->get();
+        $rekap = AbsenModel::where('nip', $nip)
+                ->whereMonth('tgl_absen', carbon::now()->format('m'))
+                ->whereYear('tgl_absen', carbon::now()->format('Y'))
+                ->selectRaw('COUNT(nip) as jmlhadir, SUM(CASE WHEN jam_in > "07:00" THEN 1 ELSE 0 END) as jmltelat')
+                ->first();
 
-        return view('absen.index', compact('pegawai', 'absen', 'absens'));
+        return view('absen.index', compact('pegawai', 'absen', 'absens', 'rekap'));
     }
 
     public function create()
