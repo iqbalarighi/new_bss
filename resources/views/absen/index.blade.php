@@ -1,9 +1,7 @@
 @extends('layouts.absen.absen')
 @section('content')
-    <div class="section" id="user-section">
-            <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                <button class="btn btn-danger p-1 float-right mt-2">logout</button>
-            </a>
+    <div class="section p-2" id="user-section">
+            
             <form id="logout-form" action="{{ route('pegawai.logout') }}" method="POST" style="display: none;">
                 @csrf
             </form>
@@ -15,16 +13,20 @@
                         <img src={{asset('storage/'.$pegawai->foto)}} alt="avatar" class="imaged w64 rounded">
                     @endif
                 </div>
-                <div id="user-info">
+                <div id="user-info" class="col mw-100 px-0">
                     <h2 id="user-name">{{Auth::guard('pegawai')->user()->nama_lengkap}}</h2>
                     <span id="user-role">{{$pegawai->jabat->jabatan}}</span>
+
+                    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <button class="btn btn-danger btn-sm float-right px-1" style="margin-top: -45px;">logout</button>
+            </a>
                 </div>
             </div>
         </div>
 
         <div class="section" id="menu-section">
             <div class="card">
-                <div class="card-body text-center">
+                <div class="card-body text-center p-2">
                     <div class="list-menu">
                         <div class="item-menu text-center">
                             <div class="menu-icon">
@@ -70,6 +72,7 @@
                 </div>
             </div>
         </div>
+        
         <div class="section mt-2" id="presence-section">
             <div class="todaypresence">
                     <h4><i class="bi bi-lock"></i> Kehadiran Terakhir</h4>
@@ -102,8 +105,12 @@
                 </div>
                 @endif
             </div>
+                @if($absen->jam_out == null)
+                <div>
+                    <span class="text-warning float-right pr-1">Berlangsung</span>
+                </div>
+                @endif
         </div>
-            <span class="text-warning mt-2">Berlangsung</span>
             @endif
         </div>
            {{-- 
@@ -216,6 +223,77 @@
                     </div>
                 </div> -->
             {{-- </div> --}}
+    <style>
+        .card-presensi {
+            text-align: center;
+            padding: 5px;
+            border-radius: 10px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            border: 1px solid #ddd;
+            width: 100px;
+            height: 70px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .container-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .badge-presensi {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: red;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>           <div id="rekappresensi">
+                <div class="row">
+                    <div class="container px-2">
+        <div class="text-center mb-1">
+            <h5 class="text-dark">Rekap Presensi Bulan {{Carbon\Carbon::now()->locale('id')->isoFormat('MMMM');}} Tahun {{Carbon\Carbon::now()->format('Y');}}</h5>
+        </div>
+        <div class="container-card d-flex justify-content-center p-1">
+            <div class="card-presensi">
+                <div class="badge-presensi">10</div>
+                <ion-icon name="accessibility-outline" size="large" style="color: blue;"></ion-icon>
+                <p class="mb-0 text-dark">Hadir</p>
+            </div>
+            <div class="card-presensi">
+                <div class="badge-presensi">10</div>
+                <ion-icon name="document-text-outline" size="large" style="color: green;"></ion-icon>
+                <p class="mb-0 text-dark">Izin</p>
+            </div>
+            <div class="card-presensi">
+                <div class="badge-presensi">10</div>
+                <ion-icon name="medkit-outline" size="large" style="color: orange;"></ion-icon>
+                <p class="mb-0 text-dark">Sakit</p>
+            </div>
+            <div class="card-presensi">
+                <div class="badge-presensi">10</div>
+                <ion-icon name="alarm-outline" size="large" style="color: red;"></ion-icon>
+                <p class="mb-0 text-dark">Telat</p>
+            </div>
+        </div>
+    </div>
+                </div>
+        </div>
             <div class="presencetab mt-2">
                 <div class="tab-pane fade show active" id="pilled" role="tabpanel">
                     <ul class="nav nav-tabs style1" role="tablist">

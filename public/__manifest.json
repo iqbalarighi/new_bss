@@ -1,7 +1,7 @@
 {
     "name": "BPBSmartSystem",
     "short_name": "BPBSmartSystem",
-    "start_url": "/absen",
+    "start_url": "/pegawai/login",
     "display": "standalone",
     "scope" : "/",
     "background_color": "#000000",
