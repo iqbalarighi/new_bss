@@ -125,7 +125,7 @@ class AbsenController extends Controller
     public function profilimage(Request $request)
     {
         $request->validate([
-            'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:4086',
         ]);
 
         try {
