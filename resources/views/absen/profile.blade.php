@@ -126,7 +126,6 @@
 </div>
 <script>
     function showUploadOptions() {
-        document.getElementById('fileInput').removeAttribute('capture');
         document.getElementById('fileInput').click();
     }
 
