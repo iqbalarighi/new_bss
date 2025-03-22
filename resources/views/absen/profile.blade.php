@@ -31,7 +31,7 @@
                 </div>
                  <a href="#" class="text-warning text-decoration-none d-block mt-2">Ubah Foto</a>
 
-                <input type="file" id="fileInput" accept="image/*" capture="environment" style="display: none;" onchange="uploadFile(event)">
+                <input type="file" id="fileInput" accept="image/*" capture="camera" style="display: none;" onchange="uploadFile(event)">
             </div>
         </div>
 
