@@ -112,4 +112,44 @@ class AbsenController extends Controller
             }
         }
     }
+
+    public function profile()
+    {
+        $nip = Auth::guard('pegawai')->user()->nip;
+        $profile = PegawaiModel::where('nip', $nip)->first();
+
+        return view('absen.profile', compact('profile'));
+    }
+
+
+    public function profilimage(Request $request)
+    {
+        $request->validate([
+            'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        try {
+            $user = Auth::guard('pegawai')->user();
+
+            if ($request->hasFile('profile_image')) {
+                // Delete old image if exists
+                if ($user->foto) {
+                    Storage::delete($user->foto);
+                }
+
+                // Store the new image
+                $path = $request->file('profile_image')->store('storage/foto_pegawai', 'public');
+
+                // Update user profile image path
+                $user->foto = $path;
+                $user->save();
+
+                return response()->json(['success' => true, 'message' => 'Foto berhasil diunggah!']);
+            }
+
+            return response()->json(['success' => false, 'message' => 'File tidak ditemukan.'], 400);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan pada server.', 'error' => $e->getMessage()], 500);
+        }
+    }
 }
