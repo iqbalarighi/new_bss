@@ -41,7 +41,8 @@ class AuthController extends Controller
     public function logout()
     {
         Auth::guard('pegawai')->logout();
-        return redirect('/pegawai/login');
+        
+        return redirect('/absen/login');
     }
 
 }
