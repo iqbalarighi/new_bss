@@ -11,7 +11,7 @@
                     @if($pegawai->foto == null)
                     <img src="https://ui-avatars.com/api/?name={{$pegawai->nama_lengkap}}" alt="Profile Image" style="width: 100%; height: 100%; object-fit: cover;">
                     @else
-                        <img src={{asset('storage/'.$pegawai->foto)}} alt="Profile Image" style="width: 100%; height: 100%; object-fit: cover;">
+                        <img src={{asset('storage/foto_pegawai/'.Auth::guard('pegawai')->user()->nip.'/'.$pegawai->foto)}} alt="Profile Image" style="width: 100%; height: 100%; object-fit: cover;">
                     @endif
                 </div>
                 </div>

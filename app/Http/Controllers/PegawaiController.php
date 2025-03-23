@@ -123,7 +123,7 @@ $foto = $request->file('foto');
 
 if($foto != null){
         $fotoNama = Str::random(20) . '.' . $foto->getClientOriginalExtension();
-        $fotoPath = $foto->storeAs('foto_pegawai', $fotoNama, 'public');
+        $fotoPath = $foto->storeAs('foto_pegawai/'.$request->nip, $fotoNama, 'public');
 } else {
     $fotoPath = null;
 }
@@ -143,7 +143,7 @@ if($foto != null){
             'nama_kantor' => $kantor,
             'satker' => $request->satker,
             'status' => $request->status,
-            'foto' => $fotoPath,
+            'foto' => $fotoNama,
         ]);
 
 

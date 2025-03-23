@@ -1,7 +1,6 @@
 @extends('layouts.absen.absen')
 
 @section('header')
-<meta name="csrf_token" content="{{ csrf_token() }}" />
 	<div class="appHeader text-light" style="background-color: #ef3b3b;">
     <div class="left">
         <a href="javascript:;" class="headerButton goBack">
@@ -14,7 +13,6 @@
 @endsection
 
 @section('content')
-<meta name="csrf-token" content="{{ csrf_token() }}">
 <div style="margin-top: 3.5rem;" class="bg-light">
 	
 	<div class="container py-3" style="margin-bottom: 3rem;">
@@ -26,7 +24,7 @@
                     @if($profile->foto == null)
                     <img src="https://ui-avatars.com/api/?name={{$profile->nama_lengkap}}" alt="Profile Image" style="width: 100%; height: 100%; object-fit: cover;">
                     @else
-                        <img src={{asset('storage/'.$profile->foto)}} alt="Profile Image" style="width: 100%; height: 100%; object-fit: cover;">
+                        <img id="fotoProfil" src={{asset('storage/foto_pegawai/'.Auth::guard('pegawai')->user()->nip.'/'.$profile->foto)}} alt="Profile Image" style="width: 100%; height: 100%; object-fit: cover;">
                     @endif
                 </div>
                  <a href="#" class="text-warning text-decoration-none d-block mt-2">Ubah Foto</a>
@@ -39,12 +37,12 @@
             <div class="card-body p-3">
                  <h6 class="fw-bold mb-2">Data Akun {{--<span class="float-right text-muted">version: 1.2.7</span>--}}</h6> 
                 <div class="list-group">
-                    <div class="list-group-item border-0 px-0 d-flex align-items-center justify-content-between" style="gap: 1rem;">
+                    <div id="namaField"  class="list-group-item border-0 px-0 d-flex align-items-center justify-content-between" style="gap: 1rem;">
                         <div class="d-flex align-items-center" style="gap: 1rem;">
                             <ion-icon name="id-card-outline" class="text-primary" style="font-size: 20px;"></ion-icon>
                             <div>
                                 <small>Nama</small>
-                                <p class="mb-0 fw-bold">{{ $profile->nama_lengkap }}</p>
+                                <p id="namadisini" class="mb-0 fw-bold">{{ $profile->nama_lengkap }}</p>
                             </div>
                         </div>
                         <ion-icon name="chevron-forward-outline" class="text-muted" style="font-size: 20px;"></ion-icon>
@@ -126,36 +124,144 @@
 </div>
 <script>
     function showUploadOptions() {
-        document.getElementById('fileInput').click();
+        $('#fileInput').click(); // Trigger klik input file
     }
 
     function uploadFile(event) {
-        const file = event.target.files[0];
+        const file = event.target.files[0]; // Ambil file dari input
+
         if (file) {
+            const maxSize = 2 * 1024 * 1024; // Maksimal 4MB
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
+
+            // Validasi ukuran file
+            if (file.size > maxSize) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Ukuran File Terlalu Besar',
+                    text: 'Maksimal ukuran file adalah 2MB.',
+                });
+                return;
+            }
+
+            // Validasi tipe file
+            if (!allowedTypes.includes(file.type)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Tipe File Tidak Valid',
+                    text: 'Hanya file JPG, PNG, dan GIF yang diperbolehkan.',
+                });
+                return;
+            }
+
             const formData = new FormData();
             formData.append('profile_image', file);
 
-            fetch('/absen/profile-image', {
-                method: 'POST',
-                body: formData,
+            // Tampilkan loading sebelum proses
+            Swal.fire({
+                title: 'Mengunggah Foto...',
+                text: 'Mohon tunggu sebentar.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading(); // Menampilkan loading
+                }
+            });
+
+            // Kirim request ke server dengan jQuery
+            $.ajax({
+                url: '/absen/profile-image',
+                type: 'POST',
+                data: formData,
+                processData: false,  // Jangan proses data
+                contentType: false,  // Jangan set content-type
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                success: function (response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: response.message || 'Foto berhasil diunggah!',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                           //  location.reload(); Reload halaman setelah sukses
+                            document.getElementById('fotoProfil').src = response.file_url;
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: response.message || 'Terjadi kesalahan saat mengunggah.',
+                        });
+                    }
+                },
+                error: function (xhr) {
+                    let errorMessage = 'Terjadi kesalahan pada server.';
+                    if (xhr.status === 422) {
+                        const errors = xhr.responseJSON?.errors;
+                        if (errors) {
+                            errorMessage = Object.values(errors).flat().join('<br>');
+                        }
+                    } else if (xhr.status === 500) {
+                        errorMessage = xhr.responseJSON?.message || 'Kesalahan pada server.';
+                    }
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        html: errorMessage,
+                    });
                 }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Foto berhasil diunggah!');
-                    location.reload();
-                } else {
-                    alert('Terjadi kesalahan saat mengunggah.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Terjadi kesalahan pada server. ' + error.message);
             });
         }
     }
+</script>
+<script>
+    document.getElementById('namaField').addEventListener('click', function () {
+        Swal.fire({
+            title: 'Ubah Nama',
+            input: 'text',
+            inputValue: document.getElementById('namadisini').innerText,
+            showCancelButton: true,
+            confirmButtonText: 'Simpan',
+            cancelButtonText: 'Batal',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Nama tidak boleh kosong!';
+                }
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Kirim perubahan ke server dengan AJAX
+                fetch('/absen/update-nama', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ nama: result.value })
+                }).then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: data.message || 'Foto berhasil diunggah!',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                           //  location.reload(); Reload halaman setelah sukses
+                            document.getElementById('namadisini').innerText = data.name;
+                        });
+                    } else {
+                        Swal.fire('Error!', 'Gagal memperbarui nama.', 'error');
+                    }
+                }).catch(() => {
+                    Swal.fire('Error!', 'Terjadi kesalahan saat mengupdate nama.', 'error');
+                });
+            }
+        });
+    });
 </script>
 @endsection

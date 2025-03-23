@@ -21,7 +21,7 @@
         height: 95% !important;
         border-radius: 15px;
         position: relative;
-        transform: scaleX(-1); /* Membalik webcam menjadi mirror */
+       /* transform: scaleX(-1);  Membalik webcam menjadi mirror */
     }
 
     .webcam-capture video {

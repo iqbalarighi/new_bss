@@ -85,11 +85,12 @@ Route::controller(AbsenController::class)->middleware(['redirif:pegawai'])->grou
     Route::get('/absen', 'index')->name('absen');
     Route::get('/absen/create', 'create');
     Route::post('/absen/store', 'store');
-    Route::post('/absen/logout',  'logout')->name('absen.logout');
     Route::get('/absen/profile', 'profile');
     Route::post('/absen/profile-image', 'profilimage');
+    Route::post('/absen/update-nama', 'updateNama')->name('profile.updateNama');
 });
 
+Route::post('/absen/logout', [AuthController::class, 'logout'])->middleware(['redirif:pegawai'])->name('absen.logout');
 
 Route::post('/absen/login', [AuthController::class, 'login'])->middleware('guest');
 
