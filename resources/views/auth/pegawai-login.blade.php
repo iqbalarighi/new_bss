@@ -135,7 +135,7 @@
         <img src="{{asset('storage/img/logo.png')}}" alt="Logo" width="200" class="mb-2">
     </div>
         <h3 class="text-center text-danger fw-bold">Absensi Pegawai</h3>
-        <form id="loginForm" action="{{ route('pegawai.login') }}" method="POST">
+        <form id="loginForm" action="{{ route('absen.login') }}" method="POST">
             @csrf
             <div class="mb-3">
                 <label for="nip" class="form-label">NIP</label>

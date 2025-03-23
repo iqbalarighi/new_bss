@@ -2,23 +2,25 @@
 @section('content')
     <div class="section p-2" id="user-section">
             
-            <form id="logout-form" action="{{ route('pegawai.logout') }}" method="POST" style="display: none;">
+            <form id="logout-form" action="{{ route('absen.logout') }}" method="POST" style="display: none;">
                 @csrf
             </form>
             <div id="user-detail">
                 <div class="avatar">
+                    <div class="rounded-circle overflow-hidden shadow-sm bg-secondary text-white d-inline-flex justify-content-center align-items-center" style="width: 60px; height: 60px;">
                     @if($pegawai->foto == null)
-                        <img src="https://ui-avatars.com/api/?name={{$pegawai->nama_lengkap}}" alt="avatar" class="imaged w64 rounded">
+                    <img src="https://ui-avatars.com/api/?name={{$pegawai->nama_lengkap}}" alt="Profile Image" style="width: 100%; height: 100%; object-fit: cover;">
                     @else
-                        <img src={{asset('storage/'.$pegawai->foto)}} alt="avatar" class="imaged w64 rounded">
+                        <img src={{asset('storage/foto_pegawai/'.Auth::guard('pegawai')->user()->nip.'/'.$pegawai->foto)}} alt="Profile Image" style="width: 100%; height: 100%; object-fit: cover;">
                     @endif
+                </div>
                 </div>
                 <div id="user-info" class="col mw-100 px-0">
                     <h2 id="user-name">{{Auth::guard('pegawai')->user()->nama_lengkap}}</h2>
                     <span id="user-role">{{$pegawai->jabat->jabatan}}</span>
 
                     <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                <button class="btn btn-danger btn-sm float-right px-1" style="margin-top: -45px;">logout</button>
+                <button class="btn btn-secondary btn-sm float-right px-1" style="margin-top: -45px;">logout</button>
             </a>
                 </div>
             </div>

@@ -25,14 +25,10 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label">NIP</label>
-                    <input type="tel" class="form-control" name="nip" oninput="validateInput(event)" required>
+                    <input type="tel" class="form-control" name="nip" id="nip" oninput="validateInput(event)" required>
+                    <div id="notif-nip" class="form-text text-danger d-none">NIP sudah terdaftar!</div>
                 </div>
-    <script>
-        function validateInput(event) {
-            let input = event.target;
-            input.value = input.value.replace(/\D/g, ''); // Hanya izinkan angka
-        }
-    </script>
+    
                 <div class="mb-3">
                     <label class="form-label">Password</label>
                     <input type="password" class="form-control" name="password" required>
@@ -51,19 +47,19 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label">No. Telepon</label>
-                    <input type="tel" class="form-control" name="no_telepon" required>
+                    <input type="tel" class="form-control" oninput="validateInput(event)" maxlength="14" name="no_telepon" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">BPJS TK</label>
-                    <input type="tel" class="form-control" name="bpjs_tk" required>
+                    <input type="tel" class="form-control" oninput="validateInput(event)" maxlength="16" name="bpjs_tk" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">BPJS Kesehatan</label>
-                    <input type="tel" class="form-control" name="bpjs_kesehatan" required>
+                    <input type="tel" class="form-control" oninput="validateInput(event)" maxlength="16" name="bpjs_kesehatan" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Kontak Darurat</label>
-                    <input type="tel" class="form-control" name="kontak_darurat" required>
+                    <input type="tel" class="form-control" oninput="validateInput(event)" maxlength="14" name="kontak_darurat" required>
                 </div>
 {{--                 <div class="mb-3">
                     <label class="form-label">Penempatan Kerja</label>
@@ -132,7 +128,12 @@
         </div>
     </div>
 </div>
-
+<script>
+        function validateInput(event) {
+            let input = event.target;
+            input.value = input.value.replace(/\D/g, ''); // Hanya izinkan angka
+        }
+    </script>
 @if(Auth::user()->role == 0)
 <script type="text/javascript">
     $(document).ready(function() {
@@ -216,6 +217,43 @@
 });
 
 </script>
-
 @endif
+<script>
+    $(document).ready(function() {
+        $('#nip').on('input', function() {
+            let nip = $(this).val();
+
+            if (nip.length >= 3) { // Minimal 3 karakter sebelum cek
+                $.ajax({
+                    url: "{{ route('cek.nip') }}",
+                    method: 'POST',
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        nip: nip
+                    },
+                    success: function(response) {
+                        if (response.exists) {
+                            $('#notif-nip').removeClass('d-none');
+                            $('#nip').addClass('is-invalid');
+                        } else {
+                            $('#notif-nip').addClass('d-none');
+                            $('#nip').removeClass('is-invalid');
+                        }
+                    }
+                });
+            } else {
+                $('#notif-nip').addClass('d-none');
+                $('#nip').removeClass('is-invalid');
+            }
+        });
+
+        // Mencegah submit jika NIP sudah ada
+        $('#form-tambah-pegawai').on('submit', function(e) {
+            if ($('#nip').hasClass('is-invalid')) {
+                e.preventDefault();
+                alert('Periksa kembali NIP!');
+            }
+        });
+    });
+</script>
 @endsection

@@ -14,7 +14,7 @@ class RedirectIfNotAuthenticated
         if (!Auth::guard($guard)->check()) {
             // Jika user mencoba akses /karyawan/* dan belum login, redirect ke login karyawan
             if ($guard === 'pegawai') {
-                return redirect()->route('pegawai.login');
+                return redirect()->route('absen.login');
             }
 
             // Redirect default ke login user biasa

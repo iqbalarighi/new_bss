@@ -63,30 +63,36 @@ Route::middleware(['auth:web'])->group(function () {
         Route::put('/jabatan/edit/{id}', [MasterController::class, 'updatejabatan']);
 
         Route::get('/pegawai', [PegawaiController::class, 'index'])->name('pegawai.index');
+        Route::get('/pegawai/detail/{id}', [PegawaiController::class, 'detail'])->name('pegawai.detail');
         Route::get('/pegawai/input', [PegawaiController::class, 'input'])->name('pegawai.input');
         Route::post('/pegawai/store', [PegawaiController::class, 'store'])->name('pegawai.store');
+        Route::post('/pegawai/ubah-password/', [PegawaiController::class, 'ubahpass'])->name('pegawai.upass');
+        Route::post('/cek-nip', [PegawaiController::class, 'cekNIP'])->name('cek.nip');
 
         Route::get('/users', [MasterController::class, 'user'])->name('users');
         Route::post('/users/add', [MasterController::class, 'adduser'])->name('adduser');
 
-});
+    });
 });
 
 
 Route::middleware('ifnotpeg')->group(function () {
-    Route::get('/pegawai/login', [AuthController::class, 'showLogin'])->name('pegawai.login');
+    Route::get('/absen/login', [AuthController::class, 'showLogin'])->name('absen.login');
 });
 
 
-Route::middleware(['redirif:pegawai'])->group(function () {
-    Route::get('/absen',[AbsenController::class, 'index'])->name('absen');
-    Route::get('/absen/create',[AbsenController::class, 'create']);
-    Route::post('/absen/store',[AbsenController::class, 'store']);
-    Route::post('/pegawai/logout', [AuthController::class, 'logout'])->name('pegawai.logout');
+Route::controller(AbsenController::class)->middleware(['redirif:pegawai'])->group(function () {
+    Route::get('/absen', 'index')->name('absen');
+    Route::get('/absen/create', 'create');
+    Route::post('/absen/store', 'store');
+    Route::get('/absen/profile', 'profile');
+    Route::post('/absen/profile-image', 'profilimage');
+    Route::post('/absen/update-nama', 'updateNama')->name('profile.updateNama');
 });
 
+Route::post('/absen/logout', [AuthController::class, 'logout'])->middleware(['redirif:pegawai'])->name('absen.logout');
 
-Route::post('/pegawai/login', [AuthController::class, 'login'])->middleware('guest');
+Route::post('/absen/login', [AuthController::class, 'login'])->middleware('guest');
 
 
 

@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use carbon\Carbon;
+use Illuminate\Support\Str;
+use File;
 
 class AbsenController extends Controller
 {
@@ -110,6 +112,84 @@ class AbsenController extends Controller
             } else {
                 echo 1;       
             }
+        }
+    }
+
+    public function profile()
+    {
+        $nip = Auth::guard('pegawai')->user()->nip;
+        $profile = PegawaiModel::where('nip', $nip)->first();
+
+        return view('absen.profile', compact('profile'));
+    }
+
+
+    public function profilimage(Request $request)
+    {
+        // Validasi input
+        $request->validate([
+            'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:4096', // Maksimal 4MB
+        ]);
+
+        try {
+            // Ambil file dari request
+            $file = $request->file('profile_image');
+
+            $user = Auth::guard('pegawai')->user();
+
+            if ($user->foto != null) {
+                    File::deleteDirectory(public_path('storage/foto_pegawai/'.$user->nip));
+                }
+            // Buat nama file unik
+            $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
+
+            // Simpan file ke direktori public/profile-images
+            $filePath = $file->storeAs('public/foto_pegawai/'.$user->nip.'/', $fileName);
+
+            // URL file yang disimpan
+            $fileUrl = Storage::url($filePath);
+
+            $user->foto = $fileName;
+            $user->save();
+
+            // Respon jika berhasil
+            return response()->json([
+                'success' => true,
+                'message' => 'Foto profil berhasil diunggah.',
+                'file_url' => $fileUrl,
+            ], 200);
+
+        } catch (\Exception $e) {
+            // Respon jika gagal
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengunggah: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function updateNama(Request $request)
+    {
+        $request->validate([
+            'nama' => 'required|string|max:100',
+        ]);
+
+        try {
+            $user = Auth::guard('pegawai')->user(); // Ambil user yang sedang login
+            $user->nama_lengkap = $request->nama;
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Nama berhasil diperbarui.',
+                'name' => $user->nama_lengkap,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui nama. Silakan coba lagi.',
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 }

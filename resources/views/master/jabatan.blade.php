@@ -91,7 +91,7 @@
                      @if(Auth::user()->role == 0)
                         <div class="mb-3">
                             <label for="perusahaan" class="form-label">Nama Perusahaan</label>
-                            <select name="perusahaan" id="perusahaan" class="form-select" required>
+                            <select name="perusahaan" id="editPerusahaan" class="form-select" required>
                                 <option selected disabled value="">Pilih Perusahaan</option>
                             @foreach($perusahaan as $usaha)
                                 <option value="{{$usaha->id}}">{{$usaha->perusahaan}}</option>
@@ -114,16 +114,20 @@
     <thead>
         <tr>
             <th>No</th>
+            @if(Auth::user()->role == 0)
             <th>Perusahaan</th>
+            @endif
             <th>Jabatan</th>
             <th>Aksi</th>
         </tr>
     </thead>
     <tbody>
         @foreach($jabatan as $key => $item)
-        <tr>
+        <tr id="row-{{$item->id}}">
             <td>{{ $jabatan->firstItem() + $key }}</td>
+            @if(Auth::user()->role == 0)
             <td>{{ $item->perusa->perusahaan }}</td>
+            @endif
             <td>{{ $item->jabatan }}</td>
             <td>
                 <button class="btn btn-sm btn-primary btnEdit" 
@@ -208,10 +212,10 @@ $(document).ready(function() {
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                Swal.fire("Terhapus!", "Data telah dihapus.", "success");
+                                Swal.fire("Terhapus!", data.message, "success");
                                 document.getElementById("row-" + id).remove();
                             } else {
-                                Swal.fire("Gagal!", "Terjadi kesalahan.", "error");
+                                Swal.fire("Gagal!", data.message, "error");
                             }
                         })
                         .catch(error => {

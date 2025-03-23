@@ -202,10 +202,10 @@ document.querySelectorAll(".delete-btn").forEach(button => {
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                Swal.fire("Terhapus!", "Data telah dihapus.", "success");
+                                Swal.fire("Terhapus!", data.message, "success");
                                 document.getElementById("row-" + id).remove();
                             } else {
-                                Swal.fire("Gagal!", "Terjadi kesalahan.", "error");
+                                Swal.fire("Gagal!", data.message, "error");
                             }
                         })
                         .catch(error => {
