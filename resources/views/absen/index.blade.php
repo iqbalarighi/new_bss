@@ -16,7 +16,7 @@
                 </div>
                 </div>
                 <div id="user-info" class="col mw-100 px-0">
-                    <h2 id="user-name">{{Auth::guard('pegawai')->user()->nama_lengkap}}</h2>
+                    <h2 id="user-name" style="width: 200px;">{{Auth::guard('pegawai')->user()->nama_lengkap}}</h2>
                     <span id="user-role">{{$pegawai->jabat->jabatan}}</span>
 
                     <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

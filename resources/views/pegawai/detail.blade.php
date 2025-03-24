@@ -5,7 +5,9 @@
     <div class="row justify-content-center">
         <div class="col mw-100">
             <div class="card">
-                <div class="card-header">{{ __('Dashboard') }}</div>
+                <div class="card-header fw-bold">{{ __('Data Pegawai') }}
+                    <button class="btn btn-sm btn-secondary float-end" onclick="history.back();">Kembali</button>
+                </div>
 
                 <div class="card-body">
                     
@@ -16,7 +18,7 @@
                     <div id="foto-container">
                         <!-- Jika foto tersedia -->
                         @if($detail->foto != null)
-                        <img id="fotoPegawai" src="{{asset('storage/foto_pegawai/'.$detail->foto)}}" alt="Foto Pegawai" class="img-fluid rounded" style="max-height: 200px;">
+                        <img id="fotoPegawai" src="{{asset('storage/foto_pegawai/'.$detail->nip.'/'.$detail->foto)}}" alt="Foto Pegawai" class="img-fluid rounded" style="max-height: 200px;">
                         <button class="btn btn-warning mt-2">Ganti Foto</button>
                         @else
                         <!-- Jika foto tidak tersedia -->
