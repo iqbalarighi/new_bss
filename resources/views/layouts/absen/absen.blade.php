@@ -44,6 +44,7 @@
 
     <!-- ///////////// Js Files ////////////////////  -->
     @include('layouts.absen.script')
+    @stack('scripts')
 </body>
 
 </html>

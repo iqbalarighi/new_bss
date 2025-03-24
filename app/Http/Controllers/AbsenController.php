@@ -192,4 +192,21 @@ class AbsenController extends Controller
             ], 500);
         }
     }
+    public function histori()
+    {
+        return view('absen.histori');
+    }
+
+    public function gethistori(Request $request)
+    {
+       $bultah = $request->bultah;
+
+       $get = AbsenModel::with('pegawai')
+       ->where('nip', Auth::guard('pegawai')->user()->id)
+       ->where('tgl_absen', 'LIKE', '%'.$bultah.'%')
+       ->orderBy('tgl_absen')
+       ->get();
+
+       return view('absen.gethistori', compact('get'));
+    }
 }

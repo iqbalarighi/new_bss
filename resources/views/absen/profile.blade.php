@@ -122,6 +122,10 @@
     </div>
 
 </div>
+
+@endsection
+
+@push('scripts')
 <script>
     function showUploadOptions() {
         $('#fileInput').click(); // Trigger klik input file
@@ -216,8 +220,8 @@
             });
         }
     }
-</script>
-<script>
+
+
     document.getElementById('namaField').addEventListener('click', function () {
         Swal.fire({
             title: 'Ubah Nama',
@@ -264,4 +268,4 @@
         });
     });
 </script>
-@endsection
+@endpush
