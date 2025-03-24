@@ -1,4 +1,6 @@
-
+@if($get->isEmpty())
+<div class="alert alert-outline-warning text-center">Belum Ada Data Rekap Absensi</div>
+@else
 @foreach($get as $key => $item )
 	<div class="card p-1 mb-2">
 	    <h5>{{Carbon\carbon::parse($item->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}}</h5>
@@ -30,3 +32,4 @@
 	    </div>
 	</div>
 @endforeach
+@endif
