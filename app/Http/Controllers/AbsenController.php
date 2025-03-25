@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use File;
+use carbon\Carbon;
 use App\Models\AbsenModel;
-use App\Models\PegawaiModel;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Models\PegawaiModel;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use carbon\Carbon;
-use Illuminate\Support\Str;
-use File;
 
 class AbsenController extends Controller
 {
@@ -192,6 +193,64 @@ class AbsenController extends Controller
             ], 500);
         }
     }
+
+    public function updateNowa(Request $request)
+    {
+        try {
+            $user = Auth::guard('pegawai')->user(); // Ambil user yang sedang login
+            $user->no_hp = $request->nowa;
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Nomor telepon berhasil diperbarui.',
+                'name' => $user->no_hp,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui nomor telepon. Silakan coba lagi.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function updatePass(Request $request)
+    {
+        // Validasi input
+       $request->validate([
+            'old_password' => 'required|string',
+            'new_password' => 'required|string|min:6|max:100|confirmed',
+        ], [
+            'old_password.required' => 'Password lama wajib diisi',
+            'new_password.required' => 'Password baru wajib diisi',
+            'new_password.min' => 'Password minimal 6 karakter',
+            'new_password.confirmed' => 'Konfirmasi password tidak sesuai',
+        ]);
+
+        $user = Auth::guard('pegawai')->user();
+
+        // Cek password lama
+        if (!Hash::check($request->old_password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'status' => 'error',
+                'message' => 'Password lama salah'
+            ], 400);
+        }
+
+        // Update password
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'status' => 'success',
+            'message' => 'Password berhasil diubah'
+        ], 200);
+        
+    }
+
     public function histori()
     {
         return view('absen.histori');

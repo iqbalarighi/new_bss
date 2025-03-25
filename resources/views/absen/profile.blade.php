@@ -10,6 +10,14 @@
     <div class="pageTitle">Profile</div>
     <div class="right"></div>
 </div>
+<style type="text/css">
+    #swal2-html-container {
+        padding: 5px;
+    }
+.swal2-input {
+    margin: 5px;
+}
+</style>
 @endsection
 
 @section('content')
@@ -55,14 +63,14 @@
                                 <p class="mb-0 fw-bold">{{ $profile->nip }}</p>
                             </div>
                         </div>
-                        <ion-icon name="chevron-forward-outline" class="text-muted" style="font-size: 20px;"></ion-icon>
+                        {{-- <ion-icon name="chevron-forward-outline" class="text-muted" style="font-size: 20px;"></ion-icon> --}}
                     </div>
-                    <div class="list-group-item border-0 px-0 d-flex align-items-center justify-content-between" style="gap: 1rem;">
+                    <div id="nowaField" class="list-group-item border-0 px-0 d-flex align-items-center justify-content-between" style="gap: 1rem;">
                         <div class="d-flex align-items-center" style="gap: 1rem;">
                             <ion-icon name="logo-whatsapp" class="text-success" style="font-size: 20px;"></ion-icon>
                             <div>
                                 <small>Nomor WhatsApp</small>
-                                <p class="mb-0 fw-bold">{{$profile->no_hp}}</p>
+                                <p id="nowa" class="mb-0 fw-bold">{{$profile->no_hp}}</p>
                             </div>
                         </div>
                         <ion-icon name="chevron-forward-outline" class="text-muted" style="font-size: 20px;"></ion-icon>
@@ -107,7 +115,7 @@
             <div class="card-body p-3">
                 <h6 class="fw-bold mb-2">Keamanan</h6>
                 <div class="list-group">
-                    <div class="list-group-item border-0 px-0 d-flex align-items-center justify-content-between" style="gap: 1rem;">
+                    <div id="passField" class="list-group-item border-0 px-0 d-flex align-items-center justify-content-between" style="gap: 1rem;">
                         <div class="d-flex align-items-center" style="gap: 1rem;">
                             <ion-icon name="lock-closed-outline" class="text-dark fw-bold" style="font-size: 20px;"></ion-icon>
                             <div>
@@ -251,7 +259,7 @@
                         Swal.fire({
                             icon: 'success',
                             title: 'Berhasil!',
-                            text: data.message || 'Foto berhasil diunggah!',
+                            text: data.message || 'Nama berhasil diubah!',
                             timer: 1500,
                             showConfirmButton: false
                         }).then(() => {
@@ -263,6 +271,105 @@
                     }
                 }).catch(() => {
                     Swal.fire('Error!', 'Terjadi kesalahan saat mengupdate nama.', 'error');
+                });
+            }
+        });
+    });
+
+    document.getElementById('nowaField').addEventListener('click', function () {
+        Swal.fire({
+        title: 'Ubah Nomor Telepon',
+        input: 'tel',
+        inputAttributes: {
+            maxlength: 15,
+            inputmode: 'numeric',
+            pattern: '\\d*'
+        },
+        inputValue: document.getElementById('nowa').innerText,
+        showCancelButton: true,
+        confirmButtonText: 'Simpan',
+        cancelButtonText: 'Batal',
+        inputValidator: (value) => {
+            if (!value) {
+                return 'Nomor telepon tidak boleh kosong!';
+            } else if (!/^\d{10,15}$/.test(value)) {
+                return 'Nomor telepon harus berisi 10-15 digit angka!';
+            }
+        }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Kirim perubahan ke server dengan AJAX
+                fetch('/absen/update-nowa', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ nowa: result.value })
+                }).then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: data.message || 'Nomor berhasil diubah!',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                           //  location.reload(); Reload halaman setelah sukses
+                            document.getElementById('nowa').innerText = data.name;
+                        });
+                    } else {
+                        Swal.fire('Error!', data.message || 'Gagal memperbarui nomor telepon.', 'error');
+                    }
+                }).catch(() => {
+                    Swal.fire('Error!', 'Terjadi kesalahan saat mengupdate nama.', 'error');
+                });
+            }
+        });
+    });
+
+    // Fungsi untuk menampilkan popup
+   $(document).on('click', '#passField', function() {
+        Swal.fire({
+            title: 'Ubah Kata Sandi',
+            html: `
+            <input type="password" id="currentPassword" class="swal2-input" placeholder="Password Lama" style="width: 95%; max-width: 100%;">
+            <input type="password" id="newPassword" class="swal2-input" placeholder="Password Baru" style="width: 95%; max-width: 100%;">
+            <input type="password" id="confirmPassword" class="swal2-input" placeholder="Konfirmasi Password" style="width: 95%; max-width: 100%;">
+        `,
+            confirmButtonText: 'Update',
+            focusConfirm: false,
+            preConfirm: () => {
+                const current = $('#currentPassword').val();
+                const newPass = $('#newPassword').val();
+                const confirm = $('#confirmPassword').val();
+
+                if (!current || !newPass || !confirm) {
+                    Swal.showValidationMessage('Semua bidang harus diisi');
+                } else if (newPass !== confirm) {
+                    Swal.showValidationMessage('Kata sandi tidak cocok');
+                } else {
+                    return { current, newPass, confirm };
+                }
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '/absen/update-pass',
+                    method: 'POST',
+                    data: {
+                        old_password: result.value.current,
+                        new_password: result.value.newPass,
+                        new_password_confirmation: result.value.confirm,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        Swal.fire('Berhasil', response.message, 'success');
+                    },
+                    error: function(xhr) {
+                        Swal.fire('Error', xhr.responseJSON.message, 'error');
+                    }
                 });
             }
         });

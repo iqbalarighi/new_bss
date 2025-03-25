@@ -91,6 +91,8 @@ Route::controller(AbsenController::class)->middleware(['redirif:pegawai'])->grou
     Route::get('/absen/histori', 'histori')->name('absen.histori');
     Route::post('/absen/gethistori', 'gethistori');
     Route::get('/absen/izin', 'izin')->name('absen.izin');
+    Route::post('/absen/update-nowa', 'updateNowa');
+    Route::post('/absen/update-pass', 'updatePass');
 });
 
 Route::post('/absen/logout', [AuthController::class, 'logout'])->middleware(['redirif:pegawai'])->name('absen.logout');
