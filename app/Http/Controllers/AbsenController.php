@@ -209,4 +209,9 @@ class AbsenController extends Controller
 
        return view('absen.gethistori', compact('get'));
     }
+
+    public function izin()
+    {
+        return view('absen.izin');
+    }
 }

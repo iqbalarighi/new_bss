@@ -83,13 +83,14 @@ Route::middleware('ifnotpeg')->group(function () {
 
 Route::controller(AbsenController::class)->middleware(['redirif:pegawai'])->group(function () {
     Route::get('/absen', 'index')->name('absen');
-    Route::get('/absen/create', 'create');
+    Route::get('/absen/create', 'create')->name('absen.create');
     Route::post('/absen/store', 'store');
     Route::get('/absen/profile', 'profile');
     Route::post('/absen/profile-image', 'profilimage');
     Route::post('/absen/update-nama', 'updateNama')->name('profile.updateNama');
     Route::get('/absen/histori', 'histori')->name('absen.histori');
     Route::post('/absen/gethistori', 'gethistori');
+    Route::get('/absen/izin', 'izin')->name('absen.izin');
 });
 
 Route::post('/absen/logout', [AuthController::class, 'logout'])->middleware(['redirif:pegawai'])->name('absen.logout');
