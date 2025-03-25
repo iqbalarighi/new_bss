@@ -1,3 +1,27 @@
+ <style type="text/css">
+    /* Default Style Tombol Kamera */
+    .appBottomMenu .action-button.large {
+        background-color: #007bff; /* Biru Default */
+        border-radius: 50%;
+        padding: 15px;
+        transition: background-color 0.3s ease;
+    }
+
+    /* Warna Abu-Abu Saat Disabled */
+    .appBottomMenu .disabled-link .action-button.large {
+        background-color: #b0b0b0; /* Warna Abu-Abu */
+        pointer-events: none;       /* Nonaktifkan Interaksi */
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    /* Tambahan untuk Tekan Tombol */
+    .appBottomMenu .item {
+        text-decoration: none;
+        color: inherit;
+    }
+ </style>
+
  <!-- App Bottom Menu -->
     <div class="appBottomMenu">
         <a href="{{route('absen')}}" class="item {{Request::is('absen') ? 'active' : ''}}">
@@ -14,13 +38,23 @@
                 <strong>History</strong>
             </div>
         </a>
-        <a href="{{route('absen.create')}}" class="item">
-            <div class="col">
-                <div class="action-button large">
-                    <ion-icon name="camera" role="img" class="md hydrated" aria-label="add outline"></ion-icon>
+        @if(Request::is('absen/create'))
+            <a class="item disabled-link">
+                <div class="col">
+                    <div class="action-button large">
+                        <ion-icon name="camera"></ion-icon>
+                    </div>
                 </div>
-            </div>
-        </a>
+            </a>
+        @else
+            <a href="{{route('absen.create')}}" class="item">
+                <div class="col">
+                    <div class="action-button large">
+                        <ion-icon name="camera"></ion-icon>
+                    </div>
+                </div>
+            </a>
+        @endif
         <a href="{{route('absen.izin')}}" class="item {{Request::is('absen/izin') ? 'active' : ''}}">
             <div class="col">
                 <ion-icon name="document-text-outline" role="img" class="md hydrated"
