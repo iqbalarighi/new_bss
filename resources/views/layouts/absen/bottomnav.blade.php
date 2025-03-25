@@ -9,19 +9,19 @@
         </a>
         <a href="{{route('absen.histori')}}" class="item {{Request::is('absen/histori') ? 'active' : ''}}">
             <div class="col">
-                <ion-icon name="document-text-outline" role="img" class="md hydrated"
-                    aria-label="document text outline"></ion-icon>
+                <ion-icon name="calendar-outline" role="img" class="md hydrated"
+                    aria-label="calendar text outline"></ion-icon>
                 <strong>History</strong>
             </div>
         </a>
-        <a href="/absen/create" class="item">
+        <a href="{{route('absen.create')}}" class="item">
             <div class="col">
                 <div class="action-button large">
                     <ion-icon name="camera" role="img" class="md hydrated" aria-label="add outline"></ion-icon>
                 </div>
             </div>
         </a>
-        <a href="#" class="item">
+        <a href="{{route('absen.izin')}}" class="item {{Request::is('absen/izin') ? 'active' : ''}}">
             <div class="col">
                 <ion-icon name="document-text-outline" role="img" class="md hydrated"
                     aria-label="document text outline"></ion-icon>
