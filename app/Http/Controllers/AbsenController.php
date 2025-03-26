@@ -273,4 +273,40 @@ class AbsenController extends Controller
     {
         return view('absen.izin');
     }
+
+    public function formizin()
+    {
+        return view('absen.formizin');
+    }
+
+    public function formizinsimpan(Request $request)
+    {
+        dd($request);
+        $request->validate([
+            'tanggal' => 'required|date',
+            'jenisIzin' => 'required|in:i,s',
+            'keterangan' => 'required|string|max:255',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $nip = Auth::guard('pegawai')->user()->id;
+
+
+        $data = [
+            'nip' => $nip,
+            'tanggal' => $request->tanggal,
+            'jenis_izin' => $request->jenisIzin,
+            'keterangan' => $request->keterangan,
+        ];
+
+        if ($request->hasFile('buktiFoto')) {
+            $path = $request->file('buktiFoto')->store('bukti_izin', 'public');
+            $data['foto'] = $path;
+        }
+
+        // Simpan ke database (sesuai model yang digunakan, contoh: Izin)
+        IzinabsenModel::create($data);
+
+        return redirect()->back()->with('success', 'Data izin berhasil disimpan.');
+    }
 }

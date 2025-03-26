@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-            <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+            {{-- <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" /> --}}
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
@@ -21,6 +21,7 @@
     <link rel="icon" type="image/png" href={{asset("assets/img/favicon.png")}} sizes="32x32">
     <link rel="apple-touch-icon" sizes="180x180" href={{asset("assets/img/icon/192x192.png")}}>
     <link rel="stylesheet" href={{asset("assets/css/style.css")}}>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" >
     <link rel="manifest" href="{{asset('__manifest.json')}}">
 
 

@@ -42,7 +42,7 @@
             <a class="item disabled-link">
                 <div class="col">
                     <div class="action-button large">
-                        <ion-icon name="camera"></ion-icon>
+                        <ion-icon name="camera-outline"></ion-icon>
                     </div>
                 </div>
             </a>
@@ -50,7 +50,7 @@
             <a href="{{route('absen.create')}}" class="item">
                 <div class="col">
                     <div class="action-button large">
-                        <ion-icon name="camera"></ion-icon>
+                        <ion-icon name="camera-outline"></ion-icon>
                     </div>
                 </div>
             </a>
