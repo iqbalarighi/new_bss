@@ -2,12 +2,7 @@
 
 @section('content')
 <style>
-    .card {
-        border-radius: 15px;
-        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-        width: 100%;
-/*        max-width: 600px;*/
-    }
+    
     .btn-custom {
         background-color: #cc0000;
         color: white;

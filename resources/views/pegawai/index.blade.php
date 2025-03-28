@@ -14,7 +14,7 @@
     <div class="card shadow-lg rounded-lg">
         <div class="card-body" style="overflow: auto;">
             <table class="table table-striped table-bordered table-hover"> 
-                <thead class="table-danger text-center">
+                <thead class="table-dark text-center">
                     <tr>
                         <th>No.</th>
                         <th>NIP</th>

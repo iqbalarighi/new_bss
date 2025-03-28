@@ -31,7 +31,7 @@
     </head>
     <body>
 
-        <div class="d-flex " id="wrapper" style="background-color: #ff4d4d;">
+        <div class="d-flex " id="wrapper">
         <!-- Sidebar -->
         @include('layouts.side.sidenav')
         <!-- /#sidebar-wrapper -->
@@ -74,7 +74,7 @@
             </div>
             </div>
         </nav>
-        <main class="py-1">
+        <main class="py-1"  style="height: 100% !important; ">
             @yield('content')
         </main>
             

@@ -35,7 +35,16 @@ class AbsenController extends Controller
                 ->orderBy('jam_in')
                 ->get();
 
-        return view('absen.index', compact('pegawai', 'absen', 'absens', 'rekap', 'leaderboard'));
+        $rekapizin = IzinabsenModel::where('nip', $id)
+                    ->where('tanggal', 'LIKE', '%'.Carbon::now()->format('Y-m').'%')
+                    ->selectRaw("
+                        SUM(CASE WHEN jenis_izin = 'i' THEN 1 ELSE 0 END) as izin, 
+                        SUM(CASE WHEN jenis_izin = 's' THEN 1 ELSE 0 END) as sakit
+                    ")
+                    ->where('status_approve', 1)
+                    ->first();
+
+        return view('absen.index', compact('pegawai', 'absen', 'absens', 'rekap', 'leaderboard', 'rekapizin'));
     }
 
     public function create()
