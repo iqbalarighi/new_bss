@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use File;
-use carbon\Carbon;
 use App\Models\AbsenModel;
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
+use App\Models\IzinabsenModel;
 use App\Models\PegawaiModel;
-use Illuminate\Support\Facades\Hash;
+use File;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use carbon\Carbon;
 
 class AbsenController extends Controller
 {
@@ -271,7 +272,10 @@ class AbsenController extends Controller
 
     public function izin()
     {
-        return view('absen.izin');
+        $nip_id = Auth::guard('pegawai')->user()->id;
+        $izin = IzinabsenModel::where('nip', $nip_id)->get();
+        
+        return view('absen.izin', compact('izin'));
     }
 
     public function formizin()
@@ -281,7 +285,6 @@ class AbsenController extends Controller
 
     public function formizinsimpan(Request $request)
     {
-        dd($request);
         $request->validate([
             'tanggal' => 'required|date',
             'jenisIzin' => 'required|in:i,s',
@@ -289,24 +292,26 @@ class AbsenController extends Controller
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $nip = Auth::guard('pegawai')->user()->id;
-
+        $user = Auth::guard('pegawai')->user();
 
         $data = [
-            'nip' => $nip,
+            'nip' => $user->id,
+            'perusahaan' => $user->perusahaan,
+            'nama_kantor' => $user->nama_kantor,
             'tanggal' => $request->tanggal,
             'jenis_izin' => $request->jenisIzin,
             'keterangan' => $request->keterangan,
         ];
 
         if ($request->hasFile('buktiFoto')) {
-            $path = $request->file('buktiFoto')->store('bukti_izin', 'public');
-            $data['foto'] = $path;
+            $filename = Str::random(40) . '.' . $request->file('buktiFoto')->getClientOriginalExtension();
+            $path = $request->file('buktiFoto')->storeAs("bukti_izin/$user->nip", $filename, 'public');
+            $data['foto'] = $filename;
         }
 
         // Simpan ke database (sesuai model yang digunakan, contoh: Izin)
         IzinabsenModel::create($data);
 
-        return redirect()->back()->with('success', 'Data izin berhasil disimpan.');
+        return redirect('absen/izin')->with('success', 'Data izin berhasil disimpan.');
     }
 }

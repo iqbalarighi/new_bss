@@ -1,7 +1,7 @@
 @extends('layouts.absen.absen')
 @section('header')
     <!-- App Header -->
-<div class="appHeader bg-danger text-light">
+<div class="appHeader text-light" style="background-color: #ef3b3b;">
     <div class="left">
         <a href="javascript:;" class="headerButton goBack">
             <ion-icon name="chevron-back-outline"></ion-icon>
@@ -38,7 +38,7 @@
 @endsection
 
 @section('content')
-<div class="section full mt-2">
+<div class="section full mt-4">
     <div class="section-title">Title</div>
     <div class="wide-block pt-2 pb-2">
         <div class="row">
@@ -47,7 +47,7 @@
             <div class="webcam-capture"></div>
             </div>
         </div>
-        <div class="row" style="margin-top: -80px;">
+        <div class="row" style="margin-top: -84px;">
             <div class="col">
                 @if($cek == 1)
                     @if($cek2->jam_out == null)
@@ -69,6 +69,10 @@
             @endif
         </div>
         </div>
+    <center>
+        <div style="margin-top: -250px;"></div>
+        <ion-icon name="person-outline" style="font-size: 200px;"></ion-icon>
+    </center>
         <div class="row mt-2">
             <div class="col">
                 <div id="map" style="z-index: 0;"></div>

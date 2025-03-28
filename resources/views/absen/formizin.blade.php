@@ -19,7 +19,7 @@
             @csrf
             <div class="mb-2">
                 <label for="tanggal" class="form-label mb-1">Tanggal</label>
-                <input type="date" class="form-control" id="tanggal" name="tanggal">
+                <input type="date" class="form-control" id="tanggal" name="tanggal" min="{{ Carbon\Carbon::now()->subDays(7)->format('Y-m-d') }}" max="{{ Carbon\Carbon::now()->addDays(7)->format('Y-m-d') }}">
             </div>
 
             <div class="mb-2">
@@ -46,6 +46,24 @@
 
             <button type="submit" class="btn btn-primary w-100">Kirim</button>
         </form>
+    </div>
+</div>
+
+<div id="loading" style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    display: none;
+">
+    <div class="spinner-border text-light" role="status">
+        <span class="visually-hidden">Loading...</span>
     </div>
 </div>
 @endsection
@@ -94,6 +112,7 @@
 	        return false;
 	    }
 
+	    document.getElementById('loading').style.display = 'flex';
 	    return true;
 	}
 
