@@ -274,22 +274,30 @@
                         </div>
                         <div class="container-card d-flex justify-content-center p-1">
                             <div class="card-presensi">
+                                @if ($rekap->jmlhadir != null)
                                 <div class="badge-presensi">{{$rekap->jmlhadir}}</div>
+                                @endif
                                 <ion-icon name="accessibility-outline" size="large" style="color: blue;"></ion-icon>
                                 <p class="mb-0 text-dark">Hadir</p>
                             </div>
                             <div class="card-presensi">
-                                <div class="badge-presensi">0</div>
+                                @if ($rekapizin->izin != null)
+                                <div class="badge-presensi">{{$rekapizin->izin}}</div>
+                                @endif
                                 <ion-icon name="document-text-outline" size="large" style="color: green;"></ion-icon>
                                 <p class="mb-0 text-dark">Izin</p>
                             </div>
                             <div class="card-presensi">
-                                <div class="badge-presensi">0</div>
+                                @if ($rekapizin->sakit != null)
+                                <div class="badge-presensi">{{$rekapizin->sakit}}</div>
+                                @endif
                                 <ion-icon name="medkit-outline" size="large" style="color: orange;"></ion-icon>
                                 <p class="mb-0 text-dark">Sakit</p>
                             </div>
                             <div class="card-presensi">
+                                @if ($rekap->jmltelat != null)
                                 <div class="badge-presensi">{{$rekap->jmltelat}}</div>
+                                @endif
                                 <ion-icon name="alarm-outline" size="large" style="color: red;"></ion-icon>
                                 <p class="mb-0 text-dark">Telat</p>
                             </div>

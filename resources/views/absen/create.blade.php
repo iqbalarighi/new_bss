@@ -69,9 +69,9 @@
             @endif
         </div>
         </div>
-    <center>
+    {{-- <center>
         <img src="{{asset('storage/img/person.svg')}}" width="400px" style="position: relative; margin-top: -500px; margin-left: -35px; opacity: ;">
-    </center>
+    </center> --}}
         <div class="row mt-2">
             <div class="col">
                 <div id="map" style="z-index: 0;"></div>

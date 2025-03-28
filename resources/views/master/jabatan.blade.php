@@ -110,8 +110,8 @@
 </div>
 
 <!-- Tabel Data -->
-<table class="table table-striped">
-    <thead>
+<table class="table table-striped table-bordered table-hover">
+    <thead class="text-center table-dark">
         <tr>
             <th>No</th>
             @if(Auth::user()->role == 0)
