@@ -70,8 +70,7 @@
         </div>
         </div>
     <center>
-        <div style="margin-top: -250px;"></div>
-        <ion-icon name="person-outline" style="font-size: 200px;"></ion-icon>
+        <img src="{{asset('storage/img/person.svg')}}" width="400px" style="position: relative; margin-top: -500px; margin-left: -35px; opacity: ;">
     </center>
         <div class="row mt-2">
             <div class="col">
