@@ -12,6 +12,7 @@ class AbsenModel extends Model
     
      protected $fillable = [
         'nip',
+        'shift',
         'perusahaan',
         'kantor',
         'tgl_absen',

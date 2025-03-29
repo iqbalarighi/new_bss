@@ -23,11 +23,20 @@ class AbsenController extends Controller
         $pegawai = PegawaiModel::with('perusa', 'kantor', 'jabat', 'sat' )->findOrFail($id);
         $absen = AbsenModel::with('pegawai')->where('tgl_absen', $harini)->where('nip', $id)->first();
         $absens = AbsenModel::where('nip', $id)->where('tgl_absen', 'LIKE', '%'.carbon::now()->format('m').'%')->latest()->get();
+        
         $rekap = AbsenModel::where('nip', $id)
-                ->whereMonth('tgl_absen', carbon::now()->format('m'))
-                ->whereYear('tgl_absen', carbon::now()->format('Y'))
-                ->selectRaw('COUNT(nip) as jmlhadir, SUM(CASE WHEN jam_in > "07:00" THEN 1 ELSE 0 END) as jmltelat')
+                ->where('tgl_absen', 'LIKE',  '%'.carbon::now()->format('Y-m').'%')
+                ->selectRaw('
+                    COUNT(nip) as jmlhadir,
+                    SUM(CASE 
+                        WHEN shift = "0" AND jam_in > "08:00" THEN 1
+                        WHEN shift = "1" AND jam_in > "07:00" THEN 1
+                        WHEN shift = "2" AND jam_in > "13:00" THEN 1
+                        ELSE 0 
+                    END) as jmltelat
+                ')
                 ->first();
+
         $leaderboard = AbsenModel::with('pegawai.perusa', 'pegawai.jabat')
                 ->where('tgl_absen', $harini)
                 ->where('perusahaan', Auth::guard('pegawai')->user()->perusahaan)
@@ -63,6 +72,7 @@ class AbsenController extends Controller
 // dd(storage_path('storage/absensi/'));
         $nip = Auth::guard('pegawai')->user()->nip;
         $nip_id = Auth::guard('pegawai')->user()->id;
+        $shift_id = Auth::guard('pegawai')->user()->shift;
         $tgl_absen = date("Y-m-d");
         $jam_absen = date("H:i:s");
         $jam_foto = date("His");
@@ -110,6 +120,7 @@ class AbsenController extends Controller
 
             $simpan = AbsenModel::create([
             'nip' => $nip_id,
+            'shift' => $shift_id,
             'perusahaan' => $id_perus,
             'kantor' => $id_kan,
             'tgl_absen' => $tgl_absen,
@@ -283,8 +294,9 @@ class AbsenController extends Controller
     {
         $nip_id = Auth::guard('pegawai')->user()->id;
         $izin = IzinabsenModel::where('nip', $nip_id)->get();
-        
-        return view('absen.izin', compact('izin'));
+        $cekizin = IzinabsenModel::where('nip', $nip_id)->where('created_at', 'LIKE', '%'.Carbon::now()->format('Y-m-d').'%')->count();
+// dd($cekizin);
+        return view('absen.izin', compact('izin', 'cekizin'));
     }
 
     public function formizin()

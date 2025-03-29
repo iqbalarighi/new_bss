@@ -24,6 +24,7 @@ protected $guard = 'karyawan';
         'nama_kantor',
         'jabatan',
         'satker',
+        'shift',
         'nip',
         'password',
         'nama_lengkap',
