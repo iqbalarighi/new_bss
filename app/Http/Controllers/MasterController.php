@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DeptModel;
 use App\Models\JabatanModel;
 use App\Models\KantorModel;
 use App\Models\PegawaiModel;
@@ -166,23 +167,28 @@ public function destroytenant(Request $request, $id)
         if(Auth::user()->role === 0){
             $perusahaan = PerusahaanModel::get();
             $satker = SatkerModel::paginate(15);
+            $kantor = KantorModel::paginate(15);
+            $departemen = DeptModel::get();
 
-        return view('master.satker', compact('satker', 'perusahaan'));
+        return view('master.satker', compact('satker', 'perusahaan', 'departemen', 'kantor'));
         }
 
         if(Auth::user()->role === 3){
             $perusahaan = PerusahaanModel::get();
+            $departemen = DeptModel::get();
             $satker = SatkerModel::where('perusahaan', Auth::user()->perusahaan)
             ->paginate(15);
 
-        return view('master.satker', compact('satker', 'perusahaan'));
+        return view('master.satker', compact('satker', 'perusahaan', 'departemen'));
         }
 
         if(Auth::user()->role === 1){
            $satker = SatkerModel::where('perusahaan', Auth::user()->perusahaan)
            ->paginate(15);
+           $departemen = DeptModel::get();
+           $kantor = KantorModel::get();
 
-        return view('master.satker', compact('satker'));
+        return view('master.satker', compact('satker', 'departemen', 'kantor'));
         }
 
         
@@ -193,6 +199,8 @@ public function destroytenant(Request $request, $id)
 
         if(Auth::user()->role === 0){
             $perusa = $request->perusahaan;
+            $dept = $request->departemen;
+            $kantor = $request->kantor;
         } else {
             $perusa = Auth::user()->perusahaan;
         }
@@ -200,6 +208,8 @@ public function destroytenant(Request $request, $id)
         $satker = new SatkerModel;
 
         $satker->perusahaan = $perusa;
+        $satker->kantor = $kantor;
+        $satker->dept_id = $dept;
         $satker->satuan_kerja = $request->satker;
 
         $satker->save();
@@ -214,6 +224,8 @@ public function destroytenant(Request $request, $id)
             $perusahaan = Auth::user()->perusahaan;
         } else {
             $perusahaan = $request->perusahaan;
+            $dept = $request->departemen;
+            $kantor = $request->kantor;
         }
 
         $request->validate([
@@ -223,6 +235,8 @@ public function destroytenant(Request $request, $id)
         $satker = SatkerModel::findOrFail($id);
         $satker->update([
             'satuan_kerja' => $request->satker,
+            'dept_id' => $dept,
+            'kantor' => $kantor,
             'perusahaan' => $perusahaan
         ]);
 
@@ -245,9 +259,12 @@ public function destroytenant(Request $request, $id)
     {
         if(Auth::user()->role === 0){
             $perusahaan = PerusahaanModel::get();
+            $kantor = KantorModel::get();
+            $departemen = DeptModel::get();
+            $satker = SatkerModel::get();
             $jabatan = JabatanModel::paginate(15);
 
-        return view('master.jabatan', compact('jabatan', 'perusahaan'));
+        return view('master.jabatan', compact('jabatan', 'perusahaan', 'kantor', 'departemen', 'satker'));
         } 
 
         if(Auth::user()->role === 3){
@@ -260,8 +277,11 @@ public function destroytenant(Request $request, $id)
         if(Auth::user()->role === 1){
            $jabatan = JabatanModel::where('perusahaan', Auth::user()->perusahaan)
            ->paginate(15);
+           $kantor = KantorModel::get();
+           $departemen = DeptModel::get();
+           $satker = SatkerModel::get();
 
-        return view('master.jabatan', compact('jabatan'));
+        return view('master.jabatan', compact('jabatan', 'kantor', 'departemen', 'satker'));
         }
     }
 
@@ -269,6 +289,9 @@ public function destroytenant(Request $request, $id)
     {
         if(Auth::user()->role === 0){
             $perusa = $request->usaha;
+            $dept = $request->departemen;
+            $kantor = $request->kantor;
+            $satker = $request->satker;
         } else {
             $perusa = Auth::user()->perusahaan;
         }
@@ -276,6 +299,9 @@ public function destroytenant(Request $request, $id)
         $jabatan = new JabatanModel;
 
         $jabatan->perusahaan = $perusa;
+        $jabatan->kantor_id = $kantor;
+        $jabatan->dept_id = $dept;
+        $jabatan->satker_id = $satker;
         $jabatan->jabatan = $request->jabatan;
          $jabatan->save();
 
@@ -287,8 +313,19 @@ public function destroytenant(Request $request, $id)
     {
         if(Auth::user()->role === 0){
             $perusa = $request->perusahaan;
-        } else {
+            $dept = $request->departemen;
+            $kantor = $request->kantor;
+            $satker = $request->satker;
+        } else if(Auth::user()->role === 1){
             $perusa = Auth::user()->perusahaan;
+            $dept = $request->departemen;
+            $kantor = $request->kantor;
+            $satker = $request->satker;
+        } else if(Auth::user()->role === 3){
+            $perusa = Auth::user()->perusahaan;
+            $kantor = Auth::user()->kantor;
+            $dept = $request->departemen;
+            $satker = $request->satker;
         }
 
         $request->validate([
@@ -298,6 +335,9 @@ public function destroytenant(Request $request, $id)
         $jabatan = JabatanModel::findOrFail($id);
         $jabatan->update([
             'perusahaan' => $perusa,
+            'kantor_id' => $kantor,
+            'dept_id' => $dept,
+            'satker_id' => $satker,
             'jabatan' => $request->jabatan
         ]);
 
@@ -362,10 +402,12 @@ public function destroytenant(Request $request, $id)
                 $kantor = $request->office;
                 $satker = $request->satker;
                 $jabat = $request->position;
+                $dept = $request->dept;
 
                 $add->kantor = $kantor;
                 $add->satker = $satker;
                 $add->jabatan = $jabat;
+                $add->departemen = $dept;
             } else if ($request->role == 3){ //cabang
                 $perusa = $request->company;
                 $kantor = $request->office;
@@ -386,7 +428,9 @@ public function destroytenant(Request $request, $id)
                 $satker = $request->satker;
                 $jabat = $request->position;
                 $kantor = $request->office;
+                $dept = $request->dept;
 
+                $add->departemen = $dept;
                 $add->kantor = $kantor;
                 $add->satker = $satker;
                 $add->jabatan = $jabat;
@@ -399,7 +443,9 @@ public function destroytenant(Request $request, $id)
             $perusa = Auth::user()->perusahaan;
             $satker = $request->satker;
             $jabat = $request->position;
+            $dept = $request->dept;
 
+            $add->departemen = $dept;
             $add->kantor = $kantor;
             $add->satker = $satker;
             $add->jabatan = $jabat;
@@ -422,10 +468,42 @@ public function destroytenant(Request $request, $id)
         $offices = KantorModel::where('perusahaan', $companyId)->get();
         $satkers = SatkerModel::where('perusahaan', $companyId)->get();
         $positions = JabatanModel::where('perusahaan', $companyId)->get();
+        $depts = DeptModel::where('perusahaan', $companyId)->get();
         return response()->json([
             'offices' => $offices,
             'satkers' => $satkers,
             'positions' => $positions,
+            'depts' => $depts,
         ]);
+    }
+
+    public function dept()
+    {
+        $dept = DeptModel::paginate(10);
+        $perusahaan = PerusahaanModel::get();
+        $kantor = KantorModel::get();
+
+        return view('master.departemen', compact('dept', 'perusahaan', 'kantor'));
+    }
+
+    public function deptstore(Request $request)
+    {
+        $request->validate([
+            'perusahaan' => 'required',
+            'kantor' => 'required',
+            'nama_dept' => 'required|string|max:255',
+        ]);
+
+        try {
+            DeptModel::create([
+                'perusahaan' => $request->perusahaan,
+                'nama_kantor' => $request->kantor,
+                'nama_dept' => $request->nama_dept,
+            ]);
+
+            return response()->json(['success' => true, 'message' => 'Departemen berhasil ditambahkan']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+        }
     }
 }

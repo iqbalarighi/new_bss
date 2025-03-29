@@ -11,8 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('satker', function (Blueprint $table) {
-            $table->integer('perusahaan')->unsigned()->after('id');
+        Schema::create('departemen', function (Blueprint $table) {
+            $table->id();
+            $table->Integer('perusahaan')->unsigned();
+            $table->Integer('nama_kantor')->unsigned();
+            $table->string('nama_dept');
+            $table->timestamps();
         });
     }
 
@@ -21,8 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('satker', function (Blueprint $table) {
-            $table->dropColumn('perusahaan');
-        });
+        Schema::dropIfExists('departemen');
     }
 };

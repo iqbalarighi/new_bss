@@ -36,41 +36,59 @@
         }
     </style>
     <!-- Modal Tambah Bootstrap -->                    
-    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered animate__animated animate__zoomIn">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Tambah Satuan Kerja</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form action="/satker/tambah" method="POST">
-                        @csrf
-
-                        <div class="mb-3">
-                            <label for="satker" class="form-label">Satuan Kerja</label>
-                            <input type="text" class="form-control" id="satker" name="satker" placeholder="Satuan Kerja" required>
-                        </div>
-                        @if(Auth::user()->role == 0)
-                        <div class="mb-3">
-                            <label for="tenantName" class="form-label">Nama Perusahaan</label>
-                            <select name="perusahaan" id="tenantName" class="form-select" required>
-                                <option selected disabled value="">Pilih Perusahaan</option>
-                                @foreach($perusahaan as $usaha)
-                                <option value="{{$usaha->id}}">{{$usaha->perusahaan}}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        @endif
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                    <button type="submit" class="btn btn-primary">Simpan</button>
-                </div> 
-            </form>
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered animate__animated animate__zoomIn">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Tambah Satuan Kerja</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+            <div class="modal-body">
+                <form action="/satker/tambah" method="POST">
+                    @csrf
+
+                    <div class="mb-3">
+                        <label for="satker" class="form-label">Satuan Kerja</label>
+                        <input type="text" class="form-control" id="satker" name="satker" placeholder="Satuan Kerja" required>
+                    </div>
+                    @if(Auth::user()->role == 0)
+                    <div class="mb-3">
+                        <label for="tenantName" class="form-label">Nama Perusahaan</label>
+                        <select name="perusahaan" id="tenantName" class="form-select" required>
+                            <option selected disabled value="">Pilih Perusahaan</option>
+                            @foreach($perusahaan as $usaha)
+                            <option value="{{$usaha->id}}">{{$usaha->perusahaan}}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @endif
+                    <div class="mb-3">
+                        <label for="kantor" class="form-label">Kantor</label>
+                        <select name="kantor" id="kantor" class="form-select" required>
+                            <option selected disabled value="">Pilih Kantor</option>
+                            @foreach($kantor as $office)
+                            <option value="{{$office->id}}">{{$office->nama_kantor}}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="departemen" class="form-label">Departemen</label>
+                        <select name="departemen" id="departemen" class="form-select" required>
+                            <option selected disabled value="">Pilih Departemen</option>
+                            @foreach($departemen as $dept)
+                            <option value="{{$dept->id}}">{{$dept->nama_dept}}</option>
+                            @endforeach
+                        </select>
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                <button type="submit" class="btn btn-primary">Simpan</button>
+            </div> 
+        </form>
         </div>
     </div>
+</div>
     <!-- Modal Edit Bootstrap -->
     <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered animate__animated animate__zoomIn">
@@ -99,6 +117,26 @@
                             </select>
                         </div>
                         @endif
+
+                        <div class="mb-3">
+                        <label for="edit_departemen" class="form-label">Departemen</label>
+                        <select name="departemen" id="edit_departemen" class="form-select" required>
+                            <option selected disabled value="">Pilih Departemen</option>
+                            @foreach($departemen as $dept)
+                            <option value="{{$dept->id}}">{{$dept->nama_dept}}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit_kantor" class="form-label">Kantor</label>
+                        <select name="kantor" id="edit_kantor" class="form-select" required>
+                            <option selected disabled value="">Pilih Kantor</option>
+                            @foreach($kantor as $office)
+                            <option value="{{$office->id}}">{{$office->nama_kantor}}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
@@ -119,6 +157,8 @@
                 @if(Auth::user()->role == 0)       
                     <th>Perusahaan</th>
                 @endif     
+                    <th>Kantor</th>
+                    <th>Departemen</th>
                     <th>Satuan Kerja</th>
                     <th>Aksi</th>
                 </tr>
@@ -130,11 +170,15 @@
                  @if(Auth::user()->role == 0)
                     <td>{{$ker->perusa->perusahaan}}</td>
                 @endif 
+                    <td>{{$ker->kant->nama_kantor}}</td>
+                    <td>{{$ker->deptmn->nama_dept}}</td>
                     <td>{{$ker->satuan_kerja}}</td>
                     <td class="align-middle text-center">
                         <button class="btn btn-primary btn-sm cen edit-btn" 
                         data-id="{{$ker->id}}" 
                         data-satker="{{$ker->satuan_kerja}}" 
+                        data-kantor="{{$ker->kantor}}" 
+                        data-departemen="{{$ker->dept_id}}" 
 @if(Auth::user()->role == 0) data-perusahaan="{{$ker->perusahaan}}" @endif>Edit</button>
                         <button class="btn btn-danger btn-sm cen delete-btn" data-id="{{$ker->id}}">Hapus</button>
                     </td>
@@ -157,10 +201,14 @@
             button.addEventListener("click", function () {
                 let id = this.getAttribute("data-id");
                 let satker = this.getAttribute("data-satker");
+                let departemen = this.getAttribute("data-departemen");
                 let perusahaan = this.getAttribute("data-perusahaan");
+                let kantor = this.getAttribute("data-kantor");
                 
                 document.getElementById("edit_id").value = id;
                 document.getElementById("edit_satker").value = satker;
+                document.getElementById("edit_departemen").value = departemen;
+                document.getElementById("edit_kantor").value = kantor;
 @if(Auth::user()->role == 0) document.getElementById("edit_tenantName").value = perusahaan; @endif
                 document.getElementById("editForm").action = "/satker/edit/" + id;
 

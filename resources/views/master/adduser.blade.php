@@ -61,8 +61,9 @@
                         @if(Auth::user()->role == 1 || Auth::user()->role == 0)
                             <th>Kantor</th>
                         @endif
-                            <th>Jabatan</th>
+                            <th>Departemen</th>
                             <th>Satker</th>
+                            <th>Jabatan</th>
                             <th>Role</th>
                             <th>Aksi</th>
                         </tr>
@@ -91,13 +92,13 @@
                             @else
                                {{$item->kant->nama_kantor}}
                             @endif
-                    @endif
                         </td>
+                    @endif
                         <td>
-                            @if ($item->jabatan == 0)
+                            @if ($item->dept == 0)
                             -
                             @else
-                               {{$item->jabat->jabatan}}
+                               {{$item->deptmn->nama_dept}}
                             @endif
                         </td>
                         <td>
@@ -105,6 +106,13 @@
                             -
                             @else
                                {{$item->sat->satuan_kerja}}
+                            @endif
+                        </td>
+                        <td>
+                            @if ($item->jabatan == 0)
+                            -
+                            @else
+                               {{$item->jabat->jabatan}}
                             @endif
                         </td>
                         <td>
@@ -181,10 +189,14 @@
                         <div class="mb-3" id="office-container">
                             <label for="office" class="form-label">Kantor</label>
                             <select id="office" name="office" class="form-select">
-
                             </select>
                         </div>
                         @endif
+                        <div class="mb-3" id="dept-container">
+                            <label for="dept" class="form-label">Departemen</label>
+                            <select id="dept" name="dept" class="form-select">
+                            </select>
+                        </div>
                         <div class="mb-3" id="satker-container">
                             <label for="satker" class="form-label">Satuan Kerja</label>
                             <select id="satker" name="satker" class="form-select">
@@ -203,22 +215,24 @@
         $(document).ready(function() {
             function toggleFields() {
                 if ($('#role').val() == "3") { // Jika memilih Admin
-                    $('#satker-container, #position-container').hide();
-                    $('#satker, #position').prop("disabled", true);
+                    $('#satker-container, #position-container, #dept-container').hide();
+                    $('#satker, #position, #dept').prop("disabled", true);
                     $('#office-container').show();
                     $('#office').prop("disabled", false);
                     $('#office').prop("required", true);
                 } else if ($('#role').val() == "1") { // Jika memilih Admin
-                    $('#satker-container, #position-container, #office-container').hide();
-                    $('#satker, #position, #office').prop("disabled", true);
+                    $('#satker-container, #position-container, #office-container, #dept-container').hide();
+                    $('#satker, #position, #office, #dept').prop("disabled", true);
                     $('#office').prop("required", false);
                     $('#satker').prop("required", false);
+                    $('#dept').prop("required", false);
                     $('#position').prop("required", false);
                 } else { // Jika memilih User
-                    $('#satker-container, #position-container, #office-container').show();
-                    $('#satker, #position, #office').prop("disabled", false);
+                    $('#satker-container, #position-container, #office-container, #dept-container').show();
+                    $('#satker, #position, #office, #dept').prop("disabled", false);
                     $('#office').prop("required", true);
                     $('#satker').prop("required", true);
+                    $('#dept').prop("required", true);
                     $('#position').prop("required", true);
                 }
             }
@@ -267,6 +281,13 @@
                             $('#position').append('<option value="' + position.id + '">' + position.jabatan + '</option>');
                         });
 
+                        $('#dept').empty();
+                        $('#dept').append('<option value="">Pilih Jabatan</option>');
+                        
+                        $.each(response.depts, function(key, dept) {
+                            $('#dept').append('<option value="' + dept.id + '">' + dept.nama_dept + '</option>');
+                        });
+
                     },
                     error: function(xhr, status, error) {
                         console.error(error);
@@ -276,6 +297,7 @@
                 $('#office').empty().append('<option value="">Pilih Kantor</option>');
                 $('#satker').empty().append('<option value="">Pilih Satuan Kerja</option>');
                 $('#position').empty().append('<option value="">Pilih Jabatan</option>');
+                $('#dept').empty().append('<option value="">Pilih Jabatan</option>');
             }
         });
     });
@@ -307,6 +329,13 @@
             
             $.each(response.positions, function(key, position) {
                 $('#position').append('<option value="' + position.id + '">' + position.jabatan + '</option>');
+            });
+
+            $('#dept').empty();
+            $('#dept').append('<option value="">Pilih Jabatan</option>');
+            
+            $.each(response.depts, function(key, dept) {
+                $('#dept').append('<option value="' + dept.id + '">' + dept.nama_dept + '</option>');
             });
 
         },

@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('satker', function (Blueprint $table) {
             $table->id();
+            $table->integer('perusahaan')->unsigned();
+            $table->integer('kantor')->unsigned();
+            $table->integer('dept_id')->unsigned();
             $table->string('satuan_kerja');
             $table->timestamps();
         });

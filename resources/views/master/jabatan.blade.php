@@ -43,34 +43,66 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                    <form action="{{ route('jabatan')}}/tambah" method="POST">
-                        @csrf
+                <form action="{{ route('jabatan')}}/tambah" method="POST">
+                    @csrf
 
                     @if(Auth::user()->role == 0)
-                        <div class="mb-3">
+                    <div class="mb-3">
                         <label for="tenantName" class="form-label">Nama Perusahaan</label>
-                            {{-- <input type="text" class="form-control"name="usaha" placeholder="Masukkan nama kantor" required> --}}
-                            <select name="usaha" id="tenantName" class="form-select" required>
-                                <option selected disabled value="">Pilih Perusahaan</option>
-                                @foreach($perusahaan as $usaha)
-                                <option value="{{$usaha->id}}">{{$usaha->perusahaan}}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                        <select name="usaha" id="tenantName" class="form-select" required>
+                            <option selected disabled value="">Pilih Perusahaan</option>
+                            @foreach($perusahaan as $usaha)
+                            <option value="{{$usaha->id}}">{{$usaha->perusahaan}}</option>
+                            @endforeach
+                        </select>
+                    </div>
                     @endif
-                        <div class="mb-3">
-                            <label for="jabatan" class="form-label">Jabatan</label>
-                            <input type="text" class="form-control" id="jabatan" name="jabatan" placeholder="Jabatan" required>
-                        </div>
+
+                    <div class="mb-3">
+                        <label for="kantor" class="form-label">Kantor</label>
+                        <select name="kantor" id="kantor" class="form-select" required>
+                            <option selected disabled value="">Pilih Kantor</option>
+                            @foreach($kantor as $office)
+                            <option value="{{$office->id}}">{{$office->nama_kantor}}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="departemen" class="form-label">Departemen</label>
+                        <select name="departemen" id="departemen" class="form-select" required>
+                            <option selected disabled value="">Pilih Departemen</option>
+                            @foreach($departemen as $dept)
+                            <option value="{{$dept->id}}">{{$dept->nama_dept}}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="satker" class="form-label">Satuan Kerja</label>
+                        <select name="satker" id="satker" class="form-select" required>
+                            <option selected disabled value="">Pilih Satuan Kerja</option>
+                            @foreach($satker as $unit)
+                            <option value="{{$unit->id}}">{{$unit->satuan_kerja}}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="jabatan" class="form-label">Jabatan</label>
+                        <input type="text" class="form-control" id="jabatan" name="jabatan" placeholder="Jabatan" required>
+                    </div>
+
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
                         <button type="submit" class="btn btn-primary">Simpan</button>
                     </div>
                 </form>
-                </div>
+            </div>
         </div>
     </div>
 </div>
+
 
 <!-- Modal Edit Jabatan -->
 <div class="modal fade" id="modalEdit" tabindex="-1" aria-hidden="true">
@@ -99,6 +131,36 @@
                             </select>
                         </div>
                         @endif
+
+                        <div class="mb-3">
+                        <label for="kantor" class="form-label">Kantor</label>
+                        <select name="kantor" id="editKantor" class="form-select" required>
+                            <option selected disabled value="">Pilih Kantor</option>
+                            @foreach($kantor as $office)
+                            <option value="{{$office->id}}">{{$office->nama_kantor}}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="departemen" class="form-label">Departemen</label>
+                        <select name="departemen" id="editDepartemen" class="form-select" required>
+                            <option selected disabled value="">Pilih Departemen</option>
+                            @foreach($departemen as $dept)
+                            <option value="{{$dept->id}}">{{$dept->nama_dept}}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="satker" class="form-label">Satuan Kerja</label>
+                        <select name="satker" id="editSatker" class="form-select" required>
+                            <option selected disabled value="">Pilih Satuan Kerja</option>
+                            @foreach($satker as $unit)
+                            <option value="{{$unit->id}}">{{$unit->satuan_kerja}}</option>
+                            @endforeach
+                        </select>
+                    </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
                         <button type="submit" class="btn btn-primary">Simpan</button>
@@ -117,6 +179,9 @@
             @if(Auth::user()->role == 0)
             <th>Perusahaan</th>
             @endif
+            <th>Kantor</th>
+            <th>Departemen</th>
+            <th>Satuan Kerja</th>
             <th>Jabatan</th>
             <th>Aksi</th>
         </tr>
@@ -128,6 +193,9 @@
             @if(Auth::user()->role == 0)
             <td>{{ $item->perusa->perusahaan }}</td>
             @endif
+            <td>{{ $item->kant->nama_kantor }}</td>
+            <td>{{ $item->deptmn->nama_dept }}</td>
+            <td>{{ $item->sat->satuan_kerja }}</td>
             <td>{{ $item->jabatan }}</td>
             <td>
                 <button class="btn btn-sm btn-primary btnEdit" 
@@ -149,10 +217,16 @@ $(document).ready(function() {
         let id = $(this).data('id');
         let jabatan = $(this).data('jabatan');
         let perusahaan = $(this).data('perusahaan');
+        let kantor = $(this).data('perusahaan');
+        let departemen = $(this).data('perusahaan');
+        let satker = $(this).data('perusahaan');
         
         $('#editId').val(id);
         $('#editJabatan').val(jabatan);
         $('#editPerusahaan').val(perusahaan);
+        $('#editKantor').val(kantor);
+        $('#editDepartemen').val(departemen);
+        $('#editSatker').val(satker);
         $('#modalEdit').modal('show');
     });
 
@@ -161,6 +235,9 @@ $(document).ready(function() {
         let id = $('#editId').val();
         let jabatan = $('#editJabatan').val();
         let perusahaan = $('#editPerusahaan').val();
+        let kantor = $('#editKantor').val();
+        let departemen = $('#editDepartemen').val();
+        let satker = $('#editSatker').val();
         
         $.ajax({
             url: '/jabatan/edit/' + id,
@@ -168,7 +245,10 @@ $(document).ready(function() {
             data: { 
                 _token: '{{ csrf_token() }}', 
                 jabatan: jabatan, 
-                perusahaan: perusahaan
+                perusahaan: perusahaan, 
+                kantor: kantor, 
+                departemen: departemen, 
+                satker: satker
             },
             success: function(response) {
                 Swal.fire({

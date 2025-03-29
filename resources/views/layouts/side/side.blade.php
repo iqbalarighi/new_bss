@@ -81,6 +81,8 @@
         </div>
     </div>
 </div>
+
+@stack('script')
 </body>
             <footer class="footer py-1">
                   <center>Copyright &copy; {{Carbon\Carbon::today()->isoFormat('Y');}} www.bpbsmartsystem.com. All Rights Reserved </center>  
