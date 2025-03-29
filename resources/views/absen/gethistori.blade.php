@@ -7,7 +7,15 @@
 	    <div class="d-flex justify-content-around align-items-center">
 	        <div class="d-flex align-items-center gap-2">
 	            <img src="{{ asset('storage/absensi/'.$item->pegawai->nip.'/'.$item->foto_in) }}" alt="Foto Masuk" class="rounded" width="50">
-	            <div class="text-center pl-1">
+	        @if($item->shift == 0 && $item->jam_in > '08:00')
+            <div class="text-center pl-1 text-danger">
+            @elseif($item->shift == 1 && $item->jam_in > '07:00')
+            <div class="text-center pl-1 text-danger">
+            @elseif($item->shift == 2 && $item->jam_in > '13:00')
+            <div class="text-center pl-1 text-danger">
+            @else
+            <div class="text-center pl-1">
+            @endif
 	                <span class="d-block">Masuk</span>
 	                <strong>{{$item->jam_in}}</strong>
 	            </div>

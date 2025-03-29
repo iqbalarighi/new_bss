@@ -18,6 +18,7 @@ return new class extends Migration
             $table->Integer('dept')->unsigned();
             $table->Integer('satker')->unsigned();
             $table->Integer('jabatan')->unsigned();
+            $table->Integer('shift')->unsigned();
             $table->string('nip', 30)->unique();
             $table->string('nama_lengkap', 100);
             $table->string('password');

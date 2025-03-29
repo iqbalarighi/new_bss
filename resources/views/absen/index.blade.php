@@ -16,8 +16,8 @@
                 </div>
                 </div>
                 <div id="user-info" class="col mw-100 px-0">
-                    <h2 id="user-name" style="width: 200px;">{{Auth::guard('pegawai')->user()->nama_lengkap}}</h2>
-                    <span id="user-role">{{$pegawai->jabat->jabatan}}</span>
+                    <h2 id="user-name" style="width: 80%;">{{Auth::guard('pegawai')->user()->nama_lengkap}}</h2>
+                    <span id="user-role">{{$pegawai->jabat->jabatan}}</span> <br>
 
                     <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                 <button class="btn btn-secondary btn-sm float-right px-1" style="margin-top: -45px;">logout</button>
@@ -80,11 +80,20 @@
                     <h5><ion-icon name="person"></ion-icon> Kehadiran Terakhir</h5>
         @if($absen != null)
         <div class="card p-1 mb-1">
-            <h5>{{Carbon\carbon::parse($absen->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}}</h5>
+            <h5>{{Carbon\carbon::parse($absen->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} (@if($absen->shift == 0) Non Shift @elseif($absen->shift == 1) Shift Pagi @else Shift Siang @endif)</h5>
+
             <div class="d-flex justify-content-around align-items-center">
                 <div class="d-flex align-items-center gap-2">
                     <img src="{{ asset('storage/absensi/'.$absen->pegawai->nip.'/'.$absen->foto_in) }}" alt="Foto Masuk" class="rounded" width="50">
-                    <div class="text-center pl-1">
+                @if($absen->shift == 0 && $absen->jam_in > '08:00')
+                <div class="text-center pl-1 text-danger">
+                @elseif($absen->shift == 1 && $absen->jam_in > '07:00')
+                <div class="text-center pl-1 text-danger">
+                @elseif($absen->shift == 2 && $absen->jam_in > '13:00')
+                <div class="text-center pl-1 text-danger">
+                @else
+                <div class="text-center pl-1">
+                @endif
                         <span class="d-block">Masuk</span>
                         <strong>{{$absen->jam_in}}</strong>
                     </div>
@@ -326,11 +335,19 @@
                              @foreach($absens as $item)
                             <li>
                                <div class="card p-1 mb-2">
-                                    <h5>{{Carbon\carbon::parse($item->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}}</h5>
+                                    <h5>{{Carbon\carbon::parse($item->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} (@if($item->shift == 0) Non Shift @elseif($item->shift == 1) Shift Pagi @else Shift Siang @endif)</h5>
                                     <div class="d-flex justify-content-around align-items-center">
                                         <div class="d-flex align-items-center gap-2">
                                             <img src="{{ asset('storage/absensi/'.$item->pegawai->nip.'/'.$item->foto_in) }}" alt="Foto Masuk" class="rounded" width="50">
-                                            <div class="text-center pl-1">
+                                        @if($item->shift == 0 && $item->jam_in > '08:00')
+                                        <div class="text-center pl-1 text-danger">
+                                        @elseif($item->shift == 1 && $item->jam_in > '07:00')
+                                        <div class="text-center pl-1 text-danger">
+                                        @elseif($item->shift == 2 && $item->jam_in > '13:00')
+                                        <div class="text-center pl-1 text-danger">
+                                        @else
+                                        <div class="text-center pl-1">
+                                        @endif
                                                 <span class="d-block">Masuk</span>
                                                 <strong>{{$item->jam_in}}</strong>
                                             </div>
