@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DeptModel;
-use App\Models\JabatanModel;
-use App\Models\KantorModel;
-use App\Models\PegawaiModel;
-use App\Models\PerusahaanModel;
-use App\Models\SatkerModel;
 use App\Models\User;
+use App\Models\DeptModel;
+use App\Models\KantorModel;
+use App\Models\SatkerModel;
+use App\Models\JabatanModel;
+use App\Models\PegawaiModel;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\PerusahaanModel;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class MasterController extends Controller
 {
@@ -161,6 +162,21 @@ public function destroytenant(Request $request, $id)
 
         return redirect()->route('kantor')->with('status', 'Data kantor berhasil diperbarui.');
     }
+
+    public function kantroy($id)
+    {
+        $kantor = KantorModel::findOrFail($id);
+
+        $kanBaru = 0;
+        User::where('kantor', $id)->update(['kantor' => $kanBaru]);
+        JabatanModel::where('kantor_id', $id)->update(['kantor_id' => $kanBaru]);
+        SatkerModel::where('kantor', $id)->update(['kantor' => $kanBaru]);
+        DeptModel::where('nama_kantor', $id)->update(['nama_kantor' => $kanBaru]);
+
+        $kantor->delete();
+
+        return response()->json(['success' => true]);
+    }
     
     public function satker()
     {
@@ -259,6 +275,11 @@ public function destroytenant(Request $request, $id)
     {
         try {
             $satker = SatkerModel::findOrFail($id);
+
+            $satkerBaru = 0;
+            JabatanModel::where('satker', $id)->update(['satker' => $satkerBaru]);
+            User::where('satker', $id)->update(['satker' => $satkerBaru]);
+
             $satker->delete();
 
             return response()->json(['success' => true, 'message' => 'Data berhasil dihapus'], 200);
@@ -282,8 +303,10 @@ public function destroytenant(Request $request, $id)
         if(Auth::user()->role === 3){
            $jabatan = JabatanModel::where('perusahaan', Auth::user()->perusahaan)
            ->paginate(15);
+           $departemen = DeptModel::get();
+            $satker = SatkerModel::get();
 
-        return view('master.jabatan', compact('jabatan'));
+        return view('master.jabatan', compact('jabatan', 'departemen', 'satker'));
         } 
         
         if(Auth::user()->role === 1){
@@ -300,7 +323,7 @@ public function destroytenant(Request $request, $id)
     public function tambahjabatan(Request $request)
     {
         if(Auth::user()->role === 0){
-            $perusa = $request->perusahaan;
+            $perusa = $request->usaha;
             $dept = $request->departemen;
             $kantor = $request->kantor;
             $satker = $request->satker;
@@ -369,6 +392,10 @@ public function destroytenant(Request $request, $id)
     {
         try {
              $jabatan = JabatanModel::findOrFail($id);
+
+             $jabatanBaru = 0;
+             User::where('jabatan', $id)->update(['jabatan' => $jabatanBaru]);
+
              $jabatan->delete();
 
             return response()->json(['success' => true, 'message' => 'Data berhasil dihapus.'], 200);
@@ -484,6 +511,62 @@ public function destroytenant(Request $request, $id)
         ->with('status', 'berhasil');
     }
 
+public function upuser(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'user_id' => 'required|exists:users,id',
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email,' . $request->user_id,
+        'password' => 'nullable|min:6',
+        'role' => 'required|integer',
+        'company' => 'nullable|integer',
+        'office' => 'nullable|integer',
+        'dept' => 'nullable|integer',
+        'satker' => 'nullable|integer',
+        'position' => 'nullable|integer',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'success' => false,
+            'message' => $validator->errors()->first()
+        ]);
+    }
+
+    $user = User::find($request->user_id);
+    if (!$user) {
+        return response()->json(['success' => false, 'message' => 'User tidak ditemukan'], 404);
+    }
+
+    $user->name = $request->name;
+    $user->email = $request->email;
+    if ($request->password) {
+        $user->password = bcrypt($request->password);
+    }
+    $user->role = $request->role;
+    $user->perusahaan = $request->company;
+    $user->kantor = $request->office;
+    $user->dept = $request->dept;
+    $user->satker = $request->satker;
+    $user->jabatan = $request->position;
+
+    $user->save();
+
+    return response()->json(['success' => true]);
+}
+
+public function deluser($id)
+{
+     $user = User::findOrFail($id);
+        
+        if ($user->delete()) {
+            return response()->json(['success' => true]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Gagal menghapus data.']);
+   
+}
+
     public function getkonten($companyId)
     {
         $offices = KantorModel::where('perusahaan', $companyId)->get();
@@ -500,8 +583,8 @@ public function destroytenant(Request $request, $id)
 
     public function getsat($kantId)
     {
-        $departemen = DeptModel::where('perusahaan', $kantId)->get();
-        $satker = SatkerModel::where('perusahaan', $kantId)->get();
+        $departemen = DeptModel::where('nama_kantor', $kantId)->get();
+        $satker = SatkerModel::where('kantor', $kantId)->get();
 
         return response()->json([
             'departemen' => $departemen,
@@ -616,6 +699,12 @@ public function destroytenant(Request $request, $id)
     public function deptroy($id)
     {
         $departemen = DeptModel::findOrFail($id);
+
+        $deptBaru = 0;
+        User::where('dept', $id)->update(['dept' => $deptBaru]);
+        JabatanModel::where('dept_id', $id)->update(['dept_id' => $deptBaru]);
+        SatkerModel::where('dept_id', $id)->update(['dept_id' => $deptBaru]);
+
         $departemen->delete();
 
         return response()->json(['success' => true]);

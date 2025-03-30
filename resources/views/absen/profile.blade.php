@@ -103,6 +103,15 @@
                     <div class="d-flex align-items-center" style="gap: 1rem;">
                         <ion-icon name="business-outline" class="text-black" style="font-size: 20px;"></ion-icon>
                         <div>
+                            <small>Departemen</small>
+                            <p class="mb-0 fw-bold">{{$profile->deptmn->nama_dept}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="list-group-item border-0 px-0 d-flex align-items-center justify-content-between" style="gap: 1rem;">
+                    <div class="d-flex align-items-center" style="gap: 1rem;">
+                        <ion-icon name="business-outline" class="text-black" style="font-size: 20px;"></ion-icon>
+                        <div>
                             <small>Unit Kerja</small>
                             <p class="mb-0 fw-bold">{{$profile->kantor->nama_kantor}}</p>
                         </div>

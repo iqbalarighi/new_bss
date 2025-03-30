@@ -157,7 +157,7 @@
                                 @if(Auth::user()->role == 0 || Auth::user()->role == 1)
                                     <td class="align-middle text-center">
                                         <button class="btn btn-primary btn-sm" onclick="location.href ='/kantor/edit/'+{{$kan->id}}">Edit</button>
-                                        <button class="btn btn-danger btn-sm">Hapus</button>
+                                        <button class="btn btn-danger btn-sm del-btn" data-id="{{$kan->id}}">Hapus</button>
                                     </td>
                                 @endif
                                 </tr>
@@ -170,3 +170,55 @@
         </div>
     </div>
 @endsection
+@push('script')
+<script type="text/javascript">
+    // Hapus Data
+    $('.del-btn').click(function () {
+        var userId = $(this).data('id'); // Ambil ID user dari atribut data-id
+
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: 'Data yang dihapus tidak dapat dikembalikan!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, Hapus!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '/kantor/hapus/' + userId, // Sesuaikan dengan route di Laravel
+                    type: 'DELETE',
+                    data: { _token: '{{ csrf_token() }}' },
+                    success: function (response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Terhapus!',
+                                text: 'Data user telah dihapus.',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+
+                            location.reload(); // Reload halaman setelah berhasil dihapus
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal!',
+                                text: response.message
+                            });
+                        }
+                    },
+                    error: function () {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Terjadi Kesalahan!',
+                            text: 'Gagal menghapus data.'
+                        });
+                    }
+                });
+            }
+        });
+    });
+</script>
+@endpush

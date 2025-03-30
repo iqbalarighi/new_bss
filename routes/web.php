@@ -46,7 +46,7 @@ Route::middleware(['auth:web'])->group(function () {
         Route::post('/kantor/tambah', [MasterController::class, 'tambahkantor']);
         Route::get('/kantor/edit/{id}', [MasterController::class, 'kantoredit']);
         Route::put('/kantor/edit/{id}', [MasterController::class, 'kantorupdate']);
-        Route::delete('/kantor/hapus/{id}', [MasterController::class, 'kantorhapus']);
+        Route::delete('/kantor/hapus/{id}', [MasterController::class, 'kantroy']);
     });
 
     Route::middleware('role:0|1|3')->group(function () {
@@ -80,6 +80,8 @@ Route::middleware(['auth:web'])->group(function () {
 
         Route::get('/users', [MasterController::class, 'user'])->name('users');
         Route::post('/users/add', [MasterController::class, 'adduser'])->name('adduser');
+        Route::put('/users/update', [MasterController::class, 'upuser']);
+        Route::delete('/users/delete/{id}', [MasterController::class, 'deluser']);
 
     });
 });

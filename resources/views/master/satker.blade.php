@@ -161,8 +161,10 @@
                     <th>No</th>
                 @if(Auth::user()->role == 0)       
                     <th>Perusahaan</th>
-                @endif     
+                @endif
+                @if(Auth::user()->role == 0 || Auth::user()->role == 1)
                     <th>Kantor</th>
+                @endif
                     <th>Departemen</th>
                     <th>Satuan Kerja</th>
                     <th>Aksi</th>
@@ -175,8 +177,10 @@
                  @if(Auth::user()->role == 0)
                     <td>{{$ker->perusa->perusahaan}}</td>
                 @endif 
-                    <td>{{$ker->kant->nama_kantor}}</td>
-                    <td>{{$ker->deptmn->nama_dept}}</td>
+                @if(Auth::user()->role == 0 || Auth::user()->role == 1)
+                    <td>{{$ker->kantor == 0 ? '-' : $ker->kant->nama_kantor}}</td>
+                @endif
+                    <td>{{$ker->dept_id == 0 ? '-' : $ker->deptmn->nama_dept}}</td>
                     <td>{{$ker->satuan_kerja}}</td>
                     <td class="align-middle text-center">
                         <button class="btn btn-primary btn-sm cen edit-btn" 

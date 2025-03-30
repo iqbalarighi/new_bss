@@ -138,7 +138,7 @@
                                 <td>{{ $item->perusa->perusahaan }}</td>
                                 @endif
                                 @if(Auth::user()->role == 0 || Auth::user()->role == 1)
-                                <td>{{ $item->kantor->nama_kantor }}</td>
+                                <td>{{ $item->nama_kantor == 0 ? '-' : $item->kantor->nama_kantor}}</td>
                                 @endif
                                 <td>{{ $item->nama_dept }}</td>
                                 <td class="align-middle text-center">

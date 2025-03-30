@@ -57,7 +57,8 @@
                         </select>
                     </div>
                     @endif
-
+                    
+                    @if(Auth::user()->role == 0 || Auth::user()->role == 1 )
                     <div class="mb-3">
                         <label for="kantor" class="form-label">Kantor</label>
                         <select name="kantor" id="kantor" class="form-select" required>
@@ -67,12 +68,14 @@
                             @endforeach
                         </select>
                     </div>
-
+                    @endif
                     <div class="mb-3">
                         <label for="departemen" class="form-label">Departemen</label>
                         <select name="departemen" id="departemen" class="form-select" required>
                             <option selected disabled value="">Pilih Departemen</option>
-                            
+                            @foreach($departemen as $dept)
+                            <option value="{{$dept->id}}">{{$dept->nama_dept}}</option>
+                            @endforeach
                         </select>
                     </div>
 
@@ -127,8 +130,8 @@
                             </select>
                         </div>
                         @endif
-
-                        <div class="mb-3">
+                        @if(Auth::user()->role == 0 || Auth::user()->role == 1 )
+                    <div class="mb-3">
                         <label for="kantor" class="form-label">Kantor</label>
                         <select name="kantor" id="editKantor" class="form-select" required>
                             <option selected disabled value="">Pilih Kantor</option>
@@ -137,7 +140,7 @@
                             @endforeach
                         </select>
                     </div>
-
+                    @endif
                     <div class="mb-3">
                         <label for="departemen" class="form-label">Departemen</label>
                         <select name="departemen" id="editDepartemen" class="form-select" required>
@@ -175,7 +178,9 @@
             @if(Auth::user()->role == 0)
             <th>Perusahaan</th>
             @endif
+            @if(Auth::user()->role == 0 || Auth::user()->role == 1 )
             <th>Kantor</th>
+            @endif
             <th>Departemen</th>
             <th>Satuan Kerja</th>
             <th>Jabatan</th>
@@ -189,14 +194,19 @@
             @if(Auth::user()->role == 0)
             <td>{{ $item->perusa->perusahaan }}</td>
             @endif
-            <td>{{ $item->kant->nama_kantor }}</td>
-            <td>{{ $item->deptmn->nama_dept }}</td>
-            <td>{{ $item->sat->satuan_kerja }}</td>
+            @if(Auth::user()->role == 0 || Auth::user()->role == 1 )
+            <td>{{ $item->kantor_id == 0 ? '-' : $item->kant->nama_kantor }}</td>
+            @endif
+            <td>{{ $item->dept_id == 0 ? '-' : $item->deptmn->nama_dept }}</td>
+            <td>{{ $item->satker_id == 0 ? '-' : $item->sat->satuan_kerja }}</td>
             <td>{{ $item->jabatan }}</td>
             <td>
                 <button class="btn btn-sm btn-primary btnEdit" 
                 data-id="{{ $item->id }}" 
                 data-jabatan="{{ $item->jabatan }}"
+                data-satker="{{ $item->satker_id }}"
+                data-dept="{{ $item->dept_id }}"
+                data-kantor="{{ $item->kantor_id }}"
                 data-perusahaan="{{ $item->perusahaan }}"
                 >Edit</button>
                 <button class="btn btn-sm btn-danger btnHapus" data-id="{{ $item->id }}">Hapus</button>
@@ -215,9 +225,9 @@ $(document).ready(function() {
         let id = $(this).data('id');
         let jabatan = $(this).data('jabatan');
         let perusahaan = $(this).data('perusahaan');
-        let kantor = $(this).data('perusahaan');
-        let departemen = $(this).data('perusahaan');
-        let satker = $(this).data('perusahaan');
+        let kantor = $(this).data('kantor');
+        let departemen = $(this).data('dept');
+        let satker = $(this).data('satker');
         
         $('#editId').val(id);
         $('#editJabatan').val(jabatan);
@@ -314,7 +324,7 @@ $(document).ready(function() {
                     type: 'GET',
                     success: function(response) {
                         let departemenOptions = '<option value="">Pilih Departemen</option>';
-                        let satkerOptions = '<option value="">Pilih Satker</option>';
+                        let satkerOptions = '<option value="">Pilih Satuan Kerja</option>';
 
                         response.departemen.forEach(function(dept) {
                             departemenOptions += `<option value="${dept.id}">${dept.nama_dept}</option>`;
@@ -340,7 +350,7 @@ $(document).ready(function() {
                     url: '/get-satker-by-departemen/' + departemenId,
                     type: 'GET',
                     success: function(response) {
-                        let satkerOptions = '<option value="">Pilih Satker</option>';
+                        let satkerOptions = '<option value="">Pilih Satuan Kerja</option>';
                         response.satker.forEach(function(satker) {
                             satkerOptions += `<option value="${satker.id}">${satker.satuan_kerja}</option>`;
                         });
