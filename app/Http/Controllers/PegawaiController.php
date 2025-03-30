@@ -125,12 +125,14 @@ if($foto != null){
         $fotoNama = Str::random(20) . '.' . $foto->getClientOriginalExtension();
         $fotoPath = $foto->storeAs('foto_pegawai/'.$request->nip, $fotoNama, 'public');
 } else {
-    $fotoPath = null;
+    $fotoNama = null;
 }
         PegawaiModel::create([
             'perusahaan' => $id,
             'nama_lengkap' => $request->nama,
             'nip' => $request->nip,
+            'dept' => $request->dept,
+	    'shift' => 0,
             'password' => Hash::make($request->password),
             'tgl_lahir' => $request->tgl_lahir,
             'alamat' => $request->alamat,

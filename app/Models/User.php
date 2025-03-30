@@ -72,4 +72,8 @@ public function sat()
     {
         return $this->belongsTo(SatkerModel::class, 'satker');
     }
+
+public function deptmn() {
+	return $this->belongsTo(DeptModel::class, 'dept');
+    }
 }

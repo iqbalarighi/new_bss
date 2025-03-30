@@ -428,7 +428,7 @@ public function destroytenant(Request $request, $id)
                 $add->kantor = $kantor;
                 $add->satker = $satker;
                 $add->jabatan = $jabat;
-                $add->departemen = $dept;
+                $add->dept = $dept;
             } else if ($request->role == 3){ //cabang
                 $perusa = $request->company;
                 $kantor = $request->office;
@@ -451,7 +451,7 @@ public function destroytenant(Request $request, $id)
                 $kantor = $request->office;
                 $dept = $request->dept;
 
-                $add->departemen = $dept;
+                $add->dept = $dept;
                 $add->kantor = $kantor;
                 $add->satker = $satker;
                 $add->jabatan = $jabat;
@@ -466,7 +466,7 @@ public function destroytenant(Request $request, $id)
             $jabat = $request->position;
             $dept = $request->dept;
 
-            $add->departemen = $dept;
+            $add->dept = $dept;
             $add->kantor = $kantor;
             $add->satker = $satker;
             $add->jabatan = $jabat;
