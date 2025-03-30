@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\DeptModel;
+use App\Models\KantorModel;
+use App\Models\PerusahaanModel;
 use Illuminate\Database\Eloquent\Model;
 
 class SatkerModel extends Model
@@ -10,6 +13,8 @@ class SatkerModel extends Model
     
     protected $fillable = [
         'perusahaan',
+        'kantor',
+        'dept_id',
         'satuan_kerja',
     ];
 
@@ -17,4 +22,14 @@ class SatkerModel extends Model
     {
         return $this->belongsTo(PerusahaanModel::class, 'perusahaan');
     }  
+
+    public function kant()
+    {
+        return $this->belongsTo(KantorModel::class, 'kantor');
+    }
+
+    public function deptmn()
+    {
+        return $this->belongsTo(DeptModel::class, 'dept_id');
+    }
 }

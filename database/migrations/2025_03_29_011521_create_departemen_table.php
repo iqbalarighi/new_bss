@@ -11,8 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('karyawan', function (Blueprint $table) {
-            $table->text('foto')->nullable()->after('status');
+        Schema::create('departemen', function (Blueprint $table) {
+            $table->id();
+            $table->Integer('perusahaan')->unsigned();
+            $table->Integer('nama_kantor')->unsigned();
+            $table->string('nama_dept');
+            $table->timestamps();
         });
     }
 
@@ -21,8 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('karyawan', function (Blueprint $table) {
-            $table->dropColumn('foto');
-        });
+        Schema::dropIfExists('departemen');
     }
 };

@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('absensi', function (Blueprint $table) {
             $table->id();
             $table->string('nip');
+            $table->string('shift')->default(0);
             $table->string('tgl_absen');
             $table->string('jam_in');
             $table->string('jam_out')->nullable();

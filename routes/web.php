@@ -51,7 +51,16 @@ Route::middleware(['auth:web'])->group(function () {
 
     Route::middleware('role:0|1|3')->group(function () {
         Route::get('/get-konten/{companyId}', [MasterController::class, 'getkonten']);
+        Route::get('/get-sat/{kantId}', [MasterController::class, 'getsat']);
+        Route::get('/get-satker-by-departemen/{deptId}', [MasterController::class, 'getSatkerByDepartemen']);
+        Route::get('/get-position-by-satker/{satId}', [MasterController::class, 'getPositionBySatker']);
         
+        Route::get('/departemen', [MasterController::class, 'dept'])->name('departemen');
+        Route::post('/departemen/store', [MasterController::class, 'deptstore'])->name('departemen.store');
+        Route::put('/departemen/update/{id}', [MasterController::class, 'deptup']);
+        Route::delete('/departemen/{id}', [MasterController::class, 'deptroy'])->name('dept.destroy');
+
+
         Route::get('/satker', [MasterController::class, 'satker'])->name('satker');
         Route::post('/satker/tambah', [MasterController::class, 'tambahsatker']);
         Route::put('/satker/edit/{id}', [MasterController::class, 'updatesatker']);
