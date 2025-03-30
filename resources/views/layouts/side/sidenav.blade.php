@@ -15,10 +15,10 @@
                     @endif
     @if(Auth::user()->role == 1 || Auth::user()->role == 0)
                     <a href="{{ route('kantor') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('kantor') ? 'active' : '' }}" style="width: 95%;">Kantor</a>
-                    <a href="{{ route('departemen') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('departemen') ? 'active' : '' }}" style="width: 95%;">Departemen</a>
                     @endif
 
     @if(Auth::user()->role == 0 || Auth::user()->role == 1 || Auth::user()->role == 3)
+                    <a href="{{ route('departemen') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('departemen') ? 'active' : '' }}" style="width: 95%;">Departemen</a>
                     <a href="{{ route('satker') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('satker') ? 'active' : '' }}" style="width: 95%;">Satuan Kerja</a>
                     <a href="{{ route('jabatan') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('jabatan') ? 'active' : '' }}" style="width: 95%;">Jabatan</a>
                     <a href="{{ route('users') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('users') ? 'active' : '' }}" style="width: 95%;">Manage User</a>

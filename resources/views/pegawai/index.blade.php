@@ -25,8 +25,9 @@
                         @if(Auth::user()->role == 1 || Auth::user()->role == 0)
                             <th>Kantor</th>
                         @endif
-                        <th>Jabatan</th>
+                        <th>Departemen</th>
                         <th>Satker</th>
+                        <th>Jabatan</th>
                         <th>Status</th>
                         <th>Aksi</th>
                     </tr>
@@ -43,8 +44,9 @@
                         @if(Auth::user()->role == 1 || Auth::user()->role == 0)
                             <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;">{{ $pegawai->kantor->nama_kantor }}</td>
                         @endif
-                            <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;white-space: wrap;">{{ $pegawai->jabat->jabatan }}</td>
                             <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;">{{ $pegawai->sat->satuan_kerja }}</td>
+                            <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;">{{ $pegawai->deptmn->nama_dept }}</td>
+                            <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;white-space: wrap;">{{ $pegawai->jabat->jabatan }}</td>
                             <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;">{{ $pegawai->status}}</td>
                             <td class="align-middle text-center">
                                 <button class="btn btn-primary btn-sm px-1">Edit</button>
@@ -67,3 +69,4 @@
 
 
 @endsection
+

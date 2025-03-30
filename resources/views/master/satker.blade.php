@@ -62,6 +62,7 @@
                         </select>
                     </div>
                     @endif
+                   @if(Auth::user()->role == 0 || Auth::user()->role == 1)
                     <div class="mb-3">
                         <label for="kantor" class="form-label">Kantor</label>
                         <select name="kantor" id="kantor" class="form-select" required>
@@ -71,6 +72,7 @@
                             @endforeach
                         </select>
                     </div>
+                     @endif
                     <div class="mb-3">
                         <label for="departemen" class="form-label">Departemen</label>
                         <select name="departemen" id="departemen" class="form-select" required>
@@ -80,6 +82,7 @@
                             @endforeach
                         </select>
                     </div>
+                   
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
@@ -106,6 +109,7 @@
                             <label for="edit_satker" class="form-label">Satuan Kerja</label>
                             <input type="text" class="form-control" id="edit_satker" name="satker" required>
                         </div>
+
                         @if(Auth::user()->role == 0)
                         <div class="mb-3">
                             <label for="edit_tenantName" class="form-label">Nama Perusahaan</label>
@@ -117,7 +121,7 @@
                             </select>
                         </div>
                         @endif
-
+                       
                         <div class="mb-3">
                         <label for="edit_departemen" class="form-label">Departemen</label>
                         <select name="departemen" id="edit_departemen" class="form-select" required>
@@ -127,7 +131,7 @@
                             @endforeach
                         </select>
                     </div>
-
+                     @if(Auth::user()->role == 0 || Auth::user()->role == 1)
                     <div class="mb-3">
                         <label for="edit_kantor" class="form-label">Kantor</label>
                         <select name="kantor" id="edit_kantor" class="form-select" required>
@@ -137,6 +141,7 @@
                             @endforeach
                         </select>
                     </div>
+                    @endif
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
@@ -177,8 +182,10 @@
                         <button class="btn btn-primary btn-sm cen edit-btn" 
                         data-id="{{$ker->id}}" 
                         data-satker="{{$ker->satuan_kerja}}" 
+                        @if(Auth::user()->role == 0 || Auth::user()->role == 1)
                         data-kantor="{{$ker->kantor}}" 
-                        data-departemen="{{$ker->dept_id}}" 
+                        @endif
+                        data-departemen="{{$ker->dept_id}}"
 @if(Auth::user()->role == 0) data-perusahaan="{{$ker->perusahaan}}" @endif>Edit</button>
                         <button class="btn btn-danger btn-sm cen delete-btn" data-id="{{$ker->id}}">Hapus</button>
                     </td>
@@ -207,8 +214,9 @@
                 
                 document.getElementById("edit_id").value = id;
                 document.getElementById("edit_satker").value = satker;
-                document.getElementById("edit_departemen").value = departemen;
-                document.getElementById("edit_kantor").value = kantor;
+                document.getElementById("edit_departemen").value = departemen; 
+@if(Auth::user()->role == 0 || Auth::user()->role == 1)
+                document.getElementById("edit_kantor").value = kantor;@endif
 @if(Auth::user()->role == 0) document.getElementById("edit_tenantName").value = perusahaan; @endif
                 document.getElementById("editForm").action = "/satker/edit/" + id;
 

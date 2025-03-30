@@ -72,9 +72,7 @@
                         <label for="departemen" class="form-label">Departemen</label>
                         <select name="departemen" id="departemen" class="form-select" required>
                             <option selected disabled value="">Pilih Departemen</option>
-                            @foreach($departemen as $dept)
-                            <option value="{{$dept->id}}">{{$dept->nama_dept}}</option>
-                            @endforeach
+                            
                         </select>
                     </div>
 
@@ -82,9 +80,7 @@
                         <label for="satker" class="form-label">Satuan Kerja</label>
                         <select name="satker" id="satker" class="form-select" required>
                             <option selected disabled value="">Pilih Satuan Kerja</option>
-                            @foreach($satker as $unit)
-                            <option value="{{$unit->id}}">{{$unit->satuan_kerja}}</option>
-                            @endforeach
+                            
                         </select>
                     </div>
 
@@ -209,7 +205,9 @@
         @endforeach
     </tbody>
 </table>
+@endsection
 
+@push('script')
 <script>
 $(document).ready(function() {
     // Edit Data
@@ -306,4 +304,55 @@ $(document).ready(function() {
     });
 });
 </script>
-@endsection
+<script>
+    $(document).ready(function() {
+        $('#kantor').change(function() {
+            let perusahaanId = $(this).val();
+            if (perusahaanId) {
+                $.ajax({
+                    url: '/get-sat/' + perusahaanId,
+                    type: 'GET',
+                    success: function(response) {
+                        let departemenOptions = '<option value="">Pilih Departemen</option>';
+                        let satkerOptions = '<option value="">Pilih Satker</option>';
+
+                        response.departemen.forEach(function(dept) {
+                            departemenOptions += `<option value="${dept.id}">${dept.nama_dept}</option>`;
+                        });
+                        response.satker.forEach(function(satker) {
+                            satkerOptions += `<option value="${satker.id}">${satker.nama_satker}</option>`;
+                        });
+
+                        $('#departemen').html(departemenOptions);
+                        $('#satker').html(satkerOptions);
+                    },
+                    error: function(xhr) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            }
+        });
+
+        $('#departemen').change(function() {
+            let departemenId = $(this).val();
+            if (departemenId) {
+                $.ajax({
+                    url: '/get-satker-by-departemen/' + departemenId,
+                    type: 'GET',
+                    success: function(response) {
+                        let satkerOptions = '<option value="">Pilih Satker</option>';
+                        response.satker.forEach(function(satker) {
+                            satkerOptions += `<option value="${satker.id}">${satker.satuan_kerja}</option>`;
+                        });
+                        $('#satker').html(satkerOptions);
+                    },
+                    error: function(xhr) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+@endpush

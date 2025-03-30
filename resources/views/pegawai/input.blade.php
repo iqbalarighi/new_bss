@@ -88,14 +88,14 @@
                     </select>
                 </div>
                 @endif
-               {{--  <div class="mb-3">
-                    <label class="form-label">Jabatan</label>
-                    <input type="text" class="form-control" name="jabatan" required>
-                </div> --}}
-                {{-- <div class="mb-3">
-                    <label class="form-label">Satker</label>
-                    <input type="text" class="form-control" name="satker" required>
-                </div> --}}
+
+                <div class="mb-3">
+                    <label for="dept" class="form-label">Departemen</label>
+                    {{-- <input type="text" class="form-control"name="usaha" placeholder="Masukkan nama kantor" required> --}}
+                    <select name="dept" id="dept" class="form-select" required>
+
+                    </select>
+                </div>
                 <div class="mb-3">
                     <label for="satker" class="form-label">Satuan Kerja</label>
                     {{-- <input type="text" class="form-control"name="usaha" placeholder="Masukkan nama kantor" required> --}}
@@ -128,6 +128,9 @@
         </div>
     </div>
 </div>
+
+
+@push('script')
 <script>
         function validateInput(event) {
             let input = event.target;
@@ -195,19 +198,26 @@
                 $('#office').append('<option value="' + office.id + '">' + office.nama_kantor + '</option>');
             });
 
-            $('#satker').empty();
-            $('#satker').append('<option value="">Pilih Satuan Kerja</option>');
+            $('#dept').empty();
+            $('#dept').append('<option value="">Pilih Departemen</option>');
             
-            $.each(response.satkers, function(key, satker) {
-                $('#satker').append('<option value="' + satker.id + '">' + satker.satuan_kerja + '</option>');
+            $.each(response.depts, function(key, dept) {
+                $('#dept').append('<option value="' + dept.id + '">' + dept.nama_dept + '</option>');
             });
 
-            $('#position').empty();
-            $('#position').append('<option value="">Pilih Jabatan</option>');
+            // $('#satker').empty();
+            // $('#satker').append('<option value="">Pilih Satuan Kerja</option>');
             
-            $.each(response.positions, function(key, position) {
-                $('#position').append('<option value="' + position.id + '">' + position.jabatan + '</option>');
-            });
+            // $.each(response.satkers, function(key, satker) {
+            //     $('#satker').append('<option value="' + satker.id + '">' + satker.satuan_kerja + '</option>');
+            // });
+
+            // $('#position').empty();
+            // $('#position').append('<option value="">Pilih Jabatan</option>');
+            
+            // $.each(response.positions, function(key, position) {
+            //     $('#position').append('<option value="' + position.id + '">' + position.jabatan + '</option>');
+            // });
 
         },
         error: function(xhr, status, error) {
@@ -256,4 +266,92 @@
         });
     });
 </script>
+<script type="text/javascript">
+    $('#satker').change(function() {
+            let satId = $(this).val();
+            if (satId) {
+                $.ajax({
+                    url: '/get-position-by-satker/' + satId,
+                    type: 'GET',
+                    success: function(response) {
+
+            $('#position').empty();
+            $('#position').append('<option value="">Pilih Jabatan</option>');
+            
+            $.each(response.positions, function(key, position) {
+                $('#position').append('<option value="' + position.id + '">' + position.jabatan + '</option>');
+            });
+                    },
+                    error: function(xhr) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            }
+
+             if (!satID){
+                $('#position').empty().append('<option value="">Pilih Jabatan</option>');
+                $('#satker').empty().append('<option value="">Pilih Satuan Kerja</option>');
+            }
+        });
+</script>
+<script type="text/javascript">
+    $('#dept').change(function() {
+            let departemenId = $(this).val();
+            if (departemenId) {
+                $.ajax({
+                    url: '/get-satker-by-departemen/' + departemenId,
+                    type: 'GET',
+                    success: function(response) {
+                        let satkerOptions = '<option value="">Pilih Satuan Kerja</option>';
+                        response.satker.forEach(function(satker) {
+                            satkerOptions += `<option value="${satker.id}">${satker.satuan_kerja}</option>`;
+                        });
+                        $('#satker').html(satkerOptions);
+
+                    },
+                    error: function(xhr) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            } 
+
+            if (!departemenId){
+                $('#position').empty().append('<option value="">Pilih Jabatan</option>');
+                $('#satker').empty().append('<option value="">Pilih Satuan Kerja</option>');
+            }
+        });
+</script>
+<script>
+    $('#kantor').change(function() {
+            let perusahaanId = $(this).val();
+            if (perusahaanId) {
+                $.ajax({
+                    url: '/get-sat/' + perusahaanId,
+                    type: 'GET',
+                    success: function(response) {
+                        let departemenOptions = '<option value="">Pilih Departemen</option>';
+
+                        response.departemen.forEach(function(dept) {
+                            departemenOptions += `<option value="${dept.id}">${dept.nama_dept}</option>`;
+                        });
+
+                        $('#departemen').html(departemenOptions);
+                    },
+                    error: function(xhr) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            }
+
+            if (!perusahaanId){
+                $('#office').empty().append('<option value="">Pilih Kantor</option>');
+                $('#dept').empty().append('<option value="">Pilih Departemen</option>');
+                $('#satker').empty().append('<option value="">Pilih Satuan Kerja</option>');
+                $('#position').empty().append('<option value="">Pilih Jabatan</option>');
+            }
+        });
+</script>
+@endpush
 @endsection
+
+{{-- Tinggal edit di controllernya tambahi departemen --}}

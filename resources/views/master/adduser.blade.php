@@ -282,7 +282,7 @@
                         });
 
                         $('#dept').empty();
-                        $('#dept').append('<option value="">Pilih Jabatan</option>');
+                        $('#dept').append('<option value="">Pilih Departemen</option>');
                         
                         $.each(response.depts, function(key, dept) {
                             $('#dept').append('<option value="' + dept.id + '">' + dept.nama_dept + '</option>');
@@ -297,7 +297,7 @@
                 $('#office').empty().append('<option value="">Pilih Kantor</option>');
                 $('#satker').empty().append('<option value="">Pilih Satuan Kerja</option>');
                 $('#position').empty().append('<option value="">Pilih Jabatan</option>');
-                $('#dept').empty().append('<option value="">Pilih Jabatan</option>');
+                $('#dept').empty().append('<option value="">Pilih Departemen</option>');
             }
         });
     });
@@ -332,7 +332,7 @@
             });
 
             $('#dept').empty();
-            $('#dept').append('<option value="">Pilih Jabatan</option>');
+            $('#dept').append('<option value="">Pilih Departemen</option>');
             
             $.each(response.depts, function(key, dept) {
                 $('#dept').append('<option value="' + dept.id + '">' + dept.nama_dept + '</option>');
@@ -346,6 +346,85 @@
 });
 
 </script>
-
 @endif
+<script>
+    $(document).ready(function() {
+        $('#office').change(function() {
+            let perusahaanId = $(this).val();
+            if (perusahaanId) {
+                $.ajax({
+                    url: '/get-sat/' + perusahaanId,
+                    type: 'GET',
+                    success: function(response) {
+                        let departemenOptions = '<option value="">Pilih Departemen</option>';
+                        let satkerOptions = '<option value="">Pilih Satuan Kerja</option>';
+
+                        response.departemen.forEach(function(dept) {
+                            departemenOptions += `<option value="${dept.id}">${dept.nama_dept}</option>`;
+                        });
+                        response.satker.forEach(function(satker) {
+                            satkerOptions += `<option value="${satker.id}">${satker.nama_satker}</option>`;
+                        });
+
+                        $('#dept').html(departemenOptions);
+                        $('#satker').html(satkerOptions);
+                    },
+                    error: function(xhr) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            } else {
+                $('#satker').empty().append('<option value="">Pilih Satuan Kerja</option>');
+                $('#position').empty().append('<option value="">Pilih Jabatan</option>');
+            }
+        });
+
+        $('#dept').change(function() {
+            let departemenId = $(this).val();
+            if (departemenId) {
+                $.ajax({
+                    url: '/get-satker-by-departemen/' + departemenId,
+                    type: 'GET',
+                    success: function(response) {
+                        let satkerOptions = '<option value="">Pilih Satuan Kerja</option>';
+                        response.satker.forEach(function(satker) {
+                            satkerOptions += `<option value="${satker.id}">${satker.satuan_kerja}</option>`;
+                        });
+                        $('#satker').html(satkerOptions);
+
+                    },
+                    error: function(xhr) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            } else {
+                $('#satker').empty().append('<option value="">Pilih Satuan Kerja</option>');
+            }
+        });
+
+        $('#satker').change(function() {
+            let satId = $(this).val();
+            if (satId) {
+                $.ajax({
+                    url: '/get-position-by-satker/' + satId,
+                    type: 'GET',
+                    success: function(response) {
+
+            $('#position').empty();
+            $('#position').append('<option value="">Pilih Jabatan</option>');
+            
+            $.each(response.positions, function(key, position) {
+                $('#position').append('<option value="' + position.id + '">' + position.jabatan + '</option>');
+            });
+                    },
+                    error: function(xhr) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            } else {
+                $('#position').empty().append('<option value="">Pilih Jabatan</option>');
+            }
+        });
+    });
+</script>
 @endsection
