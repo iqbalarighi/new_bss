@@ -92,10 +92,10 @@
             	<h6 class="fw-bold mb-2">Penempatan</h6>
                 <div class="list-group-item border-0 px-0 d-flex align-items-center justify-content-between" style="gap: 1rem;">
                     <div class="d-flex align-items-center" style="gap: 1rem;">
-                        <ion-icon name="person" class="text-black" style="font-size: 20px;"></ion-icon>
+                        <ion-icon name="business-outline" class="text-black" style="font-size: 20px;"></ion-icon>
                         <div>
-                            <small>Posisi</small>
-                            <p class="mb-0 fw-bold">{{$profile->jabat->jabatan}}</p>
+                            <small>Unit Kerja</small>
+                            <p class="mb-0 fw-bold">{{$profile->kantor->nama_kantor}}</p>
                         </div>
                     </div>
                 </div>
@@ -112,8 +112,17 @@
                     <div class="d-flex align-items-center" style="gap: 1rem;">
                         <ion-icon name="business-outline" class="text-black" style="font-size: 20px;"></ion-icon>
                         <div>
-                            <small>Unit Kerja</small>
-                            <p class="mb-0 fw-bold">{{$profile->kantor->nama_kantor}}</p>
+                            <small>Satuan Kerja</small>
+                            <p class="mb-0 fw-bold">{{$profile->sat->satuan_kerja}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="list-group-item border-0 px-0 d-flex align-items-center justify-content-between" style="gap: 1rem;">
+                    <div class="d-flex align-items-center" style="gap: 1rem;">
+                        <ion-icon name="person" class="text-black" style="font-size: 20px;"></ion-icon>
+                        <div>
+                            <small>Posisi</small>
+                            <p class="mb-0 fw-bold">{{$profile->jabat->jabatan}}</p>
                         </div>
                     </div>
                 </div>

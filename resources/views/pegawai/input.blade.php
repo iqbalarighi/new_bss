@@ -61,11 +61,15 @@
                     <label class="form-label">Kontak Darurat</label>
                     <input type="tel" class="form-control" oninput="validateInput(event)" maxlength="14" name="kontak_darurat" required>
                 </div>
-{{--                 <div class="mb-3">
-                    <label class="form-label">Penempatan Kerja</label>
-                    <input type="text" class="form-control" name="penempatan_kerja" required>
-                </div> --}}
-                {{-- {{dd(Auth::user()->role === 0,1)}} --}}
+                <div class="mb-3">
+                    <label for="shift" class="form-label">Shift</label>
+                    <select name="shift" id="shift" class="form-select" required>
+                        <option value="" selected>Pilih Shift</option>
+                        <option value="0">Non Shift</option>
+                        <option value="1">Shift Pagi</option>
+                        <option value="2">Shift Siang</option>
+                    </select>
+                </div>
                 @if(Auth::user()->role === 0)
                 <div class="mb-3">
                     <label for="tenant" class="form-label">Perusahaan</label>
