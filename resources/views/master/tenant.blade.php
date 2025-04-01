@@ -9,7 +9,6 @@
                     <button class="btn btn-sm btn-primary float-right" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="bi bi-building-add"></i></button>
                 </div>
 
-                <div class="card-body">
 @if (Session::get('status'))
 <script>
         Swal.fire({
@@ -102,7 +101,7 @@
         </div>
     </div>
     
-    <div style="overflow: auto;"> 
+    <div class="card-body" style="overflow: auto;"> 
         <table class="table table-striped table-bordered table-hover" >
             <thead class="table-dark">
                 <tr>
@@ -137,7 +136,7 @@
         <div class="d-flex justify-content-center">
             {{ $perusahaan->links('pagination::bootstrap-5') }}
         </div>
-    </div>
+
 </div>
 </div>
 </div>

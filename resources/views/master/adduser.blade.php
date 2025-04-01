@@ -121,7 +121,7 @@
                             @elseif($item->role == 1)
                                 Admin Pusat
                             @elseif($item->role == 3)
-                                Admin Kantor
+                                Admin Cabang
                             @else
                                 User
                             @endif
@@ -259,7 +259,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="edit_password" class="form-label">Kata Sandi</label>
-                        <input type="password" id="edit_password" name="password" class="form-control">
+                        <input type="password" id="edit_password" name="password" class="form-control" autocomplete="off">
                         <div id="passwordLengthError" class="text-danger mt-1" style="display: none; font-size: 0.875rem;">
                             ⚠ Kata sandi minimal 6 karakter!
                         </div>
@@ -276,8 +276,10 @@
                         <label for="edit_role" class="form-label">Daftar sebagai</label>
                         <select id="edit_role" name="role" class="form-select" required>
                             <option value="2">User</option>
-                            @if(Auth::user()->role == 0)<option value="1">Admin Pusat</option>@endif
-                            @if(Auth::user()->role == 0 || Auth::user()->role == 1)<option value="3">Admin Cabang</option>@endif
+                            @if(Auth::user()->role == 0 || Auth::user()->role == 1)<option value="1">Admin Pusat</option>@endif
+                            @if(Auth::user()->role == 0 || Auth::user()->role == 1 || Auth::user()->role == 3)
+                                <option value="3">Admin Cabang</option>
+                                @endif
                         </select>
                     </div>
                     @if(Auth::user()->role == 0)

@@ -9,7 +9,6 @@
                     <button class="btn btn-sm btn-primary float-right" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="bi bi-building-add"></i></button>
                 </div>
 
-                <div class="card-body">
 @if (Session::get('status'))
 <script>
         Swal.fire({
@@ -154,11 +153,12 @@
     <!-- Modal Edit Bootstrap -->
 
     
-    <div>
+        <div class="card-body" style="overflow: auto;"> 
             <table class="table table-striped table-bordered table-hover">
             <thead class="table-dark">
                 <tr>
                     <th>No</th>
+                    <th>Satuan Kerja</th>
                 @if(Auth::user()->role == 0)       
                     <th>Perusahaan</th>
                 @endif
@@ -166,7 +166,6 @@
                     <th>Kantor</th>
                 @endif
                     <th>Departemen</th>
-                    <th>Satuan Kerja</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -174,6 +173,7 @@
                 @foreach($satker as $key => $ker)
                 <tr id="row-{{$ker->id}}">
                     <td class="align-middle text-center">{{$satker->firstitem()+$key}}</td>
+                    <td>{{$ker->satuan_kerja}}</td>
                  @if(Auth::user()->role == 0)
                     <td>{{$ker->perusa->perusahaan}}</td>
                 @endif 
@@ -181,7 +181,6 @@
                     <td>{{$ker->kantor == 0 ? '-' : $ker->kant->nama_kantor}}</td>
                 @endif
                     <td>{{$ker->dept_id == 0 ? '-' : $ker->deptmn->nama_dept}}</td>
-                    <td>{{$ker->satuan_kerja}}</td>
                     <td class="align-middle text-center">
                         <button class="btn btn-primary btn-sm cen edit-btn" 
                         data-id="{{$ker->id}}" 
@@ -205,7 +204,7 @@
             </div>
         </div>
     </div>
-</div>
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll(".edit-btn").forEach(button => {

@@ -20,11 +20,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'jabatan',
-        'kantor',
-        'satker',
         'perusahaan',
+        'kantor',
         'dept',
+        'satker',
+        'jabatan',
         'role',
 
     ];

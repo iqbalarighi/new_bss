@@ -115,18 +115,18 @@
         </div>
     </div>
 </div>
-                <div class="card-body">
+                <div class="card-body" style="overflow-x: auto;">
                     <table class="table table-striped table-bordered table-hover">
                         <thead class="text-center table-dark">
                             <tr>
                                 <th>No</th>
+                                <th>Departemen</th>
                                 @if(Auth::user()->role == 0)
                                 <th>Perusahaan</th>
                                 @endif
                                 @if(Auth::user()->role == 0 || Auth::user()->role == 1)
                                 <th>Kantor</th>
                                 @endif
-                                <th>Departemen</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -134,13 +134,13 @@
                             @foreach($dept as $key => $item)
                             <tr id="row-{{$item->id}}">
                                 <td>{{ $dept->firstItem() + $key }}</td>
+                                <td>{{ $item->nama_dept }}</td>
                                 @if(Auth::user()->role == 0)
                                 <td>{{ $item->perusa->perusahaan }}</td>
                                 @endif
                                 @if(Auth::user()->role == 0 || Auth::user()->role == 1)
                                 <td>{{ $item->nama_kantor == 0 ? '-' : $item->kantor->nama_kantor}}</td>
                                 @endif
-                                <td>{{ $item->nama_dept }}</td>
                                 <td class="align-middle text-center">
                     <button class="btn btn-sm btn-primary btnEdit" 
                     data-id="{{ $item->id }}" 

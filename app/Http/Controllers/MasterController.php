@@ -93,7 +93,7 @@ public function destroytenant(Request $request, $id)
 
     public function kantor()
     {
-        if(Auth::user()->role === 0){
+        if(Auth::user()->role == 0){
             $perusahaan = PerusahaanModel::get();
             $kantor = KantorModel::with('perusa')->paginate(15);
 
@@ -109,7 +109,7 @@ public function destroytenant(Request $request, $id)
 
         public function tambahkantor(Request $request)
     {
-        if(Auth::user()->role === 0){
+        if(Auth::user()->role == 0){
             $perusa = $request->usaha;
         } else {
             $perusa = Auth::user()->perusahaan;
@@ -180,7 +180,7 @@ public function destroytenant(Request $request, $id)
     
     public function satker()
     {
-        if(Auth::user()->role === 0){
+        if(Auth::user()->role == 0){
             $perusahaan = PerusahaanModel::get();
             $satker = SatkerModel::paginate(15);
             $kantor = KantorModel::paginate(15);
@@ -189,7 +189,7 @@ public function destroytenant(Request $request, $id)
         return view('master.satker', compact('satker', 'perusahaan', 'departemen', 'kantor'));
         }
 
-        if(Auth::user()->role === 3){
+        if(Auth::user()->role == 3){
             $perusahaan = PerusahaanModel::get();
             $departemen = DeptModel::get();
             $satker = SatkerModel::where('perusahaan', Auth::user()->perusahaan)
@@ -198,7 +198,7 @@ public function destroytenant(Request $request, $id)
         return view('master.satker', compact('satker', 'perusahaan', 'departemen'));
         }
 
-        if(Auth::user()->role === 1){
+        if(Auth::user()->role == 1){
            $satker = SatkerModel::where('perusahaan', Auth::user()->perusahaan)
            ->paginate(15);
            $departemen = DeptModel::get();
@@ -290,7 +290,7 @@ public function destroytenant(Request $request, $id)
 
     public function jabatan()
     {
-        if(Auth::user()->role === 0){
+        if(Auth::user()->role == 0){
             $perusahaan = PerusahaanModel::get();
             $kantor = KantorModel::get();
             $departemen = DeptModel::get();
@@ -300,7 +300,7 @@ public function destroytenant(Request $request, $id)
         return view('master.jabatan', compact('jabatan', 'perusahaan', 'kantor', 'departemen', 'satker'));
         } 
 
-        if(Auth::user()->role === 3){
+        if(Auth::user()->role == 3){
            $jabatan = JabatanModel::where('perusahaan', Auth::user()->perusahaan)
            ->paginate(15);
            $departemen = DeptModel::get();
@@ -309,7 +309,7 @@ public function destroytenant(Request $request, $id)
         return view('master.jabatan', compact('jabatan', 'departemen', 'satker'));
         } 
         
-        if(Auth::user()->role === 1){
+        if(Auth::user()->role == 1){
            $jabatan = JabatanModel::where('perusahaan', Auth::user()->perusahaan)
            ->paginate(15);
            $kantor = KantorModel::get();
@@ -322,17 +322,17 @@ public function destroytenant(Request $request, $id)
 
     public function tambahjabatan(Request $request)
     {
-        if(Auth::user()->role === 0){
+        if(Auth::user()->role == 0){
             $perusa = $request->usaha;
             $dept = $request->departemen;
             $kantor = $request->kantor;
             $satker = $request->satker;
-        } else if(Auth::user()->role === 1){
+        } else if(Auth::user()->role == 1){
             $perusa = Auth::user()->perusahaan;
             $dept = $request->departemen;
             $kantor = $request->kantor;
             $satker = $request->satker;
-        } else if(Auth::user()->role === 3){
+        } else if(Auth::user()->role == 3){
             $perusa = Auth::user()->perusahaan;
             $kantor = Auth::user()->kantor;
             $dept = $request->departemen;
@@ -355,17 +355,17 @@ public function destroytenant(Request $request, $id)
 
     public function updatejabatan(Request $request, $id)
     {
-        if(Auth::user()->role === 0){
+        if(Auth::user()->role == 0){
             $perusa = $request->perusahaan;
             $dept = $request->departemen;
             $kantor = $request->kantor;
             $satker = $request->satker;
-        } else if(Auth::user()->role === 1){
+        } else if(Auth::user()->role == 1){
             $perusa = Auth::user()->perusahaan;
             $dept = $request->departemen;
             $kantor = $request->kantor;
             $satker = $request->satker;
-        } else if(Auth::user()->role === 3){
+        } else if(Auth::user()->role == 3){
             $perusa = Auth::user()->perusahaan;
             $kantor = Auth::user()->kantor;
             $dept = $request->departemen;
@@ -408,12 +408,12 @@ public function destroytenant(Request $request, $id)
     public function user()
     {
         //Superadmin
-        if(Auth::user()->role === 0){
+        if(Auth::user()->role == 0){
             $users = User::with('perusa', 'kant', 'jabat', 'sat')
         ->paginate(15);
         } 
         //Admin kantor
-        if(Auth::user()->role === 3){
+        if(Auth::user()->role == 3){
             $comId = Auth::user()->perusahaan;
             $kanId = Auth::user()->kantor;
             
@@ -424,7 +424,7 @@ public function destroytenant(Request $request, $id)
         }
 
         // Admin pusat
-        if(Auth::user()->role === 1){
+        if(Auth::user()->role == 1){
             $comId = Auth::user()->perusahaan;
 
             $users = User::with('perusa', 'kant', 'jabat', 'sat')
@@ -442,7 +442,7 @@ public function destroytenant(Request $request, $id)
 
       $add =  new User;
         // Superadmin
-        if(Auth::user()->role === 0){
+        if(Auth::user()->role == 0){
             if ($request->role == 1) { //pusat
                 $perusa = $request->company;
             } else if ($request->role == 2){ //user
@@ -465,7 +465,7 @@ public function destroytenant(Request $request, $id)
         }
 
         //Admin Pusat
-        if(Auth::user()->role === 1){
+        if(Auth::user()->role == 1){
             if ($request->role == 3) {//admin cabang
                 $perusa = Auth::user()->perusahaan;
                 $kantor = $request->office;
@@ -486,7 +486,7 @@ public function destroytenant(Request $request, $id)
         }
 
         //Admin Cabang
-        if(Auth::user()->role === 3){ //user
+        if(Auth::user()->role == 3){ //user
             $kantor = Auth::user()->kantor;
             $perusa = Auth::user()->perusahaan;
             $satker = $request->satker;
@@ -538,17 +538,122 @@ public function upuser(Request $request)
         return response()->json(['success' => false, 'message' => 'User tidak ditemukan'], 404);
     }
 
+if(Auth::user()->role == 0){
+            if ($request->role == 1) { //pusat
+                $perusa = $request->company;
+
+                $kantor = $request->office ?? 0;
+                $dept = $request->dept ?? 0;
+                $satker = $request->satker ?? 0;
+                $jabatan = $request->position ?? 0;
+            } else if ($request->role == 2){ //user
+                $perusa = $request->company;
+                $kantor = $request->office;
+                $satker = $request->satker;
+                $jabat = $request->position;
+                $dept = $request->dept;
+            } else if ($request->role == 3){ //cabang
+                $perusa = $request->company;
+                $kantor = $request->office ?? 0;
+                $dept = $request->dept ?? 0;
+                $satker = $request->satker ?? 0;
+                $jabat = $request->position ?? 0;
+
+            } 
+
+            $role = $request->role;
+
+            $user->kantor = $kantor;
+            $user->dept = $dept;
+            $user->satker = $satker;
+            $user->jabatan = $jabat;
+            $user->role = $role;
+        }
+
+        //Admin Pusat
+        if(Auth::user()->role == 1){
+            if ($request->role == 3) {//admin cabang
+                $perusa = Auth::user()->perusahaan;
+                $kantor = $request->office;
+                $dept = $request->dept ?? 0;
+                $satker = $request->satker ?? 0;
+                $jabat = $request->position ?? 0;
+
+if ($request->role == 1 && $user->role == 1) {
+    $role = $request->role;
+} else if ($request->role == 3 && $user->role == 1) {
+    return response()->json(['success' => false, 'message' => 'Tidak dapat merubah akun Admin Pusat menjadi Admin Cabang, hubungi Web Administrator untuk merubah data!']);
+} else if ($request->role == 3 && $user->role == 2) {
+    $role = $request->role;
+} else {
+    $role = $request->role;
+}
+
+                $user->kantor = $kantor;
+                $user->dept = $dept;
+                $user->satker = $satker;
+                $user->jabatan = $jabat;
+                $user->role = $role;
+            } else { //user
+                $perusa = Auth::user()->perusahaan;
+                $satker = $request->satker ?? 0;
+                $jabat = $request->position ?? 0;
+                $kantor = $request->office ?? 0;
+                $dept = $request->dept ?? 0;
+
+if ($request->role == 2 && $user->role == 1) {
+    return response()->json(['success' => false, 'message' => 'Tidak dapat merubah akun Admin Pusat menjadi User, hubungi Web Administrator untuk merubah data!']);
+} else if ($request->role == 2 && $user->role == 3) {
+    $role = $request->role;
+} else if ($request->role == 3 && $user->role == 1) {
+    return response()->json(['success' => false, 'message' => 'Tidak dapat merubah akun Admin Pusat menjadi Admin Cabang, hubungi Web Administrator untuk merubah data!']);
+} else if ($request->role == 1 && $user->role == 2) {
+    return response()->json(['success' => false, 'message' => 'Tidak dapat merubah akun User menjadi Admin Pusat, hubungi Web Administrator untuk merubah data!']);
+} else if ($request->role == 1 && $user->role == 3) {
+    return response()->json(['success' => false, 'message' => 'Tidak dapat merubah akun Admin Cabang menjadi Admin Pusat, hubungi Web Administrator untuk merubah data!']);
+} else {
+    $role = $request->role;
+}
+                $user->dept = $dept;
+                $user->kantor = $kantor;
+                $user->satker = $satker;
+                $user->jabatan = $jabat;
+                $user->role = $role;
+            }
+        }
+
+        //Admin Cabang
+        if(Auth::user()->role == 3){ //user
+            $perusa = Auth::user()->perusahaan;
+            $kantor = Auth::user()->kantor;
+            $dept = $request->dept ?? 0;
+            $satker = $request->satker ?? 0;
+            $jabat = $request->position ?? 0;
+
+if ($request->role == 3 && $user->role == 3) {
+    $role = $request->role;
+} else if ($request->role == 2 && $user->role == 3) {
+    return response()->json(['success' => false, 'message' => 'Tidak dapat merubah akun Admin menjadi User, hubungi admin pusat untuk merubah data!']);
+} else if ($request->role == 3) {
+    return response()->json(['success' => false, 'message' => 'Tidak dapat merubah akun user menjadi admin, hubungi admin pusat untuk merubah data!']);
+} else {
+    $role = $request->role;
+}
+            $user->kantor = $kantor;
+            $user->dept = $dept;
+            $user->satker = $satker;
+            $user->jabatan = $jabat;
+            $user->role = $role;
+        } 
+
     $user->name = $request->name;
     $user->email = $request->email;
     if ($request->password) {
         $user->password = bcrypt($request->password);
     }
-    $user->role = $request->role;
-    $user->perusahaan = $request->company;
-    $user->kantor = $request->office;
-    $user->dept = $request->dept;
-    $user->satker = $request->satker;
-    $user->jabatan = $request->position;
+
+    $user->perusahaan = $perusa;
+
 
     $user->save();
 

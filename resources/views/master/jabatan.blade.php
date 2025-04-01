@@ -9,7 +9,7 @@
                     <button class="btn btn-sm btn-primary float-right" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="bi bi-building-add"></i></button>
                 </div>
 
-                <div class="card-body">
+                
 @if (Session::get('status'))
 <script>
     Swal.fire({
@@ -169,12 +169,13 @@
         </div>
     </div>
 </div>
-
+<div class="card-body" style="overflow-x: auto;">
 <!-- Tabel Data -->
 <table class="table table-striped table-bordered table-hover">
     <thead class="text-center table-dark">
         <tr>
             <th>No</th>
+            <th>Jabatan</th>
             @if(Auth::user()->role == 0)
             <th>Perusahaan</th>
             @endif
@@ -183,7 +184,6 @@
             @endif
             <th>Departemen</th>
             <th>Satuan Kerja</th>
-            <th>Jabatan</th>
             <th>Aksi</th>
         </tr>
     </thead>
@@ -191,6 +191,7 @@
         @foreach($jabatan as $key => $item)
         <tr id="row-{{$item->id}}">
             <td>{{ $jabatan->firstItem() + $key }}</td>
+            <td>{{ $item->jabatan }}</td>
             @if(Auth::user()->role == 0)
             <td>{{ $item->perusa->perusahaan }}</td>
             @endif
@@ -199,7 +200,6 @@
             @endif
             <td>{{ $item->dept_id == 0 ? '-' : $item->deptmn->nama_dept }}</td>
             <td>{{ $item->satker_id == 0 ? '-' : $item->sat->satuan_kerja }}</td>
-            <td>{{ $item->jabatan }}</td>
             <td>
                 <button class="btn btn-sm btn-primary btnEdit" 
                 data-id="{{ $item->id }}" 

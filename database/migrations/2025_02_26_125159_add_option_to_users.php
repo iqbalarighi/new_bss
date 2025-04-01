@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->integer('role')->default(2)->after('remember_token');
-            $table->integer('perusahaan')->default(0)->after('remember_token');
-            $table->integer('kantor')->default(0)->after('remember_token');
-            $table->integer('dept')->default(0)->after('remember_token');
-            $table->integer('satker')->default(0)->after('remember_token');
-            $table->integer('jabatan')->default(0)->after('remember_token');
+            $table->integer('perusahaan')->default(0)->nullable()->after('remember_token');
+            $table->integer('kantor')->default(0)->nullable()->after('remember_token');
+            $table->integer('dept')->default(0)->nullable()->after('remember_token');
+            $table->integer('satker')->default(0)->nullable()->after('remember_token');
+            $table->integer('jabatan')->default(0)->nullable()->after('remember_token');
         });
     }
 
@@ -31,8 +31,8 @@ return new class extends Migration
             $table->dropColumn('perusahaan');
             $table->dropColumn('kantor');
             $table->dropColumn('dept');
-            $table->dropColumn('jabatan');
             $table->dropColumn('satker');
+            $table->dropColumn('jabatan');
         });
     }
 };
