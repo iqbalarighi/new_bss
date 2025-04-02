@@ -433,8 +433,12 @@ public function destroytenant(Request $request, $id)
         }
 
         $perusa = PerusahaanModel::get();
+        $kantor = KantorModel::get();
+        $satker = SatkerModel::get();
+        $jabat = JabatanModel::get();
+        $dept = DeptModel::get();
 
-        return view('master.adduser', compact('users', 'perusa'));
+        return view('master.adduser', compact('users', 'perusa', 'kantor', 'satker', 'jabat', 'dept'));
     }
 
     public function adduser(Request $request)
@@ -768,7 +772,7 @@ public function deluser($id)
 
     public function deptup(Request $request, $id)
     {
-        if (Auth::user()->role == 0) {
+    if (Auth::user()->role == 0) {
         $request->validate([
             'perusahaan' => 'required',
             'kantor' => 'required',
@@ -778,7 +782,7 @@ public function deluser($id)
             $perusahaan = $request->perusahaan;
             $dept = $request->nama_dept;
             $kantor = $request->kantor;
-        } elseif (Auth::user()->role == 1) {
+    } elseif (Auth::user()->role == 1) {
         $request->validate([
             'kantor' => 'required',
             'nama_dept' => 'required|string|max:255',
@@ -787,16 +791,23 @@ public function deluser($id)
             $perusahaan = Auth::user()->perusahaan;
             $kantor = $request->kantor;
             $dept = $request->nama_dept;
-        } elseif (Auth::user()->role == 3) {
-        $request->validate([
+    } elseif (Auth::user()->role == 3) {
+    $request->validate([
             'nama_dept' => 'required|string|max:255',
         ]);
             $perusahaan = Auth::user()->perusahaan;
             $kantor = Auth::user()->kantor;
             $dept = $request->nama_dept;
-        }
+    }
 
-    DeptModel::where('id', $id)->update($request->only(['perusahaan', 'nama_kantor', 'nama_dept']));
+    // DeptModel::where('id', $id)->update($request->only(['perusahaan', 'nama_kantor', 'nama_dept']));
+    $dep = DeptModel::findOrFail($id);
+
+    $dep->perusahaan = $perusahaan;
+    $dep->nama_kantor = $kantor;
+    $dep->nama_dept = $dept;
+    $dep->save();
+
 
     return response()->json(['success' => true]);
     }

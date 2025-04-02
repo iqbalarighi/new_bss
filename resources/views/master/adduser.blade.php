@@ -297,22 +297,34 @@
                         <div class="mb-3" id="edit_office-container">
                             <label for="edit_office" class="form-label">Kantor</label>
                             <select id="edit_office" name="office" class="form-select">
+                                @foreach($kantor as $kan)
+                                    <option value="{{$kan->id}}">{{$kan->nama_kantor}}</option>
+                                @endforeach
                             </select>
                         </div>
                     @endif
                     <div class="mb-3" id="edit_dept-container">
                         <label for="edit_dept" class="form-label">Departemen</label>
                         <select id="edit_dept" name="dept" class="form-select">
+                            @foreach($dept as $dep)
+                                    <option value="{{$dep->id}}">{{$dep->nama_dept}}</option>
+                                @endforeach
                         </select>
                     </div>
                     <div class="mb-3" id="edit_satker-container">
                         <label for="edit_satker" class="form-label">Satuan Kerja</label>
                         <select id="edit_satker" name="satker" class="form-select">
+                            @foreach($satker as $sat)
+                                    <option value="{{$sat->id}}">{{$sat->satuan_kerja}}</option>
+                                @endforeach
                         </select>
                     </div>
                     <div class="mb-3" id="edit_position-container">
                         <label for="edit_position" class="form-label">Jabatan</label>
                         <select id="edit_position" name="position" class="form-select">
+                            @foreach($jabat as $jab)
+                                    <option value="{{$jab->id}}">{{$jab->jabatan}}</option>
+                                @endforeach
                         </select>
                     </div>
                     <button type="submit" class="btn btn-custom w-100">Simpan Perubahan</button>
@@ -651,14 +663,14 @@
     }
 
     // Panggil saat perusahaan berubah
-    $('#edit_company').change(function() {
-        loadCompanyData();
-    });
+    // $('#edit_company').change(function() {
+    //     loadCompanyData();
+    // });
 
     // Panggil saat modal edit dibuka
-    $('#editUserModal').on('shown.bs.modal', function () {
-        loadCompanyData();
-    });
+    // $('#editUserModal').on('shown.bs.modal', function () {
+    //     loadCompanyData();
+    // });
 </script>
 @else
 <script type="text/javascript">
