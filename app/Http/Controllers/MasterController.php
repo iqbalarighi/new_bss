@@ -262,6 +262,25 @@ public function destroytenant(Request $request, $id)
 
         $satker = SatkerModel::findOrFail($id);
 
+    // Update JabatanModel
+    JabatanModel::where('satker_id', $satker->id)
+        ->where('dept_id', $satker->dept_id)
+        ->where('kantor_id', $satker->kantor)
+        ->update([
+            'dept_id' => $dept,
+            'kantor_id' => $kantor
+        ]);
+
+    // Update User Model
+    User::where('satker', $satker->id) // Perbaikan dari 'dept' menjadi 'dept_id'
+        ->where('dept', $satker->dept_id)
+        ->where('kantor', $satker->kantor)
+        ->update([
+            'dept' => $dept,
+            'kantor' => $kantor
+        ]);
+
+
         $satker->satuan_kerja = $request->satker;
         $satker->dept_id = $dept;
         $satker->kantor = $kantor;
@@ -377,6 +396,17 @@ public function destroytenant(Request $request, $id)
         ]);
 
         $jabatan = JabatanModel::findOrFail($id);
+
+         $cek = User::where('jabatan', $jabatan->id) 
+        ->where('satker', $jabatan->satker_id)
+        ->where('dept', $jabatan->dept_id)
+        ->where('kantor', $jabatan->kantor_id)
+        ->update([
+            'kantor' => $kantor,
+            'dept' => $dept,
+            'satker' => $satker
+        ]); 
+        
         $jabatan->update([
             'perusahaan' => $perusa,
             'kantor_id' => $kantor,
@@ -772,6 +802,8 @@ public function deluser($id)
 
     public function deptup(Request $request, $id)
     {
+
+
     if (Auth::user()->role == 0) {
         $request->validate([
             'perusahaan' => 'required',
@@ -803,11 +835,26 @@ public function deluser($id)
     // DeptModel::where('id', $id)->update($request->only(['perusahaan', 'nama_kantor', 'nama_dept']));
     $dep = DeptModel::findOrFail($id);
 
+    // Update SatkerModel
+    SatkerModel::where('dept_id', $dep->id)
+        ->where('kantor', $dep->nama_kantor)
+        ->update(['kantor' => $kantor]);
+
+    // Update JabatanModel
+    JabatanModel::where('dept_id', $dep->id)
+        ->where('kantor_id', $dep->nama_kantor)
+        ->update(['kantor_id' => $kantor]);
+
+    // Update User Model
+    User::where('dept', $dep->id) // Perbaikan dari 'dept' menjadi 'dept_id'
+        ->where('kantor', $dep->nama_kantor)
+        ->update(['kantor' => $kantor]);
+
+    // Update DeptModel
     $dep->perusahaan = $perusahaan;
     $dep->nama_kantor = $kantor;
     $dep->nama_dept = $dept;
-    $dep->save();
-
+    $dep->save(); // Simpan perubahan
 
     return response()->json(['success' => true]);
     }

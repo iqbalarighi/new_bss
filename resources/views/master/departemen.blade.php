@@ -229,46 +229,61 @@
 
 
         $('#editForm').submit(function(e) {
-            e.preventDefault();
-            let id = $('#edit_id').val();
-            let data = {
-                _token: '{{ csrf_token() }}',
-                _method: 'PUT',
-                perusahaan: $('#edit_perusahaan').val(),
-                kantor: $('#edit_kantor').val(),
-                nama_dept: $('#edit_nama_dept').val()
-            };
-            
-            $.ajax({
-                url: '/departemen/update/' + id,
-                type: 'POST',
-                data: data,
-                success: function(response) {
-                    if (response.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Berhasil',
-                            text: 'Departemen berhasil diperbarui',
-                            timer: 2000,
-                            showConfirmButton: false
-                        }).then(() => location.reload());
-                    } else {
+        e.preventDefault();
+        
+        Swal.fire({
+            title: "Konfirmasi Perubahan",
+            text: "Perubahan ini akan mempengaruhi beberapa data terkait di database. Apakah Anda yakin ingin melanjutkan?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Ya, Update!",
+            cancelButtonText: "Batal",
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Jika user menekan "Ya, Update!"
+                let id = $('#edit_id').val();
+                let data = {
+                    _token: '{{ csrf_token() }}',
+                    _method: 'PUT',
+                    perusahaan: $('#edit_perusahaan').val(),
+                    kantor: $('#edit_kantor').val(),
+                    nama_dept: $('#edit_nama_dept').val()
+                };
+
+                $.ajax({
+                    url: '/departemen/update/' + id,
+                    type: 'POST',
+                    data: data,
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil',
+                                text: 'Departemen berhasil diperbarui',
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => location.reload());
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal',
+                                text: 'Gagal memperbarui departemen'
+                            });
+                        }
+                    },
+                    error: function(xhr) {
                         Swal.fire({
                             icon: 'error',
-                            title: 'Gagal',
-                            text: 'Gagal memperbarui departemen'
+                            title: 'Error',
+                            text: 'Terjadi kesalahan, coba lagi nanti.'
                         });
                     }
-                },
-                error: function(xhr) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Terjadi kesalahan, coba lagi nanti.'
-                    });
-                }
-            });
+                });
+            } 
         });
+    });
+
 
 
 $('.btnHapus').click(function() {

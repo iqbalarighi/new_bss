@@ -121,15 +121,6 @@
                         </div>
                         @endif
                        
-                        <div class="mb-3">
-                        <label for="edit_departemen" class="form-label">Departemen</label>
-                        <select name="departemen" id="edit_departemen" class="form-select" required>
-                            <option selected disabled value="">Pilih Departemen</option>
-                            @foreach($departemen as $dept)
-                            <option value="{{$dept->id}}">{{$dept->nama_dept}}</option>
-                            @endforeach
-                        </select>
-                    </div>
                      @if(Auth::user()->role == 0 || Auth::user()->role == 1)
                     <div class="mb-3">
                         <label for="edit_kantor" class="form-label">Kantor</label>
@@ -141,6 +132,21 @@
                         </select>
                     </div>
                     @endif
+                        <div class="mb-3">
+                        <label for="edit_departemen" class="form-label">Departemen</label>
+                        <select name="" id="edit_departemen" class="form-select" disabled>
+                            <option selected disabled value="">Pilih Departemen</option>
+                            @foreach($departemen as $dept)
+                            <option value="{{$dept->id}}">{{$dept->nama_dept}}</option>
+                            @endforeach
+                        </select>
+                        <select name="departemen" id="edit_departemen_h" class="form-select" required hidden>
+                            <option selected disabled value="">Pilih Departemen</option>
+                            @foreach($departemen as $dept)
+                            <option value="{{$dept->id}}">{{$dept->nama_dept}}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
@@ -204,30 +210,58 @@
             </div>
         </div>
     </div>
+@endsection
 
+@push('script')
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        document.querySelectorAll(".edit-btn").forEach(button => {
-            button.addEventListener("click", function () {
-                let id = this.getAttribute("data-id");
-                let satker = this.getAttribute("data-satker");
-                let departemen = this.getAttribute("data-departemen");
-                let perusahaan = this.getAttribute("data-perusahaan");
-                let kantor = this.getAttribute("data-kantor");
-                
-                document.getElementById("edit_id").value = id;
-                document.getElementById("edit_satker").value = satker;
-                document.getElementById("edit_departemen").value = departemen; 
-@if(Auth::user()->role == 0 || Auth::user()->role == 1)
-                document.getElementById("edit_kantor").value = kantor;@endif
-@if(Auth::user()->role == 0) document.getElementById("edit_tenantName").value = perusahaan; @endif
-                document.getElementById("editForm").action = "/satker/edit/" + id;
+    document.body.addEventListener("click", function (event) {
+        if (event.target.classList.contains("edit-btn")) {
+            let button = event.target;
+            let id = button.getAttribute("data-id");
+            let satker = button.getAttribute("data-satker");
+            let departemen = button.getAttribute("data-departemen");
+            let perusahaan = button.getAttribute("data-perusahaan");
+            let kantor = button.getAttribute("data-kantor");
 
-                let editModal = new bootstrap.Modal(document.getElementById("editModal"));
-                editModal.show();
-            });
+            document.getElementById("edit_id").value = id;
+            document.getElementById("edit_satker").value = satker;
+            document.getElementById("edit_departemen").value = departemen;
+            document.getElementById("edit_departemen_h").value = departemen;
+
+            @if(Auth::user()->role == 0 || Auth::user()->role == 1)
+                document.getElementById("edit_kantor").value = kantor;
+            @endif
+            @if(Auth::user()->role == 0) 
+                document.getElementById("edit_tenantName").value = perusahaan;
+            @endif
+
+            document.getElementById("editForm").action = "/satker/edit/" + id;
+
+            let editModal = new bootstrap.Modal(document.getElementById("editModal"));
+            editModal.show();
+        }
+    });
+
+    document.getElementById("editForm").addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        Swal.fire({
+            title: "Konfirmasi Perubahan",
+            text: "Perubahan ini akan mempengaruhi beberapa data terkait di database. Apakah Anda yakin ingin melanjutkan?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Ya, Update!",
+            cancelButtonText: "Batal",
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById("editForm").submit();
+            }
         });
     });
+});
+
 </script>
 <script>
 document.querySelectorAll(".delete-btn").forEach(button => {
@@ -275,4 +309,36 @@ document.querySelectorAll(".delete-btn").forEach(button => {
             });
         });
 </script>
-@endsection
+<script type="text/javascript">
+    $('#edit_kantor').change(function() {
+            let kantorId = $(this).val();
+
+            if (kantorId) {
+                $.ajax({
+                    url: '/get-sat/' + kantorId,
+                    type: 'GET',
+                    success: function(response) {
+                        let departemenOptions = '<option value="">Pilih Departemen</option>';
+
+                        response.departemen.forEach(function(dept) {
+                            departemenOptions += `<option value="${dept.id}">${dept.nama_dept}</option>`;
+                        });
+
+                        $('#edit_departemen').prop('disabled', false);
+                        $('#edit_departemen').prop('name', 'departemen');
+                        $('#edit_departemen_h').prop('disabled', true);
+                        $('#edit_departemen_h').prop('name', '');
+                        $('#edit_departemen').html(departemenOptions);
+                    },
+                    error: function(xhr) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            }
+            //  else {
+            //     $('#edit_satker').empty().append('<option value="">Pilih Satuan Kerja</option>');
+            //     $('#edit_position').empty().append('<option value="">Pilih Jabatan</option>');
+            // }
+        });
+</script>
+@endpush

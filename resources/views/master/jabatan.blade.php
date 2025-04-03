@@ -364,5 +364,57 @@ $(document).ready(function() {
         });
     });
 </script>
+<script>
+    $(document).ready(function() {
+        $('#editKantor').change(function() {
+            let perusahaanId = $(this).val();
+            if (perusahaanId) {
+                $.ajax({
+                    url: '/get-sat/' + perusahaanId,
+                    type: 'GET',
+                    success: function(response) {
+                        let departemenOptions = '<option value="">Pilih Departemen</option>';
+                        let satkerOptions = '<option value="">Pilih Satuan Kerja</option>';
+
+                        response.departemen.forEach(function(dept) {
+                            departemenOptions += `<option value="${dept.id}">${dept.nama_dept}</option>`;
+                        });
+                        response.satker.forEach(function(satker) {
+                            satkerOptions += `<option value="${satker.id}">${satker.nama_satker}</option>`;
+                        });
+
+                        $('#editDepartemen').html(departemenOptions);
+                        $('#editSatker').html(satkerOptions);
+                    },
+                    error: function(xhr) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            }
+        });
+
+        $('#editDepartemen').change(function() {
+            let departemenId = $(this).val();
+            if (departemenId) {
+                $.ajax({
+                    url: '/get-satker-by-departemen/' + departemenId,
+                    type: 'GET',
+                    success: function(response) {
+                        let satkerOptions = '<option value="">Pilih Satuan Kerja</option>';
+                        response.satker.forEach(function(satker) {
+                            satkerOptions += `<option value="${satker.id}">${satker.satuan_kerja}</option>`;
+                        });
+                        $('#editSatker').html(satkerOptions);
+                    },
+                    error: function(xhr) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            }
+        });
+    });
+</script>
 
 @endpush
+
+{{-- buat edit jabatan sama kaya satuan kerja, gabisa pilih dept dan satker kalo kantor ga di pilih --}}
