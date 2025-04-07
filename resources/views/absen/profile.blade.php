@@ -151,7 +151,7 @@
                 <div class="list-group">
                     <div id="logoutBtn" class="list-group-item border-0 px-0 d-flex align-items-center justify-content-between" style="gap: 1rem; cursor: pointer;">
                         <div class="d-flex align-items-center" style="gap: 1rem;">
-                            <ion-icon name="exit-outline" class="text-danger fw-bold"  style="font-size: 20px;"></ion-icon>
+                            <ion-icon name="exit-outline" class="text-danger fw-bold" style="font-size: 20px;"></ion-icon>
                             <div>
                                 <p class="mb-0 fw-bold text-danger">Logout</p>
                             </div>
