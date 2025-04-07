@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AbsenModel;
 use App\Models\DeptModel;
 use App\Models\JabatanModel;
 use App\Models\KantorModel;
@@ -282,5 +283,31 @@ public function update(Request $request, $id)
         } catch (\Exception $e) {
             return response()->json(['message' => 'Terjadi kesalahan saat memperbarui password'], 500);
         }
+    }
+
+
+    public function absensi(Request $request)
+    {
+        
+        $absen = AbsenModel::latest()->paginate(10);
+
+        return view('pegawai.absensi', compact('absen'));
+    }
+
+    public function getAbs(Request $request)
+    {
+        $bultah = $request->bultah; // Format: YYYY-MM
+
+        if($bultah == ""){
+            $absen = AbsenModel::latest()->paginate(10);
+        } else {
+        $absen = AbsenModel::where('tgl_absen', 'LIKE', '%'.$bultah.'%')
+            ->latest()
+            ->paginate(10); // Sesuaikan kolomnya
+
+            $absen->appends(['bultah' => $bultah]);
+        }
+
+        return view('pegawai.getabsensi', compact('absen'));
     }
 }

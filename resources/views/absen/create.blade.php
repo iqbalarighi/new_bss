@@ -159,6 +159,7 @@
             let canvas = document.createElement("canvas");
             let ctx = canvas.getContext("2d");
             let img = new Image();
+            let lokasi = document.getElementById('lokasi');
 
             img.onload = function() {
                 canvas.width = img.width;
@@ -170,7 +171,7 @@
                 let mirroredImage = canvas.toDataURL('image/png');
 
                 Swal.fire({
-                    title: 'Preview Foto',
+                    text: lokasi,
                     imageUrl: mirroredImage,
                     imageWidth: 300,
                     imageAlt: 'Preview Foto',

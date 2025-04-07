@@ -36,8 +36,8 @@
         <div class="collapse {{ $pegawaiActive ? 'show' : '' }}" id="pegawai">
             <div class="card card-body p-1">
                 <div class="list-group list-group-flush">
-                    <a href="{{ route('pegawai.index') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('pegawai*') ? 'active' : '' }}" style="width: 95%;">Daftar Pegawai</a>
-                    <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Absensi</a>
+                    <a href="{{ route('pegawai.index') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('pegawai') ? 'active' : '' }}" style="width: 95%;">Daftar Pegawai</a>
+                    <a href="{{ route('pegawai.absensi') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('pegawai/absensi') ? 'active' : '' }}" style="width: 95%;">Absensi</a>
                     {{-- <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Insiden/Kejadian</a> --}}
                 </div>
             </div>
