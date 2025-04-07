@@ -17,7 +17,7 @@
             <button class="float-right btn btn-sm btn-secondary" onclick="history.back()">Kembali</button>
         </div>
         <div class="card-body">
-            <form method="POST" action="{{ route('pegawai.store') }}" enctype="multipart/form-data">
+            <form method="POST" action="{{ route('pegawai.store') }}" enctype="multipart/form-data" id="cekin">
                 @csrf
                 <div class="mb-3">
                     <label class="form-label">Nama Pegawai</label>
@@ -28,11 +28,23 @@
                     <input type="tel" class="form-control" name="nip" id="nip" oninput="validateInput(event)" required>
                     <div id="notif-nip" class="form-text text-danger d-none">NIP sudah terdaftar!</div>
                 </div>
-    
+
                 <div class="mb-3">
-                    <label class="form-label">Password</label>
-                    <input type="password" class="form-control" name="password" required>
+                    <label for="password" class="form-label">Kata Sandi</label>
+                    <input type="password" id="password" name="password" class="form-control" required>
+                <div id="passLengthError" class="text-danger mt-1" style="display: none; font-size: 0.875rem;">
+                    ⚠ Kata sandi minimal 6 karakter!
                 </div>
+
+                </div>
+                <div class="mb-3">
+                    <label for="confirm_password" class="form-label">Konfirmasi Kata Sandi</label>
+                    <input type="password" id="confirm_password" name="confirm_password" class="form-control" required>
+                    <div id="passError" class="text-danger mt-1" style="display: none; font-size: 0.875rem;">
+                        ⚠ Kata sandi tidak cocok!
+                    </div>
+                </div>
+
                 <div class="mb-3">
                     <label class="form-label">Tanggal Lahir</label>
                     <input type="date" class="form-control" name="tgl_lahir" required>
@@ -132,7 +144,7 @@
         </div>
     </div>
 </div>
-
+@endsection
 
 @push('script')
 <script>
@@ -141,6 +153,26 @@
             input.value = input.value.replace(/\D/g, ''); // Hanya izinkan angka
         }
     </script>
+<script>
+    $(document).ready(function () {
+        $('#cekin').on('submit', function (e) {
+            e.preventDefault(); // Mencegah form submit langsung
+
+            Swal.fire({
+                title: 'Konfirmasi Data',
+                text: 'Apakah Anda yakin data yang diisi sudah benar?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, simpan',
+                cancelButtonText: 'Cek lagi'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    this.submit(); // Submit form jika disetujui
+                }
+            });
+        });
+    });
+</script>
 @if(Auth::user()->role == 0)
 <script type="text/javascript">
     $(document).ready(function() {
@@ -209,15 +241,15 @@
                 $('#dept').append('<option value="' + dept.id + '">' + dept.nama_dept + '</option>');
             });
 
-            // $('#satker').empty();
-            // $('#satker').append('<option value="">Pilih Satuan Kerja</option>');
+            $('#satker').empty();
+            $('#satker').append('<option value="">Pilih Satuan Kerja</option>');
             
             // $.each(response.satkers, function(key, satker) {
             //     $('#satker').append('<option value="' + satker.id + '">' + satker.satuan_kerja + '</option>');
             // });
 
-            // $('#position').empty();
-            // $('#position').append('<option value="">Pilih Jabatan</option>');
+            $('#position').empty();
+            $('#position').append('<option value="">Pilih Jabatan</option>');
             
             // $.each(response.positions, function(key, position) {
             //     $('#position').append('<option value="' + position.id + '">' + position.jabatan + '</option>');
@@ -292,7 +324,7 @@
                 });
             }
 
-             if (!satID){
+             if (!satId){
                 $('#position').empty().append('<option value="">Pilih Jabatan</option>');
                 $('#satker').empty().append('<option value="">Pilih Satuan Kerja</option>');
             }
@@ -355,7 +387,49 @@
             }
         });
 </script>
-@endpush
-@endsection
+<script type="text/javascript">
+    $(document).ready(function () {
+    function validPassword() {
+        var pass = $('#password').val();
+        var confirmPass = $('#confirm_password').val();
 
-{{-- Tinggal edit di controllernya tambahi departemen --}}
+        var isValid = true;
+
+        // Cek panjang password minimal 6 karakter
+        if (pass.length < 6) {
+            $('#passLengthError').show();
+            $('#edit_password').addClass('is-invalid');
+            isValid = false;
+        } else {
+            $('#passLengthError').hide();
+            $('#password').removeClass('is-invalid');
+        }
+
+        // Cek apakah password dan konfirmasi password cocok
+        if (pass !== confirmPass) {
+            $('#passError').show();
+            $('#confirm_password').addClass('is-invalid');
+            isValid = false;
+        } else {
+            $('#passError').hide();
+            $('#confirm_password').removeClass('is-invalid');
+        }
+
+        return isValid;
+    }
+
+    // Cek saat user mengetik di input password atau confirm password
+    $('#password, #confirm_password').keyup(function () {
+        validPassword();
+    });
+
+    // Cek sebelum submit form
+    $('#cekin').submit(function (e) {
+        if (!validPassword()) {
+            e.preventDefault(); // Hentikan submit jika password tidak cocok
+        }
+    });
+});
+
+</script>
+@endpush

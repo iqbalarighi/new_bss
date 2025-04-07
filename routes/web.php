@@ -75,6 +75,8 @@ Route::middleware(['auth:web'])->group(function () {
         Route::get('/pegawai/detail/{id}', [PegawaiController::class, 'detail'])->name('pegawai.detail');
         Route::get('/pegawai/input', [PegawaiController::class, 'input'])->name('pegawai.input');
         Route::post('/pegawai/store', [PegawaiController::class, 'store'])->name('pegawai.store');
+        Route::get('/pegawai/edit/{id}', [PegawaiController::class, 'edit'])->name('pegawai.edit');
+        Route::put('/pegawai/update/{id}', [PegawaiController::class, 'update'])->name('pegawai.update');
         Route::post('/pegawai/ubah-password/', [PegawaiController::class, 'ubahpass'])->name('pegawai.upass');
         Route::post('/cek-nip', [PegawaiController::class, 'cekNIP'])->name('cek.nip');
 

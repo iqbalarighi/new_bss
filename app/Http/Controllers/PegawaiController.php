@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DeptModel;
 use App\Models\JabatanModel;
 use App\Models\KantorModel;
 use App\Models\PegawaiModel;
@@ -66,6 +67,28 @@ class PegawaiController extends Controller
         return view('pegawai.input', compact('tenant', 'kantor', 'jabatan', 'satker'));
     }
 
+    public function edit($id)
+    {
+        if(Auth::user()->role === 0){
+        $pegawai = PegawaiModel::findOrFail($id);
+        $tenant = PerusahaanModel::get();
+        $kantorList = KantorModel::get();
+        $jabatanList = JabatanModel::get();
+        $satkerList = SatkerModel::get();
+        $departemenList = DeptModel::get();
+        } else {
+        $pegawai = PegawaiModel::findOrFail($id);
+        $tenant = PerusahaanModel::get();
+        $kantorList = KantorModel::where('perusahaan', $pegawai->perusahaan)->where('id', $pegawai->nama_kantor)->get();
+        $departemenList = DeptModel::where('perusahaan', $pegawai->perusahaan)->where('nama_kantor', $pegawai->nama_kantor)->get();
+        $satkerList = SatkerModel::where('perusahaan', $pegawai->perusahaan)->where('kantor', $pegawai->nama_kantor)->get();
+        $jabatanList = JabatanModel::where('perusahaan', $pegawai->perusahaan)->where('kantor_id', $pegawai->nama_kantor)->get();
+        }
+
+
+        return view('pegawai.edit', compact('pegawai', 'tenant', 'kantorList', 'jabatanList', 'satkerList', 'departemenList'));
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -77,6 +100,8 @@ class PegawaiController extends Controller
             'alamat_domisili' => 'required|string',
             'no_telepon' => 'required|string|max:15',
             'jabatan' => 'required|string',
+            'dept' => 'required|string',
+            'shift' => 'required|string',
             'bpjs_tk' => 'required|string',
             'bpjs_kesehatan' => 'required|string',
             'kontak_darurat' => 'required|string|max:15',
@@ -94,6 +119,8 @@ class PegawaiController extends Controller
             'alamat_domisili.required' => 'Alamat domisili wajib diisi.',
             'no_telepon.required' => 'Nomor telepon wajib diisi.',
             'jabatan.required' => 'Jabatan wajib diisi.',
+            'dept.required' => 'Departemen wajib diisi.',
+            'shift.required' => 'Shift wajib diisi.',
             'bpjs_tk.required' => 'BPJS TK wajib diisi.',
             'bpjs_kesehatan.required' => 'BPJS Kesehatan wajib diisi.',
             'kontak_darurat.required' => 'Kontak darurat wajib diisi.',
@@ -132,7 +159,7 @@ if($foto != null){
             'nama_lengkap' => $request->nama,
             'nip' => $request->nip,
             'dept' => $request->dept,
-	    'shift' => 0,
+	        'shift' => $request->shift,
             'password' => Hash::make($request->password),
             'tgl_lahir' => $request->tgl_lahir,
             'alamat' => $request->alamat,
@@ -151,6 +178,74 @@ if($foto != null){
 
         return redirect()->route('pegawai.index')->with('success', 'Pegawai berhasil ditambahkan.');
     }
+
+public function update(Request $request, $id)
+{
+    $request->validate([
+        'nama' => 'required|string|max:255',
+        'nip' => 'required|string|max:50|unique:karyawan,nip,' . $id,
+        'password' => 'nullable|string|min:6',
+        'tgl_lahir' => 'required|date',
+        'alamat' => 'required|string',
+        'alamat_domisili' => 'required|string',
+        'no_telepon' => 'required|string|max:15',
+        'jabatan' => 'required|string',
+        'dept' => 'required|string',
+        'shift' => 'required|string',
+        'bpjs_tk' => 'required|string',
+        'bpjs_kesehatan' => 'required|string',
+        'kontak_darurat' => 'required|string|max:15',
+        'satker' => 'required|string',
+        'status' => 'required|string|in:Aktif,Tidak Aktif',
+        'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+    ]);
+
+    $pegawai = PegawaiModel::findOrFail($id);
+
+    // Dapatkan nilai perusahaan & kantor berdasarkan role
+    if (Auth::user()->role === 1) {
+        $perusahaan = Auth::user()->perusahaan;
+        $kantor = $request->kantor;
+    } elseif (Auth::user()->role === 3) {
+        $perusahaan = Auth::user()->perusahaan;
+        $kantor = Auth::user()->kantor;
+    } else {
+        $perusahaan = $request->perusahaan;
+        $kantor = $request->kantor;
+    }
+
+    // Upload foto jika ada
+    if ($request->hasFile('foto')) {
+        $foto = $request->file('foto');
+        $fotoNama = Str::random(20) . '.' . $foto->getClientOriginalExtension();
+        $fotoPath = $foto->storeAs('foto_pegawai/' . $request->nip, $fotoNama, 'public');
+    } else {
+        $fotoNama = $pegawai->foto; // Pakai yang lama
+    }
+
+    $pegawai->update([
+        'perusahaan' => $perusahaan,
+        'nama_lengkap' => $request->nama,
+        'nip' => $request->nip,
+        'dept' => $request->dept,
+        'shift' => $request->shift,
+        'password' => $request->password ? Hash::make($request->password) : $pegawai->password,
+        'tgl_lahir' => $request->tgl_lahir,
+        'alamat' => $request->alamat,
+        'domisili' => $request->alamat_domisili,
+        'no_hp' => $request->no_telepon,
+        'jabatan' => $request->jabatan,
+        'bpjs_tk' => $request->bpjs_tk,
+        'bpjs_sehat' => $request->bpjs_kesehatan,
+        'ko_drat' => $request->kontak_darurat,
+        'nama_kantor' => $kantor,
+        'satker' => $request->satker,
+        'status' => $request->status,
+        'foto' => $fotoNama,
+    ]);
+
+    return redirect()->route('pegawai.index')->with('success', 'Data pegawai berhasil diperbarui.');
+}
 
     public function detail($id)
     {
