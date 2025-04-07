@@ -159,7 +159,7 @@
             let canvas = document.createElement("canvas");
             let ctx = canvas.getContext("2d");
             let img = new Image();
-            let lokasi = document.getElementById('lokasi');
+            let lokasi = $('#lokasi').val();
 
             img.onload = function() {
                 canvas.width = img.width;
@@ -171,7 +171,9 @@
                 let mirroredImage = canvas.toDataURL('image/png');
 
                 Swal.fire({
-                    text: lokasi,
+                    html: `
+                        Lokasi Absen </br> <ion-icon name="location" class="text-danger" style="font-size: 20px;"></ion-icon>&nbsp;
+                      ` + lokasi,
                     imageUrl: mirroredImage,
                     imageWidth: 300,
                     imageAlt: 'Preview Foto',
