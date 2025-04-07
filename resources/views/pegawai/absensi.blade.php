@@ -38,11 +38,9 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between fw-bold">{{ __('Monitoring Absensi Pegawai') }}
                 </div>
-                <div class="card-body" style="overflow: auto;">
+                <div class="card-body">
                 <!-- Bootstrap form-group dengan label -->
                     <div class="form-group position-relative">
-                        {{-- <label for="bultah" class="form-label">Bulan & Tahun</label> --}}
-
                         <input type="" 
                                onfocus="(this.type='date')"
                                id="bultah" 
@@ -53,8 +51,8 @@
                                placeholder=" ">
 
                         <span class="fake-placeholder">Pilih Tanggal</span>
-                        {{-- <input type="text" name="tanggal" placeholder="Tanggal & Waktu" class="form-control m-0" onfocus="(this.type='datetime-local')" onblur="(this.type='datetime-local')" required/> --}}
                     </div>
+                    <div style="overflow: auto;">
                     <table class="table table-striped table-bordered table-hover" id="dataTable">
                         <thead class="text-center table-dark px-1">
                             <tr>
@@ -134,6 +132,7 @@
                             @endforeach
                         </tbody>
                     </table>
+                    </div>
                     <div>
                         {{$absen->links('pagination::bootstrap-5')}}
                     </div>
