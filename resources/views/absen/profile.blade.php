@@ -101,7 +101,7 @@
                 </div>
                 <div class="list-group-item border-0 px-0 d-flex align-items-center justify-content-between" style="gap: 1rem;">
                     <div class="d-flex align-items-center" style="gap: 1rem;">
-                        <ion-icon name="business-outline" class="text-black" style="font-size: 20px;"></ion-icon>
+                        <ion-icon name="people-outline" class="text-black" style="font-size: 20px;"></ion-icon>
                         <div>
                             <small>Departemen</small>
                             <p class="mb-0 fw-bold">{{$profile->deptmn->nama_dept}}</p>
@@ -110,7 +110,7 @@
                 </div>
                 <div class="list-group-item border-0 px-0 d-flex align-items-center justify-content-between" style="gap: 1rem;">
                     <div class="d-flex align-items-center" style="gap: 1rem;">
-                        <ion-icon name="business-outline" class="text-black" style="font-size: 20px;"></ion-icon>
+                        <ion-icon name="star-outline" class="text-black" style="font-size: 20px;"></ion-icon>
                         <div>
                             <small>Satuan Kerja</small>
                             <p class="mb-0 fw-bold">{{$profile->sat->satuan_kerja}}</p>
@@ -119,7 +119,7 @@
                 </div>
                 <div class="list-group-item border-0 px-0 d-flex align-items-center justify-content-between" style="gap: 1rem;">
                     <div class="d-flex align-items-center" style="gap: 1rem;">
-                        <ion-icon name="person" class="text-black" style="font-size: 20px;"></ion-icon>
+                        <ion-icon name="person-outline" class="text-black" style="font-size: 20px;"></ion-icon>
                         <div>
                             <small>Posisi</small>
                             <p class="mb-0 fw-bold">{{$profile->jabat->jabatan}}</p>
@@ -145,6 +145,25 @@
                 </div>
             </div>
         </div>
+
+        <div class="card shadow-sm rounded-4 mb-2 border-0">
+            <div class="card-body p-3">
+                <div class="list-group">
+                    <div id="logoutBtn" class="list-group-item border-0 px-0 d-flex align-items-center justify-content-between" style="gap: 1rem; cursor: pointer;">
+                        <div class="d-flex align-items-center" style="gap: 1rem;">
+                            <ion-icon name="exit-outline" class="text-danger fw-bold"  style="font-size: 20px;"></ion-icon>
+                            <div>
+                                <p class="mb-0 fw-bold text-danger">Logout</p>
+                            </div>
+                            <form id="logoutForm" action="{{ route('absen.logout') }}" method="POST" style="display: none;">
+                                @csrf
+                            </form>
+                        </div>
+                        <ion-icon name="chevron-forward-outline" class="text-muted" style="font-size: 20px;"></ion-icon>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
 </div>
@@ -152,6 +171,28 @@
 @endsection
 
 @push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        logoutBtn.addEventListener('click', function () {
+            Swal.fire({
+                title: 'Yakin ingin logout?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, logout',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('logoutForm').submit();
+                }
+            });
+        });
+    });
+</script>
+
 <script>
     function showUploadOptions() {
         $('#fileInput').click(); // Trigger klik input file

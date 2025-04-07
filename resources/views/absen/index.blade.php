@@ -1,10 +1,6 @@
 @extends('layouts.absen.absen')
 @section('content')
     <div class="section p-2" id="user-section">
-            
-            <form id="logout-form" action="{{ route('absen.logout') }}" method="POST" style="display: none;">
-                @csrf
-            </form>
             <div id="user-detail">
                 <div class="avatar">
                     <div class="rounded-circle overflow-hidden shadow-sm bg-secondary text-white d-inline-flex justify-content-center align-items-center" style="width: 60px; height: 60px;">
@@ -18,10 +14,6 @@
                 <div id="user-info" class="col mw-100 px-0">
                     <h2 id="user-name" style="width: 80%;">{{Auth::guard('pegawai')->user()->nama_lengkap}}</h2>
                     <span id="user-role">{{$pegawai->jabat->jabatan}}</span> <br>
-
-                    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                <button class="btn btn-secondary btn-sm float-right px-1" style="margin-top: -45px;">logout</button>
-            </a>
                 </div>
             </div>
         </div>
