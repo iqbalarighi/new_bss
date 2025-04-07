@@ -191,8 +191,11 @@ public function destroytenant(Request $request, $id)
 
         if(Auth::user()->role == 3){
             $perusahaan = PerusahaanModel::get();
-            $departemen = DeptModel::get();
+            $departemen = DeptModel::where('perusahaan', Auth::user()->perusahaan)
+                ->where('nama_kantor', Auth::user()->kantor)
+                ->get();
             $satker = SatkerModel::where('perusahaan', Auth::user()->perusahaan)
+                ->where('kantor', Auth::user()->kantor)
             ->paginate(15);
 
         return view('master.satker', compact('satker', 'perusahaan', 'departemen'));
@@ -201,8 +204,8 @@ public function destroytenant(Request $request, $id)
         if(Auth::user()->role == 1){
            $satker = SatkerModel::where('perusahaan', Auth::user()->perusahaan)
            ->paginate(15);
-           $departemen = DeptModel::get();
-           $kantor = KantorModel::get();
+           $departemen = DeptModel::where('perusahaan', Auth::user()->perusahaan)->get();
+           $kantor = KantorModel::where('perusahaan', Auth::user()->perusahaan)->get();
 
         return view('master.satker', compact('satker', 'departemen', 'kantor'));
         }
@@ -321,8 +324,11 @@ public function destroytenant(Request $request, $id)
 
         if(Auth::user()->role == 3){
            $jabatan = JabatanModel::where('perusahaan', Auth::user()->perusahaan)
+           ->where('kantor_id', Auth::user()->kantor)
            ->paginate(15);
-           $departemen = DeptModel::get();
+           $departemen = DeptModel::where('perusahaan', Auth::user()->perusahaan)
+           ->where('nama_kantor', Auth::user()->kantor)
+           ->get();
             $satker = SatkerModel::get();
 
         return view('master.jabatan', compact('jabatan', 'departemen', 'satker'));
@@ -331,9 +337,12 @@ public function destroytenant(Request $request, $id)
         if(Auth::user()->role == 1){
            $jabatan = JabatanModel::where('perusahaan', Auth::user()->perusahaan)
            ->paginate(15);
-           $kantor = KantorModel::get();
-           $departemen = DeptModel::get();
-           $satker = SatkerModel::get();
+           $kantor = KantorModel::where('perusahaan', Auth::user()->perusahaan)
+           ->get();
+           $departemen = DeptModel::where('perusahaan', Auth::user()->perusahaan)
+           ->get();
+           $satker = SatkerModel::where('perusahaan', Auth::user()->perusahaan)
+           ->get();
 
         return view('master.jabatan', compact('jabatan', 'kantor', 'departemen', 'satker'));
         }
@@ -441,17 +450,12 @@ public function destroytenant(Request $request, $id)
         if(Auth::user()->role == 0){
             $users = User::with('perusa', 'kant', 'jabat', 'sat')
         ->paginate(15);
+        $perusa = PerusahaanModel::get();
+        $kantor = KantorModel::get();
+        $satker = SatkerModel::get();
+        $jabat = JabatanModel::get();
+        $dept = DeptModel::get();
         } 
-        //Admin kantor
-        if(Auth::user()->role == 3){
-            $comId = Auth::user()->perusahaan;
-            $kanId = Auth::user()->kantor;
-            
-            $users = User::with('perusa', 'kant', 'jabat', 'sat')
-            ->where('perusahaan', $comId)
-            ->where('kantor', $kanId)
-        ->paginate(15);
-        }
 
         // Admin pusat
         if(Auth::user()->role == 1){
@@ -460,13 +464,42 @@ public function destroytenant(Request $request, $id)
             $users = User::with('perusa', 'kant', 'jabat', 'sat')
             ->where('perusahaan', $comId)
             ->whereNot('role', 0)->paginate(15);
+        $perusa = PerusahaanModel::where('perusahaan', $comId)
+            ->get();
+        $kantor = KantorModel::where('perusahaan', $comId)
+            ->get();
+
+        $dept = DeptModel::where('perusahaan', $comId)
+            ->get();
+        $satker = SatkerModel::where('perusahaan', $comId)
+            ->get();
+        $jabat = JabatanModel::where('perusahaan', $comId)
+            ->get();
         }
 
-        $perusa = PerusahaanModel::get();
-        $kantor = KantorModel::get();
-        $satker = SatkerModel::get();
-        $jabat = JabatanModel::get();
-        $dept = DeptModel::get();
+        //Admin kantor
+        if(Auth::user()->role == 3){
+            $comId = Auth::user()->perusahaan;
+            $kanId = Auth::user()->kantor;
+            
+            $users = User::with('perusa', 'kant', 'jabat', 'sat')
+            ->where('perusahaan', $comId)
+            ->where('kantor', $kanId)
+            ->paginate(15);
+        $perusa = PerusahaanModel::where('perusahaan', $comId)
+            ->get();
+        $kantor = KantorModel::where('perusahaan', $comId)
+            ->get();
+        $dept = DeptModel::where('perusahaan', $comId)
+            ->where('nama_kantor', $kanId)
+            ->get();
+        $satker = SatkerModel::where('perusahaan', $comId)
+            ->where('kantor', $kanId)
+            ->get();
+        $jabat = JabatanModel::where('perusahaan', $comId)
+            ->where('kantor_id', $kanId)
+            ->get();
+        }
 
         return view('master.adduser', compact('users', 'perusa', 'kantor', 'satker', 'jabat', 'dept'));
     }
@@ -708,10 +741,37 @@ public function deluser($id)
 
     public function getkonten($companyId)
     {
-        $offices = KantorModel::where('perusahaan', $companyId)->get();
-        $satkers = SatkerModel::where('perusahaan', $companyId)->get();
-        $positions = JabatanModel::where('perusahaan', $companyId)->get();
-        $depts = DeptModel::where('perusahaan', $companyId)->get();
+        if(Auth::user()->role == 0) {
+            $offices = KantorModel::where('perusahaan', $companyId)->get();
+            $satkers = SatkerModel::where('perusahaan', $companyId)->get();
+            $positions = JabatanModel::where('perusahaan', $companyId)->get();
+            $depts = DeptModel::where('perusahaan', $companyId)->get();
+        }
+
+        if(Auth::user()->role == 1) {
+            $offices = KantorModel::where('perusahaan', $companyId)
+                ->get();
+            $satkers = SatkerModel::where('perusahaan', $companyId)
+                ->get();
+            $positions = JabatanModel::where('perusahaan', $companyId)
+                ->get();
+            $depts = DeptModel::where('perusahaan', $companyId)
+                ->get();
+        }
+
+        if(Auth::user()->role == 3) {
+            $offices = KantorModel::where('perusahaan', $companyId)->get();
+            $satkers = SatkerModel::where('perusahaan', $companyId)
+                ->where('kantor', Auth::user()->kantor)
+                ->get();
+            $positions = JabatanModel::where('perusahaan', $companyId)
+                ->where('kantor_id', Auth::user()->kantor)
+                ->get();
+            $depts = DeptModel::where('perusahaan', $companyId)
+                ->where('nama_kantor', Auth::user()->kantor)
+                ->get();
+        }
+
         return response()->json([
             'offices' => $offices,
             'satkers' => $satkers,
@@ -749,8 +809,22 @@ public function deluser($id)
 }
 
     public function dept()
-    {
-        $dept = DeptModel::paginate(10);
+    {   
+        if (Auth::user()->role == 0) {
+            $dept = DeptModel::paginate(10);
+        }
+
+        if (Auth::user()->role == 1) {
+            $dept = DeptModel::where('perusahaan', Auth::user()->perusahaan)
+            ->paginate(10);
+        }
+
+        if (Auth::user()->role == 3) {
+            $dept = DeptModel::where('perusahaan', Auth::user()->perusahaan)
+            ->where('nama_kantor', Auth::user()->kantor)
+            ->paginate(10);
+        }
+
         $perusahaan = PerusahaanModel::get();
         $kantor = KantorModel::get();
 

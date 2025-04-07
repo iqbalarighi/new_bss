@@ -132,7 +132,7 @@
                             data-name="{{$item->name}}"
                             data-email="{{$item->email}}"
                             data-role="{{$item->role}}"
-                            data-company="{{$item->perusahaan}}"
+                            data-company="{{Auth::user()->role != 0 ? Auth::user()->perusahaan : $item->perusahaan}}"
                             data-office="{{$item->kantor}}"
                             data-dept="{{$item->dept}}"
                             data-satker="{{$item->satker}}"
@@ -372,64 +372,175 @@
     </script>
 
 <script>
-    $(document).ready(function() {
-        function edittoggleFields() {
-            var selectedRole = $('#edit_role').val();
-            
-            if (selectedRole == "3") { // Admin Cabang
-                $('#edit_satker-container, #edit_position-container, #edit_dept-container').hide();
-                $('#edit_satker, #edit_position, #edit_dept').prop("disabled", true);
-                $('#edit_office-container').show();
-                $('#edit_office').prop("disabled", false).prop("required", true);
-            } 
-            else if (selectedRole == "1") { // Admin Pusat
-                $('#edit_satker-container, #edit_position-container, #edit_office-container, #edit_dept-container').hide();
-                $('#edit_satker, #edit_position, #edit_office, #edit_dept').prop("disabled", true);
-                $('#edit_office, #edit_satker, #edit_dept, #edit_position').prop("required", false);
-            } 
-            else { // User
-                $('#edit_satker-container, #edit_position-container, #edit_office-container, #edit_dept-container').show();
-                $('#edit_satker, #edit_position, #edit_office, #edit_dept').prop("disabled", false);
-                $('#edit_office, #edit_satker, #edit_dept, #edit_position').prop("required", true);
-            }
+$(document).ready(function () {
+    function edittoggleFields() {
+        var selectedRole = $('#edit_role').val();
+
+        if (selectedRole == "3") {
+            $('#edit_satker-container, #edit_position-container, #edit_dept-container').hide();
+            $('#edit_satker, #edit_position, #edit_dept').prop("disabled", true);
+            $('#edit_office-container').show();
+            $('#edit_office').prop("disabled", false).prop("required", true);
+        } else if (selectedRole == "1") {
+            $('#edit_satker-container, #edit_position-container, #edit_office-container, #edit_dept-container').hide();
+            $('#edit_satker, #edit_position, #edit_office, #edit_dept').prop("disabled", true).prop("required", false);
+        } else {
+            $('#edit_satker-container, #edit_position-container, #edit_office-container, #edit_dept-container').show();
+            $('#edit_satker, #edit_position, #edit_office, #edit_dept').prop("disabled", false).prop("required", true);
+        }
+    }
+
+    function validatePassword() {
+        var password = $('#edit_password').val();
+        var confirmPassword = $('#edit_confirm_password').val();
+        var isValid = true;
+
+        if (password && password.length < 6) {
+            $('#passwordLengthError').show();
+            $('#edit_password').addClass('is-invalid');
+            isValid = false;
+        } else {
+            $('#passwordLengthError').hide();
+            $('#edit_password').removeClass('is-invalid');
         }
 
-        // Jalankan toggle saat role berubah
-        $('#edit_role').change(function() {
-            edittoggleFields();
-        });
+        if (password && password !== confirmPassword) {
+            $('#passwordError').show();
+            $('#edit_confirm_password').addClass('is-invalid');
+            isValid = false;
+        } else {
+            $('#passwordError').hide();
+            $('#edit_confirm_password').removeClass('is-invalid');
+        }
 
-        // Ketika tombol edit ditekan
-        $('.editUserBtn').click(function() {
-            var userId = $(this).data('id');
-            var userName = $(this).data('name');
-            var userEmail = $(this).data('email');
-            var userRole = $(this).data('role');
-            var userCompany = $(this).data('company');
-            var userOffice = $(this).data('office');
-            var userDept = $(this).data('dept');
-            var userSatker = $(this).data('satker');
-            var userPosition = $(this).data('position');
+        return isValid;
+    }
 
-            // Isi modal dengan data dari tabel
-            $('#edit_user_id').val(userId);
-            $('#edit_name').val(userName);
-            $('#edit_email').val(userEmail);
-            $('#edit_role').val(userRole);
-            $('#edit_company').val(userCompany);
-            $('#edit_office').val(userOffice);
-            $('#edit_dept').val(userDept);
-            $('#edit_satker').val(userSatker);
-            $('#edit_position').val(userPosition);
+    $('#edit_role').change(edittoggleFields);
+    edittoggleFields(); // saat load awal
 
-            // Panggil fungsi toggle fields agar menyesuaikan role yang dipilih
-            edittoggleFields();
-        });
+    $('#edit_password, #edit_confirm_password').keyup(validatePassword);
 
-        // Panggil fungsi saat halaman dimuat pertama kali
-        edittoggleFields();
+    $(document).on("click", ".editUserBtn", function () {
+        let btn = $(this);
+        let id = btn.data("id");
+        let name = btn.data("name");
+        let email = btn.data("email");
+        let perusahaan = btn.data("company");
+        let kantor = btn.data("office");
+        let dept = btn.data("dept");
+        let satker = btn.data("satker");
+        let posisi = btn.data("position");
+        let role = btn.data("role");
+
+        $("#edit_user_id").val(id);
+        $("#edit_name").val(name);
+        $("#edit_email").val(email);
+        $("#edit_role").val(role);
+        edittoggleFields(); // gunakan fungsi saja
+
+        $("#edit_password, #edit_confirm_password").val("");
+        $("#passwordLengthError, #passwordError").hide();
+
+        @if(Auth::user()->role == 0)
+            $("#edit_company").val(perusahaan);
+        @endif
+        @if(Auth::user()->role == 0 || Auth::user()->role == 1)
+            $("#edit_office").val(kantor);
+        @endif
+
+        $("#edit_dept").html('<option value="">Loading...</option>');
+        $("#edit_satker").html('<option value="">Loading...</option>');
+        $("#edit_position").html('<option value="">Loading...</option>');
+        $("#edit_office").html('<option value="">Loading...</option>');
+
+        if (perusahaan) {
+            $.getJSON('/get-konten/' + perusahaan, function (response) {
+                let deptOptions = '<option value="">Pilih Departemen</option>';
+                let satkerOptions = '<option value="">Pilih Satuan Kerja</option>';
+                let positionOptions = '<option value="">Pilih Posisi</option>';
+                let officeOptions = '<option value="">Pilih Kantor</option>';
+
+                $.each(response.offices, function (i, o) {
+                    console.log(o.id == kantor);
+                    officeOptions += `<option value="${o.id}" ${o.id == kantor ? 'selected' : ''}>${o.nama_kantor}</option>`;
+                });
+
+                $.each(response.depts, function (i, d) {
+                    deptOptions += `<option value="${d.id}" ${d.id == dept ? 'selected' : ''}>${d.nama_dept}</option>`;
+                });
+
+                $.each(response.satkers, function (i, s) {
+                    satkerOptions += `<option value="${s.id}" ${s.id == satker ? 'selected' : ''}>${s.satuan_kerja}</option>`;
+                });
+
+                $.each(response.positions, function (i, p) {
+                    positionOptions += `<option value="${p.id}" ${p.id == posisi ? 'selected' : ''}>${p.jabatan}</option>`;
+                });
+
+                $("#edit_dept").html(deptOptions);
+                $("#edit_satker").html(satkerOptions);
+                $("#edit_position").html(positionOptions);
+                $("#edit_office").html(officeOptions);
+            });
+        }
+
+        $("#editUserModal").modal("show");
     });
+
+    $('#editUserForm').submit(function (e) {
+        e.preventDefault();
+
+        if (!validatePassword()) return;
+
+        Swal.fire({
+            title: "Konfirmasi Perubahan",
+            text: "Apakah Anda yakin ingin menyimpan perubahan ini?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Ya, simpan!",
+            cancelButtonText: "Batal"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                var formData = $(this).serialize() + '&_method=PUT';
+                $.ajax({
+                    url: '/users/update',
+                    type: 'POST',
+                    data: formData,
+                    dataType: 'json',
+                    success: function (response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: 'Data user berhasil diperbarui.',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                            $('#editUserModal').modal('hide');
+                            location.reload();
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal!',
+                                text: response.message
+                            });
+                        }
+                    },
+                    error: function () {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Terjadi Kesalahan!',
+                            text: 'Cek kembali data yang diinput.'
+                        });
+                    }
+                });
+            }
+        });
+    });
+});
 </script>
+
 @if(Auth::user()->role == 0)
 <script type="text/javascript">
     $(document).ready(function() {
@@ -620,7 +731,7 @@
 </script>
 @if(Auth::user()->role == 0)
 <script type="text/javascript">
-    function loadCompanyData() {
+
         var companyId = $('#edit_company').val();
         
         if (companyId) {
@@ -660,7 +771,7 @@
             $('#edit_position').empty().append('<option value="">Pilih Jabatan</option>');
             $('#edit_dept').empty().append('<option value="">Pilih Departemen</option>');
         }
-    }
+    
 
     // Panggil saat perusahaan berubah
     // $('#edit_company').change(function() {
@@ -671,50 +782,6 @@
     // $('#editUserModal').on('shown.bs.modal', function () {
     //     loadCompanyData();
     // });
-</script>
-@else
-<script type="text/javascript">
-    $(document).ready(function() {
-    $.ajax({
-        url: '/get-konten/' + {{Auth::user()->perusahaan}},
-        type: 'GET',
-        dataType: 'json',
-        success: function(response) {
-            $('#edit_office').empty();
-            $('#edit_office').append('<option value="">Pilih Kantor</option>');
-            
-            $.each(response.offices, function(key, office) {
-                $('#edit_office').append('<option value="' + office.id + '">' + office.nama_kantor + '</option>');
-            });
-
-            $('#edit_satker').empty();
-            $('#edit_satker').append('<option value="">Pilih Satuan Kerja</option>');
-            
-            $.each(response.satkers, function(key, satker) {
-                $('#edit_satker').append('<option value="' + satker.id + '">' + satker.satuan_kerja + '</option>');
-            });
-
-            $('#edit_position').empty();
-            $('#edit_position').append('<option value="">Pilih Jabatan</option>');
-            
-            $.each(response.positions, function(key, position) {
-                $('#edit_position').append('<option value="' + position.id + '">' + position.jabatan + '</option>');
-            });
-
-            $('#edit_dept').empty();
-            $('#edit_dept').append('<option value="">Pilih Departemen</option>');
-            
-            $.each(response.depts, function(key, dept) {
-                $('#edit_dept').append('<option value="' + dept.id + '">' + dept.nama_dept + '</option>');
-            });
-
-        },
-        error: function(xhr, status, error) {
-            console.error(error);
-        }
-    });
-});
-
 </script>
 @endif
 
@@ -806,51 +873,7 @@
         });
     });
 </script>
-<script type="text/javascript">
-    $(document).ready(function () {
-    function validatePassword() {
-        var password = $('#edit_password').val();
-        var confirmPassword = $('#edit_confirm_password').val();
 
-        var isValid = true;
-
-        // Cek panjang password minimal 6 karakter
-        if (password.length < 6) {
-            $('#passwordLengthError').show();
-            $('#edit_password').addClass('is-invalid');
-            isValid = false;
-        } else {
-            $('#passwordLengthError').hide();
-            $('#edit_password').removeClass('is-invalid');
-        }
-
-        // Cek apakah password dan konfirmasi password cocok
-        if (password !== confirmPassword) {
-            $('#passwordError').show();
-            $('#edit_confirm_password').addClass('is-invalid');
-            isValid = false;
-        } else {
-            $('#passwordError').hide();
-            $('#edit_confirm_password').removeClass('is-invalid');
-        }
-
-        return isValid;
-    }
-
-    // Cek saat user mengetik di input password atau confirm password
-    $('#edit_password, #edit_confirm_password').keyup(function () {
-        validatePassword();
-    });
-
-    // Cek sebelum submit form
-    $('#editUserForm').submit(function (e) {
-        if (!validatePassword()) {
-            e.preventDefault(); // Hentikan submit jika password tidak cocok
-        }
-    });
-});
-
-</script>
 <script type="text/javascript">
     $(document).ready(function () {
     function validPassword() {
@@ -895,50 +918,6 @@
     });
 });
 
-</script>
-
-<script type="text/javascript">
-    $(document).ready(function () {
-    $('#editUserForm').submit(function (e) {
-        e.preventDefault(); // Mencegah form submit secara default
-
-        var formData = $(this).serialize() + '&_method=PUT'; // Tambahkan method PUT
-
-        $.ajax({
-            url: '/users/update', // Sesuaikan dengan route di Laravel
-            type: 'POST', // Gunakan POST karena Laravel mengenali _method=PUT
-            data: formData,
-            dataType: 'json',
-            success: function (response) {
-                if (response.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        text: 'Data user berhasil diperbarui.',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-
-                    $('#editUserModal').modal('hide'); // Tutup modal
-                    location.reload(); // Reload halaman untuk update tabel
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal!',
-                        text: response.message
-                    });
-                }
-            },
-            error: function (xhr) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Terjadi Kesalahan!',
-                    text: 'Cek kembali data yang diinput.'
-                });
-            }
-        });
-    });
-});
 </script>
 <script type="text/javascript">
     // Hapus Data

@@ -125,7 +125,7 @@
                     <div class="mb-3">
                         <label for="edit_kantor" class="form-label">Kantor</label>
                         <select name="kantor" id="edit_kantor" class="form-select" required>
-                            <option selected disabled value="">Pilih Kantor</option>
+                            <option selected value="">Pilih Kantor</option>
                             @foreach($kantor as $office)
                             <option value="{{$office->id}}">{{$office->nama_kantor}}</option>
                             @endforeach
@@ -135,14 +135,14 @@
                     @if(Auth::user()->role == 0 || Auth::user()->role == 1)
                         <div class="mb-3">
                         <label for="edit_departemen" class="form-label">Departemen</label>
-                        <select name="" id="edit_departemen" class="form-select" disabled>
-                            <option selected disabled value="">Pilih Departemen</option>
+                        {{-- <select name="" id="edit_departemen" class="form-select" disabled>
+                            <option selected value="">Pilih Departemen</option>
                             @foreach($departemen as $dept)
                             <option value="{{$dept->id}}">{{$dept->nama_dept}}</option>
                             @endforeach
-                        </select>
-                        <select name="departemen" id="edit_departemen_h" class="form-select" required hidden>
-                            <option selected disabled value="">Pilih Departemen</option>
+                        </select> --}}
+                        <select name="departemen" id="edit_departemen" class="form-select" required>
+                            <option selected value="">Pilih Departemen</option>
                             @foreach($departemen as $dept)
                             <option value="{{$dept->id}}">{{$dept->nama_dept}}</option>
                             @endforeach
@@ -152,7 +152,7 @@
                     <div class="mb-3">
                         <label for="edit_departemen" class="form-label">Departemen</label>
                         <select name="departemen" id="edit_departemen" class="form-select" required>
-                            <option selected disabled value="">Pilih Departemen</option>
+                            <option selected value="">Pilih Departemen</option>
                             @foreach($departemen as $dept)
                             <option value="{{$dept->id}}">{{$dept->nama_dept}}</option>
                             @endforeach
@@ -203,11 +203,15 @@
                         <button class="btn btn-primary btn-sm cen edit-btn" 
                         data-id="{{$ker->id}}" 
                         data-satker="{{$ker->satuan_kerja}}" 
-                        @if(Auth::user()->role == 0 || Auth::user()->role == 1)
-                        data-kantor="{{$ker->kantor}}" 
-                        @endif
                         data-departemen="{{$ker->dept_id}}"
-@if(Auth::user()->role == 0) data-perusahaan="{{$ker->perusahaan}}" @endif>Edit</button>
+                    @if(Auth::user()->role == 0 || Auth::user()->role == 1)
+                        data-kantor="{{$ker->kantor}}" 
+                    @else
+                        data-kantor="{{Auth::user()->kantor}}" 
+                    @endif
+                    @if(Auth::user()->role == 0) 
+                        data-perusahaan="{{$ker->perusahaan}}" 
+                    @endif>Edit</button>
                         <button class="btn btn-danger btn-sm cen delete-btn" data-id="{{$ker->id}}">Hapus</button>
                     </td>
                 </tr>
@@ -225,57 +229,106 @@
 @endsection
 
 @push('script')
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-    document.body.addEventListener("click", function (event) {
-        if (event.target.classList.contains("edit-btn")) {
-            let button = event.target;
-            let id = button.getAttribute("data-id");
-            let satker = button.getAttribute("data-satker");
-            let departemen = button.getAttribute("data-departemen");
-            let perusahaan = button.getAttribute("data-perusahaan");
-            let kantor = button.getAttribute("data-kantor");
-
-            document.getElementById("edit_id").value = id;
-            document.getElementById("edit_satker").value = satker;
-            document.getElementById("edit_departemen").value = departemen;
-@if( Auth::user()->role == 0 || Auth::user()->role == 1 )
-            document.getElementById("edit_departemen_h").value = departemen;
-@endif
-            @if(Auth::user()->role == 0 || Auth::user()->role == 1)
-                document.getElementById("edit_kantor").value = kantor;
-            @endif
-            @if(Auth::user()->role == 0) 
-                document.getElementById("edit_tenantName").value = perusahaan;
-            @endif
-
-            document.getElementById("editForm").action = "/satker/edit/" + id;
-
-            let editModal = new bootstrap.Modal(document.getElementById("editModal"));
-            editModal.show();
+<script type="text/javascript">
+    // Dynamic load departemen berdasarkan kantor saat tambah
+    $('#kantor').change(function () {
+        let kantorId = $(this).val();
+        if (kantorId) {
+            $.get(`/get-sat/${kantorId}`, function (response) {
+                let options = '<option value="">Pilih Departemen</option>';
+                response.departemen.forEach(dept => {
+                    options += `<option value="${dept.id}">${dept.nama_dept}</option>`;
+                });
+                $('#departemen').html(options);
+            });
+        } else {
+            $('#departemen').html('<option value="">Pilih Departemen</option>');
         }
     });
 
-    document.getElementById("editForm").addEventListener("submit", function (event) {
-        event.preventDefault();
+    // Dynamic load departemen saat modal edit dibuka
+    $('#edit_kantor').on('change', function () {
+        let kantorId = $(this).val();
+        if (kantorId) {
+            $.get(`/get-sat/${kantorId}`, function (response) {
+                let options = '<option value="">Pilih Departemen</option>';
+                response.departemen.forEach(dept => {
+                    options += `<option value="${dept.id}" ${dept.id == departemen ? 'selected' : ''}>${dept.nama_dept}</option>`;
+                });
+                $('#edit_departemen').html(options);
 
+
+            });
+        }
+    });
+
+</script>
+<script>
+$(document).ready(function () {
+    // Saat tombol edit diklik
+    $(document).on("click", ".edit-btn", function () {
+        let btn = $(this);
+        let id = btn.data("id");
+        let perusahaan = btn.data("perusahaan");
+        let kantor = btn.data("kantor");
+        let departemen = btn.data("departemen");
+        let satker = btn.data("satker");
+
+        $("#edit_id").val(id);
+        $("#edit_departemen").html('<option value="">Loading...</option>');
+        $("#edit_satker").val(satker);
+
+        @if(Auth::user()->role == 0)
+            $("#edit_tenantName").val(perusahaan);
+        @endif
+        @if(Auth::user()->role == 0 || Auth::user()->role == 1)
+            $("#edit_kantor").val(kantor);
+        @endif
+
+        $("#editForm").attr("action", "/satker/edit/" + id);
+@if(Auth::user()->role == 0)
+        if (perusahaan) {
+            $.getJSON('/get-konten/' + perusahaan, function (response) {
+@else 
+        if (kantor) {
+            $.getJSON('/get-sat/' + kantor, function (response) {
+@endif
+                let departemenOptions = '<option value="">Pilih Departemen</option>';
+
+            @if(Auth::user()->role == 0)
+                $.each(response.depts, function (i, dept) {
+            @else
+                $.each(response.departemen, function (i, dept) {
+            @endif
+                    departemenOptions += `<option value="${dept.id}" ${dept.id == departemen ? 'selected' : ''}>${dept.nama_dept}</option>`;
+                });
+
+                $("#edit_departemen").html(departemenOptions);
+            });
+        }
+
+        $("#editModal").modal("show");
+    });
+
+    // Submit form edit dengan konfirmasi
+    $("#editForm").on("submit", function (e) {
+        e.preventDefault();
         Swal.fire({
             title: "Konfirmasi Perubahan",
-            text: "Perubahan ini akan mempengaruhi beberapa data terkait di database. Apakah Anda yakin ingin melanjutkan?",
+            text: "Perubahan ini akan mempengaruhi data terkait. Lanjutkan?",
             icon: "warning",
             showCancelButton: true,
-            confirmButtonText: "Ya, Update!",
-            cancelButtonText: "Batal",
-            reverseButtons: true
+            confirmButtonText: "Ya, update!",
+            cancelButtonText: "Batal"
         }).then((result) => {
             if (result.isConfirmed) {
-                document.getElementById("editForm").submit();
+                e.target.submit();
             }
         });
     });
 });
-
 </script>
+
 <script>
 document.querySelectorAll(".delete-btn").forEach(button => {
             button.addEventListener("click", function () {
@@ -322,37 +375,37 @@ document.querySelectorAll(".delete-btn").forEach(button => {
             });
         });
 </script>
-<script type="text/javascript">
-    $('#edit_kantor').change(function() {
-            let kantorId = $(this).val();
 
-            if (kantorId) {
+<script>
+    $(document).ready(function() {
+        $('#kantor').change(function() {
+            let perusahaanId = $(this).val();
+            if (perusahaanId) {
                 $.ajax({
-                    url: '/get-sat/' + kantorId,
+                    url: '/get-sat/' + perusahaanId,
                     type: 'GET',
                     success: function(response) {
                         let departemenOptions = '<option value="">Pilih Departemen</option>';
+                        let satkerOptions = '<option value="">Pilih Satuan Kerja</option>';
 
                         response.departemen.forEach(function(dept) {
-                            departemenOptions += `<option value="${dept.id}">${dept.nama_dept}</option>`;
+                            departemenOptions += `<option value="${dept.id}" ${dept.id == departemen ? 'selected' : ''}>${dept.nama_dept}</option>`;
                         });
-@if( Auth::user()->role == 0 || Auth::user()->role == 1 )
-                        $('#edit_departemen').prop('disabled', false);
-                        $('#edit_departemen').prop('name', 'departemen');
-                        $('#edit_departemen_h').prop('disabled', true);
-                        $('#edit_departemen_h').prop('name', '');
-@endif
-                        $('#edit_departemen').html(departemenOptions);
+                        response.satker.forEach(function(satker) {
+                            satkerOptions += `<option value="${satker.id}">${satker.nama_satker}</option>`;
+                        });
+
+                        $('#departemen').html(departemenOptions);
                     },
                     error: function(xhr) {
                         console.log(xhr.responseText);
                     }
                 });
+            } else {
+                $('#departemen').empty().append('<option value="">Pilih Departemen</option>');
             }
-            //  else {
-            //     $('#edit_satker').empty().append('<option value="">Pilih Satuan Kerja</option>');
-            //     $('#edit_position').empty().append('<option value="">Pilih Jabatan</option>');
-            // }
         });
+    });
 </script>
+
 @endpush

@@ -69,15 +69,25 @@
                         </select>
                     </div>
                     @endif
+                    @if(Auth::user()->role == 3 )
                     <div class="mb-3">
                         <label for="departemen" class="form-label">Departemen</label>
                         <select name="departemen" id="departemen" class="form-select" required>
-                            <option selected disabled value="">Pilih Departemen</option>
+                            <option selected disabled value="">Pilih Kantor</option>
                             @foreach($departemen as $dept)
                             <option value="{{$dept->id}}">{{$dept->nama_dept}}</option>
                             @endforeach
                         </select>
                     </div>
+                    @else
+                    <div class="mb-3">
+                        <label for="departemen" class="form-label">Departemen</label>
+                        <select name="departemen" id="departemen" class="form-select" required>
+                            <option selected disabled value="">Pilih Departemen</option>
+                        
+                        </select>
+                    </div>
+                    @endif
 
                     <div class="mb-3">
                         <label for="satker" class="form-label">Satuan Kerja</label>
@@ -219,84 +229,188 @@
 
 @push('script')
 <script>
-$(document).ready(function() {
-    // Edit Data
-    $('.btnEdit').click(function() {
-        let id = $(this).data('id');
-        let jabatan = $(this).data('jabatan');
-        let perusahaan = $(this).data('perusahaan');
-        let kantor = $(this).data('kantor');
-        let departemen = $(this).data('dept');
-        let satker = $(this).data('satker');
-        
-        $('#editId').val(id);
-        $('#editJabatan').val(jabatan);
-        $('#editPerusahaan').val(perusahaan);
-        $('#editKantor').val(kantor);
-        $('#editDepartemen').val(departemen);
-        $('#editSatker').val(satker);
-        $('#modalEdit').modal('show');
-    });
+    $(document).ready(function () {
+        // Saat tombol edit diklik
+        $(document).on('click', '.btnEdit', function () {
+            let id = $(this).data('id');
+            let jabatan = $(this).data('jabatan');
+            let perusahaan = $(this).data('perusahaan');
+            let kantor = $(this).data('kantor');
+            let departemen = $(this).data('dept');
+            let satker = $(this).data('satker');
 
-    $('#formEditJabatan').submit(function(e) {
-        e.preventDefault();
-        let id = $('#editId').val();
-        let jabatan = $('#editJabatan').val();
-        let perusahaan = $('#editPerusahaan').val();
-        let kantor = $('#editKantor').val();
-        let departemen = $('#editDepartemen').val();
-        let satker = $('#editSatker').val();
-        
-        $.ajax({
-            url: '/jabatan/edit/' + id,
-            method: 'PUT',
-            data: { 
-                _token: '{{ csrf_token() }}', 
-                jabatan: jabatan, 
-                perusahaan: perusahaan, 
-                kantor: kantor, 
-                departemen: departemen, 
-                satker: satker
-            },
-            success: function(response) {
-                Swal.fire({
-                  title: "Berhasil",
-                  icon: "success",
-                  text: "Berhasil perbarui Jabatan!",
-                  timer: 1500
+            $('#editId').val(id);
+            $('#editJabatan').val(jabatan);
+            $('#editPerusahaan').val(perusahaan);
+            $('#editKantor').val(kantor);
+            $('#editDepartemen').html('<option value="">Loading...</option>');
+            $('#editSatker').html('<option value="">Loading...</option>');
+            $('#nmdept').hide();
+
+            // Load departemen dan satker berdasarkan kantor
+            if (kantor) {
+                $.ajax({
+                    url: '/get-sat/' + kantor,
+                    type: 'GET',
+                    success: function (response) {
+                        let departemenOptions = '<option value="">Pilih Departemen</option>';
+                        let satkerOptions = '<option value="">Pilih Satuan Kerja</option>';
+
+                        response.departemen.forEach(function (dept) {
+                            departemenOptions += `<option value="${dept.id}" ${dept.id == departemen ? 'selected' : ''}>${dept.nama_dept}</option>`;
+                        });
+
+                        response.satker.forEach(function (s) {
+                            satkerOptions += `<option value="${s.id}" ${s.id == satker ? 'selected' : ''}>${s.satuan_kerja}</option>`;
+                        });
+
+                        $('#editDepartemen').html(departemenOptions);
+                        $('#editSatker').html(satkerOptions);
+                    },
+                    error: function (xhr) {
+                        console.log(xhr.responseText);
+                    }
                 });
-                location.reload();
+            }
+
+            $('#modalEdit').modal('show');
+        });
+
+        // Saat kantor diubah
+        $('#editKantor').change(function () {
+            let kantorId = $(this).val();
+            if (kantorId) {
+                $.ajax({
+                    url: '/get-sat/' + kantorId,
+                    type: 'GET',
+                    success: function (response) {
+                        let departemenOptions = '<option value="">Pilih Departemen</option>';
+                        let satkerOptions = '<option value="">Pilih Satuan Kerja</option>';
+
+                        response.departemen.forEach(function (dept) {
+                            departemenOptions += `<option value="${dept.id}">${dept.nama_dept}</option>`;
+                        });
+
+                        response.satker.forEach(function (satker) {
+                            satkerOptions += `<option value="${satker.id}">${satker.nama_satker}</option>`;
+                        });
+
+                        $('#editDepartemen').html(departemenOptions);
+                        $('#editSatker').html(satkerOptions);
+                    },
+                    error: function (xhr) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            } else {
+                $('#editDepartemen').html('<option value="">Pilih Departemen</option>');
+                $('#editSatker').html('<option value="">Pilih Satuan Kerja</option>');
             }
         });
-    });
 
-    // Hapus Data
-    $('.btnHapus').click(function() {
-        let id = $(this).data('id');
-        Swal.fire({
-            title: "Apakah Anda yakin?",
-            text: "Data yang dihapus tidak dapat dikembalikan!",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#d33",
-            cancelButtonColor: "#3085d6",
-            confirmButtonText: "Ya, hapus!",
-        }).then((result) => {
-                    if (result.isConfirmed) {
-                        Swal.fire({
-                            title: "Menghapus...",
-                            text: "Mohon tunggu",
-                            allowOutsideClick: false,
-                            didOpen: () => {
-                                Swal.showLoading();
-                            }
+        // Saat departemen diubah
+        $('#editDepartemen').change(function () {
+            let departemenId = $(this).val();
+            if (departemenId) {
+                $.ajax({
+                    url: '/get-satker-by-departemen/' + departemenId,
+                    type: 'GET',
+                    success: function (response) {
+                        let satkerOptions = '<option value="">Pilih Satuan Kerja</option>';
+                        response.satker.forEach(function (s) {
+                            satkerOptions += `<option value="${s.id}">${s.satuan_kerja}</option>`;
                         });
-                        fetch("/jabatan/hapus/" + id, {
-                            method: "DELETE",
-                            headers: {
-                                "X-CSRF-TOKEN": '{{ csrf_token() }}'
-                            }
-                        })
+                        $('#editSatker').html(satkerOptions);
+                    },
+                    error: function (xhr) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            } else {
+                $('#editSatker').html('<option value="">Pilih Satuan Kerja</option>');
+            }
+        });
+
+        // Submit form edit
+$('#formEditJabatan').submit(function (e) {
+    e.preventDefault();
+
+    let id = $('#editId').val();
+    let jabatan = $('#editJabatan').val();
+    let perusahaan = $('#editPerusahaan').val();
+    let kantor = $('#editKantor').val();
+    let departemen = $('#editDepartemen').val();
+    let satker = $('#editSatker').val();
+
+    Swal.fire({
+        title: 'Peringatan!',
+        text: 'Perubahan dapat berdampak pada data terkait. Lanjutkan?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, simpan perubahan',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: '/jabatan/edit/' + id,
+                method: 'PUT',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    jabatan: jabatan,
+                    perusahaan: perusahaan,
+                    kantor: kantor,
+                    departemen: departemen,
+                    satker: satker
+                },
+                success: function (response) {
+                    Swal.fire({
+                        title: "Berhasil",
+                        icon: "success",
+                        text: "Berhasil perbarui Jabatan!",
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    location.reload();
+                },
+                error: function () {
+                    Swal.fire({
+                        title: "Gagal",
+                        icon: "error",
+                        text: "Terjadi kesalahan saat memperbarui data."
+                    });
+                }
+            });
+        }
+    });
+});
+
+        // Hapus data
+        $('.btnHapus').click(function () {
+            let id = $(this).data('id');
+            Swal.fire({
+                title: "Apakah Anda yakin?",
+                text: "Data yang dihapus tidak dapat dikembalikan!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Ya, hapus!",
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: "Menghapus...",
+                        text: "Mohon tunggu",
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    fetch("/jabatan/hapus/" + id, {
+                        method: "DELETE",
+                        headers: {
+                            "X-CSRF-TOKEN": '{{ csrf_token() }}'
+                        }
+                    })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
@@ -309,10 +423,10 @@ $(document).ready(function() {
                         .catch(error => {
                             Swal.fire("Error!", "Gagal menghapus data.", "error");
                         });
-                    }
-                });
+                }
+            });
+        });
     });
-});
 </script>
 <script>
     $(document).ready(function() {
@@ -330,7 +444,7 @@ $(document).ready(function() {
                             departemenOptions += `<option value="${dept.id}">${dept.nama_dept}</option>`;
                         });
                         response.satker.forEach(function(satker) {
-                            satkerOptions += `<option value="${satker.id}">${satker.nama_satker}</option>`;
+                            satkerOptions += `<option value="${satker.id}">${satker.satuan_kerja}</option>`;
                         });
 
                         $('#departemen').html(departemenOptions);
@@ -378,6 +492,10 @@ $(document).ready(function() {
 
                         response.departemen.forEach(function(dept) {
                             departemenOptions += `<option value="${dept.id}">${dept.nama_dept}</option>`;
+
+                             let nm = dept.nama_dept;
+
+                $('#nmdept').empty().append('Departemen : '+nm).show();
                         });
                         response.satker.forEach(function(satker) {
                             satkerOptions += `<option value="${satker.id}">${satker.nama_satker}</option>`;
@@ -416,5 +534,3 @@ $(document).ready(function() {
 </script>
 
 @endpush
-
-{{-- buat edit jabatan sama kaya satuan kerja, gabisa pilih dept dan satker kalo kantor ga di pilih --}}
