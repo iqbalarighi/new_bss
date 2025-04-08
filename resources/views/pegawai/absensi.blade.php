@@ -190,50 +190,49 @@
 // loadabs();
     });
 </script>
-<script type="text/javascript">
-    $(document).ready(function() {
-        $('#btnMap').click(function() {
-            let nama = $(this).data('nama');
-            let lokasi = $(this).data('lokasi');
-            let kantor = $(this).data('kantor');
-            let rad = $(this).data('radius');
+<script>
+$(document).ready(function () {
+    // Event delegation agar tombol btnMap tetap bisa berfungsi setelah AJAX
+    $('#dataTable').on('click', '[id^="btnMap"]', function () {
+        let id = $(this).data('id');
+        let lokasi = $(this).data('lokasi'); // "lat,lng"
+        let nama = $(this).data('nama');
+        let kantor = $(this).data('kantor'); // "lat,lng"
+        let radius = parseFloat($(this).data('radius'));
 
-            var lok = lokasi.split(",");
-            var lati = lok[0];
-            var long = lok[1];
+        let [lat, lng] = lokasi.split(',').map(Number);
+        let [latKantor, lngKantor] = kantor.split(',').map(Number);
 
-            var kan = kantor.split(",");
-            var lat = kan[0];
-            var lon = kan[1];
-        
         Swal.fire({
-            title: 'Peta Lokasi',
-            html: '<div id="leafletMap" style="height: 400px; width: 100%;"></div>',
-            width: 600,
+            title: 'Lokasi Absen: ' + nama,
+            html: `<div id="map${id}" style="height: 400px;"></div>`,
+            width: 700,
             didOpen: () => {
-                var map = L.map('leafletMap').setView([lati, long], 18);
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        maxZoom: 19,
-                        minZoom: 5,
-                    }).addTo(map);
+                let map = L.map(`map${id}`).setView([lat, lng], 17);
 
-                     L.marker([lati, long]).addTo(map)
-                    .bindPopup(nama)
-                    .openPopup();
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(map);
 
-                    var center = L.latLng(lat, lon);
-                        var circle = L.circle(center, { 
-                            color: 'blue',
-                            fillColor: '#0000FF',
-                            fillOpacity: 0.2,
-                            radius: rad
-                        }).addTo(map);
+                L.marker([lat, lng]).addTo(map).bindPopup("Lokasi Absen").openPopup();
+
+                L.circle([latKantor, lngKantor], {
+                    color: 'blue',
+                    fillColor: '#0000FF',
+                    fillOpacity: 0.2,
+                    radius: radius
+                }).addTo(map);
             }
         });
-
-        });
     });
+});
 </script>
 @endpush
 
-{{-- nanti lanjut nampilin peta absen pegawai --}}
+{{-- {
+    title: 'Lokasi Absen',
+    icon: L.icon({
+        iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
+        iconSize: [30, 30]
+    })
+}) --}}
