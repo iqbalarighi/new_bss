@@ -56,5 +56,58 @@
                                     }
                                     @endphp
                                 </td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-primary" 
+                                    data-id="{{$abs->id}}" 
+                                    data-lokasi="{{$abs->lokasi_in}}" 
+                                    data-nama="{{$abs->pegawai->nama_lengkap}}" 
+                                    data-kantor="{{$abs->pegawai->kantor->lokasi}}" 
+                                    data-radius="{{$abs->pegawai->kantor->radius}}" 
+                                    id="btnMap"><i class="bi bi-map"></i></button>
+                                </td>
                             </tr>
                             @endforeach
+                            <script type="text/javascript">
+    $(document).ready(function() {
+        $('#btnMap').click(function() {
+            let nama = $(this).data('nama');
+            let lokasi = $(this).data('lokasi');
+            let kantor = $(this).data('kantor');
+            let rad = $(this).data('radius');
+
+            var lok = lokasi.split(",");
+            var lati = lok[0];
+            var long = lok[1];
+
+            var kan = kantor.split(",");
+            var lat = kan[0];
+            var lon = kan[1];
+        
+        Swal.fire({
+            title: 'Peta Lokasi',
+            html: '<div id="leafletMap" style="height: 400px; width: 100%;"></div>',
+            width: 600,
+            didOpen: () => {
+                var map = L.map('leafletMap').setView([lati, long], 18);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                        minZoom: 5,
+                    }).addTo(map);
+
+                     L.marker([lati, long]).addTo(map)
+                    .bindPopup(nama)
+                    .openPopup();
+
+                    var center = L.latLng(lat, lon);
+                        var circle = L.circle(center, { 
+                            color: 'blue',
+                            fillColor: '#0000FF',
+                            fillOpacity: 0.2,
+                            radius: rad
+                        }).addTo(map);
+            }
+        });
+
+        });
+    });
+</script>

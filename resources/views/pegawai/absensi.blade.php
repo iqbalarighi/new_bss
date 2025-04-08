@@ -1,6 +1,6 @@
 @extends('layouts.side.side')
 @section('content')
-
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <div class="container">
     <!-- CSS Placeholder Palsu -->
 <style>
@@ -68,6 +68,7 @@
                                 <th>Jam Pulang</th>
                                 <th>Foto</th>
                                 <th>Keterangan</th>
+                                <th>Lokasi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -128,6 +129,15 @@
                                     }
                                     @endphp
                                 </td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-primary" 
+                                    data-id="{{$abs->id}}" 
+                                    data-lokasi="{{$abs->lokasi_in}}" 
+                                    data-nama="{{$abs->pegawai->nama_lengkap}}" 
+                                    data-kantor="{{$abs->pegawai->kantor->lokasi}}" 
+                                    data-radius="{{$abs->pegawai->kantor->radius}}" 
+                                    id="btnMap"><i class="bi bi-map"></i></button>
+                                </td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -144,6 +154,9 @@
 
 @endsection
 @push('script')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
 <script>
     $(document).ready(function() {
         function loadabs() {
@@ -158,7 +171,7 @@
                     tbody.empty(); // Kosongkan tabel
 
                     if (response.length === 0) {
-                        tbody.append('<tr><td colspan="12" class="text-center">Data tidak ditemukan</td></tr>');
+                        tbody.append('<tr><td colspan="13" class="text-center">Data tidak ditemukan</td></tr>');
                         return;
                     }
 
@@ -175,6 +188,50 @@
             loadabs();
         });
 // loadabs();
+    });
+</script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#btnMap').click(function() {
+            let nama = $(this).data('nama');
+            let lokasi = $(this).data('lokasi');
+            let kantor = $(this).data('kantor');
+            let rad = $(this).data('radius');
+
+            var lok = lokasi.split(",");
+            var lati = lok[0];
+            var long = lok[1];
+
+            var kan = kantor.split(",");
+            var lat = kan[0];
+            var lon = kan[1];
+        
+        Swal.fire({
+            title: 'Peta Lokasi',
+            html: '<div id="leafletMap" style="height: 400px; width: 100%;"></div>',
+            width: 600,
+            didOpen: () => {
+                var map = L.map('leafletMap').setView([lati, long], 18);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                        minZoom: 5,
+                    }).addTo(map);
+
+                     L.marker([lati, long]).addTo(map)
+                    .bindPopup(nama)
+                    .openPopup();
+
+                    var center = L.latLng(lat, lon);
+                        var circle = L.circle(center, { 
+                            color: 'blue',
+                            fillColor: '#0000FF',
+                            fillOpacity: 0.2,
+                            radius: rad
+                        }).addTo(map);
+            }
+        });
+
+        });
     });
 </script>
 @endpush

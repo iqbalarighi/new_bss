@@ -18,9 +18,10 @@
         display: inline-block;
         width: 100% !important;
         margin: auto;
-        height: 95% !important;
+        height: 90% !important;
         border-radius: 15px;
         position: relative;
+        margin-top: 1px;
        /* transform: scaleX(-1);  Membalik webcam menjadi mirror */
     }
 
@@ -42,7 +43,7 @@
     <div class="section-title">Title</div>
     <div class="wide-block pt-2 pb-2">
         <div class="row">
-            <div class="col">
+            <div class="col" style="margin-bottom: -30px">
                 <input type="hidden" id="lokasi">
             <div class="webcam-capture"></div>
             </div>
@@ -72,8 +73,8 @@
     {{-- <center>
         <img src="{{asset('storage/img/person.svg')}}" width="400px" style="position: relative; margin-top: -500px; margin-left: -35px; opacity: ;">
     </center> --}}
-        <div class="row mt-2">
-            <div class="col">
+        <div class="row mt-1">
+            <div class="col" style="margin-top: -50px">
                 <div id="map" style="z-index: 0;"></div>
             </div>
         </div>
