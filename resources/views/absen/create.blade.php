@@ -179,7 +179,8 @@
                     imageAlt: 'Preview Foto',
                     showCancelButton: true,
                     confirmButtonText: 'Kirim',
-                    cancelButtonText: 'Batal'
+                    cancelButtonText: 'Batal',
+                    reverseButtons: true
                 }).then((result) => {
                     if (result.isConfirmed) {
                         Swal.fire({

@@ -183,7 +183,8 @@
                 confirmButtonColor: '#d33',
                 cancelButtonColor: '#6c757d',
                 confirmButtonText: 'Ya, logout',
-                cancelButtonText: 'Batal'
+                cancelButtonText: 'Batal',
+                reverseButtons: true
             }).then((result) => {
                 if (result.isConfirmed) {
                     document.getElementById('logoutForm').submit();
@@ -297,6 +298,7 @@
             showCancelButton: true,
             confirmButtonText: 'Simpan',
             cancelButtonText: 'Batal',
+            reverseButtons: true,
             inputValidator: (value) => {
                 if (!value) {
                     return 'Nama tidak boleh kosong!';
@@ -348,6 +350,7 @@
         showCancelButton: true,
         confirmButtonText: 'Simpan',
         cancelButtonText: 'Batal',
+        reverseButtons: true,
         inputValidator: (value) => {
             if (!value) {
                 return 'Nomor telepon tidak boleh kosong!';
@@ -398,6 +401,9 @@
             <input type="password" id="confirmPassword" class="swal2-input" placeholder="Konfirmasi Password" style="width: 95%; max-width: 100%;">
         `,
             confirmButtonText: 'Update',
+            cancelButtonText: 'Batal',
+            showCancelButton: true,
+            reverseButtons: true,
             focusConfirm: false,
             preConfirm: () => {
                 const current = $('#currentPassword').val();
