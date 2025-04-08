@@ -214,7 +214,7 @@ $(document).ready(function () {
                     attribution: '&copy; OpenStreetMap contributors'
                 }).addTo(map);
 
-                L.marker([lat, lng]).addTo(map).bindPopup("Lokasi Absen").openPopup();
+                L.marker([lat, lng]).addTo(map).bindPopup(nama).openPopup();
 
                 L.circle([latKantor, lngKantor], {
                     color: 'blue',
