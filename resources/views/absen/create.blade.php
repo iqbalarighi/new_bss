@@ -30,12 +30,10 @@
         aspect-ratio: 3 / 4;
     }
 
-    #map { height: 250px; }
+    #map { height: 270px; }
 </style>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 @endsection
 
 @section('content')
@@ -80,9 +78,14 @@
         </div>
     </div>
 </div>
+
 @endsection
 
 @push('myscript')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js"></script>
+
 <script>
     Webcam.set({
         width: 480,

@@ -39,39 +39,33 @@
             </div>
         </a>
         @if(Request::is('absen/create'))
-
-
-            <a class="item">
-                <div class="col">
-                    <div class="action-button large" id="capture">
-                        <ion-icon name="camera-outline"></ion-icon>
-                    </div>
-                </div>
-            </a>
-
                 @if($cek == 1)
                     @if($cek2->jam_out == null)
                     <a class="item">
                         <div class="col">
-                            <div class="action-button large" id="capture">
+                            <button class="action-button large bg-danger" id="capture" disabled>
                                 <ion-icon name="camera-outline"></ion-icon>
-                            </div>
+                            </button>
                         </div>
                     </a>
                     @else
-                    <a class="item">
+                    <a class="item disabled-link" disabled>
                         <div class="col">
-                            <div class="action-button large">
+                            <button class="action-button large">
                                 <ion-icon name="camera-outline"></ion-icon>
-                            </div>
+                            </button>
                         </div>
                     </a>
                     @endif
                 @else
+                    <a class="item">
+                        <div class="col">
+                            <button class="action-button large" id="capture" disabled> 
+                                <ion-icon name="camera-outline"></ion-icon>
+                            </button>
+                        </div>
+                    </a>
                 @endif
-
-
-
         @else
             <a href="{{route('absen.create')}}" class="item">
                 <div class="col">
@@ -96,24 +90,3 @@
         </a>
     </div>
     <!-- * App Bottom Menu -->
-
-
-     <div class="col">
-                @if($cek == 1)
-                    @if($cek2->jam_out == null)
-                        <button id="capture" class="btn btn-danger btn-block" disabled>
-                        <ion-icon name="camera-outline"></ion-icon>
-                        Absen Pulang
-                    </button>
-                @else
-                <button class="btn btn-secondary btn-block" disabled>
-                    Terima Kasih &nbsp;
-                    <ion-icon name="thumbs-up"></ion-icon>
-                </button>
-                @endif
-            @else
-                <button id="capture" class="btn btn-primary btn-block" disabled>
-                    <ion-icon name="camera-outline"></ion-icon>
-                    Absen Masuk
-                </button>
-            @endif
