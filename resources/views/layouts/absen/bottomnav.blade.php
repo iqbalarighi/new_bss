@@ -39,9 +39,9 @@
             </div>
         </a>
         @if(Request::is('absen/create'))
-            <a class="item disabled-link">
+            <a class="item">
                 <div class="col">
-                    <div class="action-button large">
+                    <div class="action-button large" id="capture">
                         <ion-icon name="camera-outline"></ion-icon>
                     </div>
                 </div>

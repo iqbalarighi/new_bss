@@ -47,7 +47,7 @@
             <div class="webcam-capture"></div>
             </div>
         </div>
-        <div class="row" style="margin-top: -84px;">
+        {{-- <div class="row" style="margin-top: -84px;">
             <div class="col">
                 @if($cek == 1)
                     @if($cek2->jam_out == null)
@@ -68,7 +68,7 @@
                 </button>
             @endif
         </div>
-        </div>
+        </div> --}}
     {{-- <center>
         <img src="{{asset('storage/img/person.svg')}}" width="400px" style="position: relative; margin-top: -500px; margin-left: -35px; opacity: ;">
     </center> --}}
