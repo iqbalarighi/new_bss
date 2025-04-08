@@ -1,6 +1,8 @@
 @extends('layouts.side.side')
 
 @section('content')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder@3.1.0/dist/Control.Geocoder.css" />
 <div class="container">
     <div class="row justify-content-center">
         <div class="col mw-100">
@@ -60,9 +62,8 @@
                     </form>
                     </div>
                 </div>
-
-                <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-                    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder@3.1.0/dist/Control.Geocoder.css" />
+@endsection
+@push('script')
                     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
                     <script src="https://unpkg.com/leaflet-control-geocoder@3.1.0/dist/Control.Geocoder.js"></script>
 
@@ -107,4 +108,5 @@
         </div>
     </div>
 </div>
-@endsection
+
+@endpush

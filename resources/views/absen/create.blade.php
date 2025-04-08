@@ -132,11 +132,24 @@
 
             var distance = userLocation.distanceTo(center);
 
-            if (distance > radius) {
-                $('#capture').prop('disabled', true);
-            } else {
-                $('#capture').prop('disabled', false);
-            }
+            const $btn = $('#capture');
+
+    if (distance > radius) {
+        $btn
+            .addClass('bg-secondary btnInfo out-radius')
+            .prop('disabled', false); // tetap bisa diklik
+    } else {
+        $btn
+            .removeClass('bg-secondary btnInfo out-radius')
+            .prop('disabled', false);
+    }
+
+    // Tambah warna merah jika sudah absen
+    if ($btn.data('absen') == 'sudah') {
+        $btn.removeClass('bg-danger');
+    } else {
+        
+    }
 
         }, function(error) {
             Swal.fire({
@@ -158,8 +171,20 @@
         });
     }
 
-    $('#capture').click(function (e) {
-        Webcam.snap(function (uri) {
+
+
+$(document).ready(function () {
+        $('#capture').on('click', function () {
+            const isOutRadius = $(this).hasClass('out-radius');
+            const absenStatus = $(this).data('absen'); // 'sudah' / 'belum'
+
+            if (isOutRadius) {
+                outofrad();
+            } else if (absenStatus === 'sudah') {
+                showAbsenAlert();
+            } else {
+                // Aksi ambil foto atau absen di sini
+            Webcam.snap(function (uri) {
             let canvas = document.createElement("canvas");
             let ctx = canvas.getContext("2d");
             let img = new Image();
@@ -234,6 +259,27 @@
 
             img.src = uri;
         });
+            }
+        });
     });
+
+
+function outofrad() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Oops!',
+            text: 'Anda berada di luar Radius',
+            confirmButtonText: 'OK'
+        });
+    }
+
+    function showAbsenAlert() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Oops!',
+            text: 'Anda sudah absen hari ini!',
+            confirmButtonText: 'OK'
+        });
+    }
 </script>
 @endpush

@@ -43,13 +43,13 @@
                     @if($cek2->jam_out == null)
                     <a class="item">
                         <div class="col">
-                            <button class="action-button large bg-danger" id="capture" disabled>
+                            <button class="action-button large bg-danger" id="capture" data-absen="belum">
                                 <ion-icon name="camera-outline"></ion-icon>
                             </button>
                         </div>
                     </a>
                     @else
-                    <a class="item disabled-link" disabled>
+                    <a class="item disabled-link" onclick="showAbsenAlert()" data-absen="sudah">
                         <div class="col">
                             <button class="action-button large">
                                 <ion-icon name="camera-outline"></ion-icon>
@@ -60,7 +60,7 @@
                 @else
                     <a class="item">
                         <div class="col">
-                            <button class="action-button large" id="capture" disabled> 
+                            <button class="action-button large" id="capture" data-absen="belum"> 
                                 <ion-icon name="camera-outline"></ion-icon>
                             </button>
                         </div>
