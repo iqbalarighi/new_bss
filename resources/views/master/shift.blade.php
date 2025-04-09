@@ -377,3 +377,6 @@ $('#editShiftForm').on('submit', function (e) {
 </script>
 @endif
 @endpush
+
+
+{{-- nanti buat absensi gabisa absen kalo kemaren belum absen pulang --}}
