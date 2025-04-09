@@ -32,4 +32,9 @@ class SatkerModel extends Model
     {
         return $this->belongsTo(DeptModel::class, 'dept_id');
     }
+
+    public function shifts()
+    {
+        return $this->belongsTo(ShiftModel::class, 'id');
+    }
 }

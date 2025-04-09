@@ -22,18 +22,13 @@ class AbsenController extends Controller
         $harini = date('Y-m-d');
         $pegawai = PegawaiModel::with('perusa', 'kantor', 'jabat', 'sat' )->findOrFail($id);
         $absen = AbsenModel::with('pegawai')->where('tgl_absen', $harini)->where('nip', $id)->first();
-        $absens = AbsenModel::where('nip', $id)->where('tgl_absen', 'LIKE', '%'.carbon::now()->format('m').'%')->latest()->get();
+        $absens = AbsenModel::with('pegawai')->where('nip', $id)->where('tgl_absen', 'LIKE', '%'.carbon::now()->format('m').'%')->latest()->get();
         
         $rekap = AbsenModel::where('nip', $id)
                 ->where('tgl_absen', 'LIKE',  '%'.carbon::now()->format('Y-m').'%')
                 ->selectRaw('
                     COUNT(nip) as jmlhadir,
-                    SUM(CASE 
-                        WHEN shift = "0" AND jam_in > "08:00" THEN 1
-                        WHEN shift = "1" AND jam_in > "07:00" THEN 1
-                        WHEN shift = "2" AND jam_in > "13:00" THEN 1
-                        ELSE 0 
-                    END) as jmltelat
+                    SUM(CASE WHEN jam_in > "'.($absen->shifts->jam_masuk ?? 0).'" THEN 1 ELSE 0 END) as jmltelat
                 ')
                 ->first();
 

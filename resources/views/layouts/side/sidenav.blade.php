@@ -21,6 +21,7 @@
                     <a href="{{ route('departemen') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('departemen') ? 'active' : '' }}" style="width: 95%;">Departemen</a>
                     <a href="{{ route('satker') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('satker') ? 'active' : '' }}" style="width: 95%;">Satuan Kerja</a>
                     <a href="{{ route('jabatan') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('jabatan') ? 'active' : '' }}" style="width: 95%;">Jabatan</a>
+                    <a href="{{ route('shift') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('shift') ? 'active' : '' }}" style="width: 95%;">Shift</a>
                     <a href="{{ route('users') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('users') ? 'active' : '' }}" style="width: 95%;">Manage User</a>
                     @endif
                 </div>
@@ -38,7 +39,7 @@
                 <div class="list-group list-group-flush">
                     <a href="{{ route('pegawai.index') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('pegawai') ? 'active' : '' }}" style="width: 95%;">Daftar Pegawai</a>
                     <a href="{{ route('pegawai.absensi') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('pegawai/absensi') ? 'active' : '' }}" style="width: 95%;">Absensi</a>
-                    {{-- <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Insiden/Kejadian</a> --}}
+                    <a href="{{ route('pegawai.absensi.laporan') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('pegawai/absensi/laporan') ? 'active' : '' }}" style="width: 95%;">Laporan</a>
                 </div>
             </div>
         </div>

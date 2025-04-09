@@ -80,6 +80,7 @@ Route::middleware(['auth:web'])->group(function () {
         Route::post('/pegawai/ubah-password/', [PegawaiController::class, 'ubahpass'])->name('pegawai.upass');
         Route::post('/cek-nip', [PegawaiController::class, 'cekNIP'])->name('cek.nip');
         Route::get('/pegawai/absensi/', [PegawaiController::class, 'absensi'])->name('pegawai.absensi');
+        Route::get('/pegawai/absensi/laporan', [PegawaiController::class, 'lapor'])->name('pegawai.absensi.laporan');
         Route::get('/get-abs', [PegawaiController::class, 'getAbs'])->name('get.abs');
 
         Route::get('/users', [MasterController::class, 'user'])->name('users');
@@ -87,6 +88,9 @@ Route::middleware(['auth:web'])->group(function () {
         Route::put('/users/update', [MasterController::class, 'upuser']);
         Route::delete('/users/delete/{id}', [MasterController::class, 'deluser']);
 
+        Route::get('/shift', [MasterController::class, 'shift'])->name('shift');
+        Route::post('/shift/store', [MasterController::class, 'shiftStore'])->name('master.shift.store');
+        Route::put('/shift/update/{id}', [MasterController::class, 'shiftUpdate'])->name('master.shift.update');
     });
 });
 

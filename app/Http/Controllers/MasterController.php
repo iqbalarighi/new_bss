@@ -2,16 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\DeptModel;
-use App\Models\KantorModel;
-use App\Models\SatkerModel;
 use App\Models\JabatanModel;
+use App\Models\KantorModel;
 use App\Models\PegawaiModel;
-use Illuminate\Http\Request;
 use App\Models\PerusahaanModel;
-use Illuminate\Support\Facades\Hash;
+use App\Models\SatkerModel;
+use App\Models\ShiftModel;
+use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class MasterController extends Controller
@@ -608,11 +610,10 @@ public function upuser(Request $request)
 if(Auth::user()->role == 0){
             if ($request->role == 1) { //pusat
                 $perusa = $request->company;
-
                 $kantor = $request->office ?? 0;
                 $dept = $request->dept ?? 0;
                 $satker = $request->satker ?? 0;
-                $jabatan = $request->position ?? 0;
+                $jabat = $request->position ?? 0;
             } else if ($request->role == 2){ //user
                 $perusa = $request->company;
                 $kantor = $request->office;
@@ -803,8 +804,11 @@ public function deluser($id)
     public function getPositionBySatker($id)
 {
     $positions = JabatanModel::where('satker_id', $id)->get();
+    $shift = ShiftModel::where('satker_id', $id)->get();
+
     return response()->json([
         'positions' => $positions,
+        'shifts' => $shift,
     ]);
 }
 
@@ -945,5 +949,127 @@ public function deluser($id)
         $departemen->delete();
 
         return response()->json(['success' => true]);
+    }
+
+    public function shift()
+    { 
+        $shift = ShiftModel::paginate(10);
+        
+        if(Auth::user()->role == 0){
+            $satker = SatkerModel::get();
+        $shift = ShiftModel::paginate(10);
+        return view('master.shift', compact('satker', 'shift'));
+        } elseif(Auth::user()->role == 1){
+            $satker = SatkerModel::where('perusahaan', Auth::user()->perusahaan)->get();
+            $kantor = KantorModel::where('perusahaan', Auth::user()->perusahaan)->get();
+        $shift = ShiftModel::paginate(10);
+        return view('master.shift', compact('satker', 'shift', 'kantor'));
+        } elseif(Auth::user()->role == 3) {
+            $satker = SatkerModel::where('perusahaan', Auth::user()->perusahaan)
+            ->where('kantor', Auth::user()->kantor)
+            ->get();
+        $shift = ShiftModel::where('kantor_id', Auth::user()->kantor)->paginate(10);
+        return view('master.shift', compact('satker', 'shift'));
+        }
+
+        
+    }
+
+    public function shiftStore(Request $request)
+    {
+
+    if (Auth::user()->role == 3) {
+        $kantor = Auth::user()->kantor;
+
+        $validator = Validator::make($request->all(), [
+            'shift' => 'required|string|max:100',
+            'satker_id' => 'required|exists:satker,id',
+            'jam_masuk' => 'required|date_format:H:i',
+            'jam_keluar' => 'required|date_format:H:i',
+        ]);
+    } else {
+        $kantor = $request->kantor_id;
+
+            $validator = Validator::make($request->all(), [
+            'shift' => 'required|string|max:100',
+            'kantor_id' => 'required|exists:kantor,id',
+            'satker_id' => 'required|exists:satker,id',
+            'jam_masuk' => 'required|date_format:H:i',
+            'jam_keluar' => 'required|date_format:H:i',
+        ]);
+    }
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first()
+            ], 422);
+        }
+
+$jamMasuk = Carbon::createFromFormat('H:i', $request->jam_masuk);
+$jamKeluar = Carbon::createFromFormat('H:i', $request->jam_keluar);
+
+// Jika jam_keluar lebih kecil dari jam_masuk, anggap lewat tengah malam
+if ($jamKeluar->lessThanOrEqualTo($jamMasuk)) {
+    $jamKeluar->addDay(); // Tambah 1 hari
+}
+
+        ShiftModel::create([
+            'shift' => $request->shift,
+            'kantor_id' => $kantor, // pastikan kolomnya benar
+            'satker_id' => $request->satker_id, // pastikan kolomnya benar
+            'jam_masuk' => $jamMasuk->format('H:i'),
+            'jam_keluar' => $jamKeluar->format('H:i'),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Shift berhasil ditambahkan.',
+        ]);
+    }
+
+    public function shiftUpdate(Request $request, $id)
+    {
+
+    $shift = ShiftModel::findOrFail($id);
+        
+        if (Auth::user()->role == 3) {
+        $kantor = Auth::user()->kantor;
+
+        $validator = Validator::make($request->all(), [
+            'shift' => 'required|string|max:100',
+            'satker_id' => 'required|exists:satker,id',
+            'jam_masuk' => 'required|regex:/^\d{2}:\d{2}$/',
+            'jam_keluar' => 'required|regex:/^\d{2}:\d{2}$/',
+        ]);
+
+        if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()], 422);
+    }
+    
+    $shift->update([
+        'shift' => $request->shift,
+        'kantor_id' => $kantor, // override di sini
+        'satker_id' => $request->satker_id,
+        'jam_masuk' => $request->jam_masuk,
+        'jam_keluar' => $request->jam_keluar,
+    ]);
+    } else {
+
+            $validator = Validator::make($request->all(), [
+            'shift' => 'required|string|max:100',
+            'kantor_id' => 'required|exists:kantor,id',
+            'satker_id' => 'required|exists:satker,id',
+            'jam_masuk' => 'required|regex:/^\d{2}:\d{2}$/',
+            'jam_keluar' => 'required|regex:/^\d{2}:\d{2}$/',
+        ]);
+
+if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()], 422);
+    }
+
+    $shift->update($request->only(['shift', 'kantor_id', 'satker_id', 'jam_masuk', 'jam_keluar']));
+    }
+
+    return response()->json(['message' => 'Shift berhasil diperbarui.']);
     }
 }

@@ -28,4 +28,9 @@ class AbsenModel extends Model
     {
         return $this->belongsTo(PegawaiModel::class, 'nip');
     }  
+
+        public function shifts()
+    {
+        return $this->belongsTo(ShiftModel::class, 'shift');
+    }
 }

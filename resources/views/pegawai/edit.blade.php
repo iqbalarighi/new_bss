@@ -14,7 +14,7 @@
     @endif
 
         <div class="card-header bg-danger text-white text-center fw-bold">Edit Pegawai
-            <button class="float-right btn btn-sm btn-secondary" onclick="history.back()">Kembali</button>
+            <button class="float-right btn btn-sm btn-secondary" onclick="window.location.href='{{route('pegawai.index')}}'">Kembali</button>
         </div>
         <div class="card-body">
 <form method="POST" action="{{ route('pegawai.update', $pegawai->id) }}" enctype="multipart/form-data" id="formEditPegawai">
@@ -64,15 +64,6 @@
     <div class="mb-3">
         <label class="form-label">Kontak Darurat</label>
         <input type="text" class="form-control" name="kontak_darurat" value="{{ $pegawai->ko_drat }}" required>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Shift</label>
-        <select name="shift" class="form-select" required>
-            <option value="0" {{ $pegawai->shift == '0' ? 'selected' : '' }}>Non Shift</option>
-            <option value="1" {{ $pegawai->shift == '1' ? 'selected' : '' }}>Shift Pagi</option>
-            <option value="2" {{ $pegawai->shift == '2' ? 'selected' : '' }}>Shift Siang</option>
-        </select>
     </div>
 
     @if(Auth::user()->role === 0)
@@ -126,6 +117,15 @@
     </div>
 
     <div class="mb-3">
+        <label class="form-label">Shift</label>
+        <select name="shift" class="form-select" required>
+            @foreach($shift as $item)
+            <option value="{{ $item->id }}" {{ $pegawai->shift == $item->id ? 'selected' : '' }}>{{ $item->shift }} {{ Carbon\Carbon::parse($item->jam_masuk)->format('H:i') }}-{{ Carbon\Carbon::parse($item->jam_keluar)->format('H:i') }} WIB</option>
+            @endforeach
+        </select>
+    </div>
+
+    <div class="mb-3">
         <label class="form-label">Status Pegawai</label>
         <select name="status" class="form-select" required>
             <option value="Aktif" {{ $pegawai->status == 'Aktif' ? 'selected' : '' }}>Aktif</option>
@@ -164,10 +164,24 @@
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Ya, perbarui!',
-            cancelButtonText: 'Batal'
+            cancelButtonText: 'Batal',
+            allowOutsideClick: false,
+            reverseButtons: true,
+            allowEscapeKey: false,
         }).then((result) => {
             if (result.isConfirmed) {
-                e.target.submit(); // Submit form jika dikonfirmasi
+                // Tampilkan loading dalam SweetAlert
+                Swal.fire({
+                    title: 'Memproses...',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Submit form setelah loading muncul
+                e.target.submit();
             }
         });
     });

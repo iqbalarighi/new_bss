@@ -72,20 +72,13 @@
                     <h5><ion-icon name="person"></ion-icon> Kehadiran Terakhir</h5>
         @if($absen != null)
         <div class="card p-1 mb-1">
-            <h5>{{Carbon\carbon::parse($absen->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} (@if($absen->shift == 0) Non Shift @elseif($absen->shift == 1) Shift Pagi @else Shift Siang @endif)</h5>
+            <h5>{{Carbon\carbon::parse($absen->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} ({{$absen->shifts->shift}})</h5>
 
             <div class="d-flex justify-content-around align-items-center">
                 <div class="d-flex align-items-center gap-2">
                     <img src="{{ asset('storage/absensi/'.$absen->pegawai->nip.'/'.$absen->foto_in) }}" alt="Foto Masuk" class="rounded" width="50">
-                @if($absen->shift == 0 && $absen->jam_in > '08:00')
-                <div class="text-center pl-1 text-danger">
-                @elseif($absen->shift == 1 && $absen->jam_in > '07:00')
-                <div class="text-center pl-1 text-danger">
-                @elseif($absen->shift == 2 && $absen->jam_in > '13:00')
-                <div class="text-center pl-1 text-danger">
-                @else
-                <div class="text-center pl-1">
-                @endif
+
+                    <div class="text-center pl-1 {{$absen->jam_in > $absen->shifts->jam_masuk ? 'text-danger' : ''}}">
                         <span class="d-block">Masuk</span>
                         <strong>{{$absen->jam_in}}</strong>
                     </div>
@@ -321,74 +314,66 @@
                         </li>
                     </ul>
                 </div>
-                <div class="tab-content mt-2" style="margin-bottom:100px;">
-                    <div class="tab-pane fade show active" id="home" role="tabpanel">
-                        <ul class="listview image-listview">
-                             @foreach($absens as $item)
-                            <li>
-                               <div class="card p-1 mb-2">
-                                    <h5>{{Carbon\carbon::parse($item->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} (@if($item->shift == 0) Non Shift @elseif($item->shift == 1) Shift Pagi @else Shift Siang @endif)</h5>
-                                    <div class="d-flex justify-content-around align-items-center">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <img src="{{ asset('storage/absensi/'.$item->pegawai->nip.'/'.$item->foto_in) }}" alt="Foto Masuk" class="rounded" width="50">
-                                        @if($item->shift == 0 && $item->jam_in > '08:00')
-                                        <div class="text-center pl-1 text-danger">
-                                        @elseif($item->shift == 1 && $item->jam_in > '07:00')
-                                        <div class="text-center pl-1 text-danger">
-                                        @elseif($item->shift == 2 && $item->jam_in > '13:00')
-                                        <div class="text-center pl-1 text-danger">
-                                        @else
+            <div class="tab-content mt-2" style="margin-bottom:100px;">
+                <div class="tab-pane fade show active" id="home" role="tabpanel">
+                    <ul class="listview image-listview">
+                         @foreach($absens as $item)
+                        <li>
+                           <div class="card p-1 mb-2">
+                                <h5>{{Carbon\carbon::parse($item->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} ({{$item->shifts->shift}})</h5>
+                                <div class="d-flex justify-content-around align-items-center">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="{{ asset('storage/absensi/'.$item->pegawai->nip.'/'.$item->foto_in) }}" alt="Foto Masuk" class="rounded" width="50">
+                                        <div class="text-center pl-1 {{$item->jam_in > $item->shifts->jam_masuk ? 'text-danger' : ''}}">
+                                            <span class="d-block">Masuk</span>
+                                            <strong>{{$item->jam_in}}</strong>
+                                        </div>
+                                    </div>
+                                    @if($item->foto_out == null)
+                                    <div class="d-flex align-items-center gap-2">
+                                        
                                         <div class="text-center pl-1">
-                                        @endif
-                                                <span class="d-block">Masuk</span>
-                                                <strong>{{$item->jam_in}}</strong>
-                                            </div>
+                                            <span class="d-block">Pulang</span>
+                                            <strong>--:--</strong>
                                         </div>
-                                        @if($item->foto_out == null)
-                                        <div class="d-flex align-items-center gap-2">
-                                            
-                                            <div class="text-center pl-1">
-                                                <span class="d-block">Pulang</span>
-                                                <strong>--:--</strong>
-                                            </div>
-                                        </div>
-                                        @else
-                                        <div class="d-flex align-items-center gap-2">
-                                            <img src="{{ asset('storage/absensi/'.$item->pegawai->nip.'/'.$item->foto_out) }}" alt="Foto Masuk" class="rounded" width="50">
-                                            <div class="text-center pl-1">
-                                                <span class="d-block">Pulang</span>
-                                                <strong>{{$item->jam_out}}</strong>
-                                            </div>
-                                        </div>
-                                        @endif
                                     </div>
-                                </div>
-                            </li>
-                            @endforeach
-                        </ul>
-                    </div>
-                    <div class="tab-pane fade" id="profile" role="tabpanel">
-                        <ul class="listview image-listview">
-                            @foreach($leaderboard as $d)
-                            <li>
-                                <div class="item ">
-                                    <img src="{{ asset('storage/absensi/'.$d->pegawai->nip.'/'.$d->foto_in) }}" alt="image" class="image rounded-circle" width="30">
-                                    <div class="in">
-                                        <div>
-                                            <b>{{ $d->pegawai->nama_lengkap }}</b><br>
-                                            <small class="text-muted">{{ $d->pegawai->jabat->jabatan }}</small>
+                                    @else
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="{{ asset('storage/absensi/'.$item->pegawai->nip.'/'.$item->foto_out) }}" alt="Foto Masuk" class="rounded" width="50">
+                                        <div class="text-center pl-1">
+                                            <span class="d-block">Pulang</span>
+                                            <strong>{{$item->jam_out}}</strong>
                                         </div>
-                                    <span class="badge {{ $d->jam_in < '07:00' ? 'bg-success' : 'bg-danger' }}">
-                                        {{ $d->jam_in }}
-                                    </span>
                                     </div>
+                                    @endif
                                 </div>
-                            </li>
-                            @endforeach
-                        </ul>
-                    </div>
-
+                            </div>
+                        </li>
+                        @endforeach
+                    </ul>
                 </div>
+                <div class="tab-pane fade" id="profile" role="tabpanel">
+                    <ul class="listview image-listview">
+                        @foreach($leaderboard as $d)
+                        <li>
+                            <div class="item ">
+                                <img src="{{ asset('storage/absensi/'.$d->pegawai->nip.'/'.$d->foto_in) }}" alt="image" class="image rounded-circle" width="30">
+                                <div class="in">
+                                    <div>
+                                        <b>{{ $d->pegawai->nama_lengkap }}</b><br>
+                                        <small class="text-muted">{{ $d->pegawai->jabat->jabatan }}</small>
+                                    </div>
+                                <span class="badge {{ $d->jam_in < '07:00' ? 'bg-success' : 'bg-danger' }}">
+                                    {{ $d->jam_in }}
+                                </span>
+                                </div>
+                            </div>
+                        </li>
+                        @endforeach
+                    </ul>
+                </div>
+
+            </div>
             </div>
         </div>
 @endsection

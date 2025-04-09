@@ -77,6 +77,9 @@ public function deptmn()
     {
         return $this->belongsTo(DeptModel::class, 'dept');
     }
-
+public function shifts()
+    {
+        return $this->belongsTo(ShiftModel::class, 'shift');
+    }
 
 }

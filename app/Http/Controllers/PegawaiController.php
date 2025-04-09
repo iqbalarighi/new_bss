@@ -9,6 +9,7 @@ use App\Models\KantorModel;
 use App\Models\PegawaiModel;
 use App\Models\PerusahaanModel;
 use App\Models\SatkerModel;
+use App\Models\ShiftModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -54,6 +55,7 @@ class PegawaiController extends Controller
         $kantor = KantorModel::get();
         $jabatan = JabatanModel::get();
         $satker = SatkerModel::get();
+        $shift = ShiftModel::get();
         } else {
         $id = Auth::user()->perusahaan;
         $knt = Auth::user()->kantor;
@@ -62,32 +64,34 @@ class PegawaiController extends Controller
         $kantor = KantorModel::where('perusahaan', $id)->where('id', $knt)->get();
         $jabatan = JabatanModel::where('perusahaan', $id)->get();
         $satker = SatkerModel::where('perusahaan', $id)->get();
+        $shift = ShiftModel::where('id', $knt)->get();
         }
 
 
-        return view('pegawai.input', compact('tenant', 'kantor', 'jabatan', 'satker'));
+        return view('pegawai.input', compact('tenant', 'kantor', 'jabatan', 'satker', 'shift'));
     }
 
     public function edit($id)
     {
+        $pegawai = PegawaiModel::findOrFail($id);
+        $tenant = PerusahaanModel::get();
         if(Auth::user()->role === 0){
-        $pegawai = PegawaiModel::findOrFail($id);
-        $tenant = PerusahaanModel::get();
-        $kantorList = KantorModel::get();
-        $jabatanList = JabatanModel::get();
-        $satkerList = SatkerModel::get();
-        $departemenList = DeptModel::get();
+            $tenant = PerusahaanModel::get();
+            $kantorList = KantorModel::get();
+            $jabatanList = JabatanModel::get();
+            $satkerList = SatkerModel::get();
+            $departemenList = DeptModel::get();
+            $shift = ShiftModel::get();
         } else {
-        $pegawai = PegawaiModel::findOrFail($id);
-        $tenant = PerusahaanModel::get();
-        $kantorList = KantorModel::where('perusahaan', $pegawai->perusahaan)->where('id', $pegawai->nama_kantor)->get();
-        $departemenList = DeptModel::where('perusahaan', $pegawai->perusahaan)->where('nama_kantor', $pegawai->nama_kantor)->get();
-        $satkerList = SatkerModel::where('perusahaan', $pegawai->perusahaan)->where('kantor', $pegawai->nama_kantor)->get();
-        $jabatanList = JabatanModel::where('perusahaan', $pegawai->perusahaan)->where('kantor_id', $pegawai->nama_kantor)->get();
+            $kantorList = KantorModel::where('perusahaan', $pegawai->perusahaan)->where('id', $pegawai->nama_kantor)->get();
+            $departemenList = DeptModel::where('perusahaan', $pegawai->perusahaan)->where('nama_kantor', $pegawai->nama_kantor)->get();
+            $satkerList = SatkerModel::where('perusahaan', $pegawai->perusahaan)->where('kantor', $pegawai->nama_kantor)->where('dept_id', $pegawai->dept)->get();
+            $jabatanList = JabatanModel::where('perusahaan', $pegawai->perusahaan)->where('kantor_id', $pegawai->nama_kantor)->where('dept_id', $pegawai->dept)->where('satker_id', $pegawai->satker)->get();
+            $shift = ShiftModel::where('satker_id', $pegawai->satker)->get();
         }
 
 
-        return view('pegawai.edit', compact('pegawai', 'tenant', 'kantorList', 'jabatanList', 'satkerList', 'departemenList'));
+        return view('pegawai.edit', compact('pegawai', 'tenant', 'kantorList', 'jabatanList', 'satkerList', 'departemenList', 'shift'));
     }
 
     public function store(Request $request)
@@ -309,5 +313,10 @@ public function update(Request $request, $id)
         }
 
         return view('pegawai.getabsensi', compact('absen'));
+    }
+
+    public function lapor()
+    {
+        return view('pegawai.laporan');
     }
 }

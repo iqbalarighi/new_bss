@@ -14,7 +14,7 @@
     @endif
 
         <div class="card-header bg-danger text-white text-center fw-bold">Tambah Pegawai
-            <button class="float-right btn btn-sm btn-secondary" onclick="history.back()">Kembali</button>
+            <button class="float-right btn btn-sm btn-secondary" onclick="window.location.href='{{route('pegawai.index')}}'">Kembali</button>
         </div>
         <div class="card-body">
             <form method="POST" action="{{ route('pegawai.store') }}" enctype="multipart/form-data" id="cekin">
@@ -73,15 +73,7 @@
                     <label class="form-label">Kontak Darurat</label>
                     <input type="tel" class="form-control" oninput="validateInput(event)" maxlength="14" name="kontak_darurat" required>
                 </div>
-                <div class="mb-3">
-                    <label for="shift" class="form-label">Shift</label>
-                    <select name="shift" id="shift" class="form-select" required>
-                        <option value="" selected>Pilih Shift</option>
-                        <option value="0">Non Shift</option>
-                        <option value="1">Shift Pagi</option>
-                        <option value="2">Shift Siang</option>
-                    </select>
-                </div>
+
                 @if(Auth::user()->role === 0)
                 <div class="mb-3">
                     <label for="tenant" class="form-label">Perusahaan</label>
@@ -124,6 +116,13 @@
                     {{-- <input type="text" class="form-control"name="usaha" placeholder="Masukkan nama kantor" required> --}}
                     <select name="jabatan" id="position" class="form-select" required>
 
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="shift" class="form-label">Shift</label>
+                    <select name="shift" id="shift" class="form-select" required>
+                        <option value="" selected>Pilih Shift</option>
+                        
                     </select>
                 </div>
                 <div class="mb-3">
@@ -317,6 +316,17 @@
             $.each(response.positions, function(key, position) {
                 $('#position').append('<option value="' + position.id + '">' + position.jabatan + '</option>');
             });
+               
+            $('#shift').empty();
+            $('#shift').append('<option value="">Pilih Shift</option>');
+            
+            $.each(response.shifts, function(key, shift) {
+                $('#shift').append(
+                        `<option value="${shift.id}">
+                            ${shift.shift} (${shift.jam_masuk.slice(0,5)} - ${shift.jam_keluar.slice(0,5)})
+                         </option>`
+                    );
+            });
                     },
                     error: function(xhr) {
                         console.log(xhr.responseText);
@@ -326,7 +336,7 @@
 
              if (!satId){
                 $('#position').empty().append('<option value="">Pilih Jabatan</option>');
-                $('#satker').empty().append('<option value="">Pilih Satuan Kerja</option>');
+                $('#shift').empty().append('<option value="">Pilih Shift</option>');
             }
         });
 </script>
