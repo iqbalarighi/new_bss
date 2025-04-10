@@ -1038,38 +1038,40 @@ if ($jamKeluar->lessThanOrEqualTo($jamMasuk)) {
         $validator = Validator::make($request->all(), [
             'shift' => 'required|string|max:100',
             'satker_id' => 'required|exists:satker,id',
-            'jam_masuk' => 'required|regex:/^\d{2}:\d{2}$/',
-            'jam_keluar' => 'required|regex:/^\d{2}:\d{2}$/',
+            'jam_masuk' => 'required|date_format:H:i',
+            'jam_keluar' => 'required|date_format:H:i',
         ]);
 
         if ($validator->fails()) {
         return response()->json(['errors' => $validator->errors()], 422);
     }
     
-    $shift->update([
-        'shift' => $request->shift,
-        'kantor_id' => $kantor, // override di sini
-        'satker_id' => $request->satker_id,
-        'jam_masuk' => $request->jam_masuk,
-        'jam_keluar' => $request->jam_keluar,
-    ]);
+        $shift->update([
+            'shift' => $request->shift,
+            'kantor_id' => $kantor, // override di sini
+            'satker_id' => $request->satker_id,
+            'jam_masuk' => $request->jam_masuk,
+            'jam_keluar' => $request->jam_keluar,
+        ]);
     } else {
 
             $validator = Validator::make($request->all(), [
             'shift' => 'required|string|max:100',
             'kantor_id' => 'required|exists:kantor,id',
             'satker_id' => 'required|exists:satker,id',
-            'jam_masuk' => 'required|regex:/^\d{2}:\d{2}$/',
-            'jam_keluar' => 'required|regex:/^\d{2}:\d{2}$/',
+            'jam_masuk' => 'required|date_format:H:i',
+            'jam_keluar' => 'required|date_format:H:i',
         ]);
 
-if ($validator->fails()) {
-        return response()->json(['errors' => $validator->errors()], 422);
-    }
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
 
     $shift->update($request->only(['shift', 'kantor_id', 'satker_id', 'jam_masuk', 'jam_keluar']));
     }
 
     return response()->json(['message' => 'Shift berhasil diperbarui.']);
     }
+
+    
 }

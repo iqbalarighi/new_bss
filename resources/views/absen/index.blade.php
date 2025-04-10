@@ -363,7 +363,7 @@
                                         <b>{{ $d->pegawai->nama_lengkap }}</b><br>
                                         <small class="text-muted">{{ $d->pegawai->jabat->jabatan }}</small>
                                     </div>
-                                <span class="badge {{ $d->jam_in < '07:00' ? 'bg-success' : 'bg-danger' }}">
+                                <span class="badge {{ $d->jam_in < $d->shifts->jam_masuk ? 'bg-success' : 'bg-danger' }}">
                                     {{ $d->jam_in }}
                                 </span>
                                 </div>

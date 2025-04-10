@@ -1,7 +1,7 @@
 @extends('layouts.side.side')
 @section('content')
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-<div class="container">
+<div class="container mw-100">
     <!-- CSS Placeholder Palsu -->
 <style>
     .form-group {
@@ -82,7 +82,7 @@
                                 <td>{{$abs->pegawai->deptmn->nama_dept}}</td>
                                 <td>{{$abs->pegawai->sat->satuan_kerja}}</td>
                                 <td class="text-center {{$abs->jam_in > $abs->shifts->jam_masuk ? 'text-danger' : ''}}">{{$abs->jam_in}}</td>
-                                <td class="text-center">
+                                <td class="text-center"> 
                                     <img src="{{ asset('storage/absensi/'.$abs->pegawai->nip.'/'.$abs->foto_in) }}" width="40px">
                                 </td>
                                 <td class="text-center">{{$abs->jam_out == null ? 'Belum Absen Pulang' : $abs->jam_out}}</td>

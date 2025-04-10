@@ -31,12 +31,16 @@
     }
 
     #map { height: 270px; }
+
 </style>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 @endsection
 
 @section('content')
+{{-- {{dd($absenTerakhir)}} --}}
+
+
 <div class="section full mt-4">
     <div class="section-title">Title</div>
     <div class="wide-block pt-2 pb-2">
@@ -85,7 +89,18 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js"></script>
-
+@if($absenTerakhir && $absenTerakhir->jam_out == null)
+<script type="text/javascript">
+    let msg = "{{$absenTerakhir->tgl_absen}}";
+    Swal.fire({
+            icon: 'warning',
+            title: 'Oops!',
+            html: `
+                  Anda belum melakukan absen pulang pada tanggal ` + msg + `. Harap selesaikan terlebih dahulu.`,
+            confirmButtonText: 'OK'
+        });
+</script>
+@endif
 <script>
     Webcam.set({
         width: 480,
@@ -242,6 +257,15 @@ $(document).ready(function () {
                                         confirmButtonText: 'OK'
                                     }).then(() => {
                                         window.location.href = '{{ url('/absen') }}';
+                                    });
+                                } else if (status[0] == "absplg") {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Berhasil!',
+                                        text: status[1],
+                                        confirmButtonText: 'OK'
+                                    }).then(() => {
+                                        window.location.reload();
                                     });
                                 } else {
                                     Swal.fire({

@@ -53,8 +53,8 @@
                                             data-shift="{{ $shi->shift }}"
                                             data-satker="{{ $shi->satker_id }}"
                                             data-kantor="{{ $shi->kantor_id }}"
-                                            data-jam_masuk="{{ $shi->jam_masuk }}"
-                                            data-jam_keluar="{{ $shi->jam_keluar }}">
+                                            data-jam_masuk="{{ \Carbon\Carbon::parse($shi->jam_masuk)->format('H:i') }}"
+                                            data-jam_keluar="{{ \Carbon\Carbon::parse($shi->jam_keluar)->format('H:i') }}">
                                             <i class="bi bi-pencil-square"></i> Edit
                                         </button>
 

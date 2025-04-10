@@ -57,14 +57,24 @@ class AbsenController extends Controller
         $nip_id = Auth::guard('pegawai')->user()->id;
         $cek = AbsenModel::where('tgl_absen', $harini)->where('nip', $nip_id)->count();
         $cek2 = AbsenModel::where('tgl_absen', $harini)->where('nip', $nip_id)->first();
+
+        $absenTerakhir = AbsenModel::where('nip', $nip_id)
+                ->where('tgl_absen', '<', $harini)
+                ->orderByDesc('tgl_absen')
+                ->first();
+
+            // Cek apakah absen terakhir belum absen pulang
+            // if ($absenTerakhir && $absenTerakhir->jam_out === null) {
+            //     return redirect()->back()->with('error', 'Anda belum melakukan absen pulang pada tanggal ' . $absenTerakhir->tgl_absen . '. Harap selesaikan terlebih dahulu.');
+            // }
+
         $pegawai = PegawaiModel::with('perusa', 'kantor', 'jabat', 'sat' )->findOrFail($nip_id);
 
-        return view('absen.create', compact('pegawai', 'cek', 'cek2'));
+        return view('absen.create', compact('pegawai', 'cek', 'cek2', 'absenTerakhir'));
     }
 
     public function store(Request $request)
     {
-// dd(storage_path('storage/absensi/'));
         $nip = Auth::guard('pegawai')->user()->nip;
         $nip_id = Auth::guard('pegawai')->user()->id;
         $shift_id = Auth::guard('pegawai')->user()->shift;
@@ -73,7 +83,7 @@ class AbsenController extends Controller
         $jam_foto = date("His");
         $lokasi = $request->lokasi;
         $image = $request->image;
-        $folderPath = ('storage/absensi/'. $nip .'/');
+        $folderPath = ('storage/absensi/' . $nip . '/');
         $id_perus = Auth::guard('pegawai')->user()->perusahaan;
         $id_kan = Auth::guard('pegawai')->user()->nama_kantor;
 
@@ -89,48 +99,81 @@ class AbsenController extends Controller
             return;
         }
 
+        // Ambil absen terakhir sebelum hari ini yang belum pulang
+        $absenSebelumnya = AbsenModel::where('nip', $nip_id)
+            ->where('tgl_absen', '<', $tgl_absen)
+            ->whereNull('jam_out')
+            ->orderByDesc('tgl_absen')
+            ->first();
+
+        if ($absenSebelumnya != null) {
+            // Auto-isi absen pulang dengan jam sekarang untuk absen sebelumnya
+            $fileNameOut = $absenSebelumnya->tgl_absen . "-" . $jam_foto . "-out.png";
+            $fileOutPath = $folderPath . $fileNameOut;
+
+            $abs = AbsenModel::where('id', $absenSebelumnya->id)->update([
+                'jam_out' => $jam_absen,
+                'foto_out' => $fileNameOut,
+                'lokasi_out' => $lokasi,
+            ]);
+
+            // Optional: log atau simpan informasi bahwa ini absen pulang otomatis
+
+            if ($abs) {
+            file_put_contents($fileOutPath, $image_base64);
+                echo "absplg|Terima Kasih, Absen Pulang Berhasil|out";
+                return;
+            } else {
+                echo "error|Gagal menyimpan absen pulang";
+                return;
+            }
+        }
+
+        // Cek apakah hari ini sudah absen masuk
         $cek = AbsenModel::where('tgl_absen', $tgl_absen)->where('nip', $nip_id)->count();
         if ($cek > 0) {
-            $formatName = $tgl_absen . "-" . $jam_foto . "-out";
-            $fileName = $formatName . ".png";
-            $file= $folderPath . $fileName;
+            // Proses absen pulang
+            $fileName = $tgl_absen . "-" . $jam_foto . "-out.png";
+            $file = $folderPath . $fileName;
 
             $update = AbsenModel::where('nip', $nip_id)->where('tgl_absen', $tgl_absen)->update([
-            'jam_out' => $jam_absen,
-            'foto_out' => $fileName,
-            'lokasi_out' => $lokasi,
-        ]);
-            if($update){
+                'jam_out' => $jam_absen,
+                'foto_out' => $fileName,
+                'lokasi_out' => $lokasi,
+            ]);
+
+            if ($update) {
                 file_put_contents($file, $image_base64);
                 echo "success|Terima Kasih, Absen Pulang Berhasil|out";
             } else {
-                echo 1;       
+                echo "error|Gagal menyimpan absen pulang";
             }
-        } else {
-            $formatName = $tgl_absen . "-" . $jam_foto . "-in";
-            $fileName = $formatName . ".png";
-            $file= $folderPath . $fileName;
 
-            
+        } else {
+            // Proses absen masuk
+            $fileName = $tgl_absen . "-" . $jam_foto . "-in.png";
+            $file = $folderPath . $fileName;
 
             $simpan = AbsenModel::create([
-            'nip' => $nip_id,
-            'shift' => $shift_id,
-            'perusahaan' => $id_perus,
-            'kantor' => $id_kan,
-            'tgl_absen' => $tgl_absen,
-            'jam_in' => $jam_absen,
-            'foto_in' => $fileName,
-            'lokasi_in' => $lokasi,
-        ]);
-            if($simpan){
+                'nip' => $nip_id,
+                'shift' => $shift_id,
+                'perusahaan' => $id_perus,
+                'kantor' => $id_kan,
+                'tgl_absen' => $tgl_absen,
+                'jam_in' => $jam_absen,
+                'foto_in' => $fileName,
+                'lokasi_in' => $lokasi,
+            ]);
+
+            if ($simpan) {
                 file_put_contents($file, $image_base64);
                 echo "success|Terima Kasih, Absen Masuk Berhasil|in";
             } else {
-                echo 1;       
+                echo "error|Gagal menyimpan absen masuk";
             }
         }
     }
+
 
     public function profile()
     {

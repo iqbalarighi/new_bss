@@ -3,18 +3,12 @@
                                 <td class="text-center">{{$absen->firstitem() + $key}}</td>
                                 <td class="text-center">{{$abs->pegawai->nip}}</td>
                                 <td>{{$abs->pegawai->nama_lengkap}}</td>
-                                <td>{{ $abs->shift == 0 ? 'Non Shift' : ($abs->shift == 1 ? 'Shift Pagi' : 'Shift Siang') }}</td>
+                                <td>{{ $abs->shifts->shift}}</td>
 @if(Auth::user()->role == 0 || Auth::user()->role == 1)<td>{{$abs->pegawai->kantor->nama_kantor}}</td> @endif
                                 <td>{{$abs->pegawai->deptmn->nama_dept}}</td>
                                 <td>{{$abs->pegawai->sat->satuan_kerja}}</td>
-                                <td class="text-center @if($abs->shift == 0)
-                                    {{$abs->jam_in >= '08:00' ? 'text-danger' : ''}}
-                                    @elseif($abs->shift == 1)
-                                    {{$abs->jam_in >= '07:00' ? 'text-danger' : ''}}
-                                    @elseif($abs->shift == 2)
-                                    {{$abs->jam_in >= '13:00' ? 'text-danger' : ''}}
-                                    @endif">{{$abs->jam_in}}</td>
-                                <td class="text-center">
+                                <td class="text-center {{$abs->jam_in > $abs->shifts->jam_masuk ? 'text-danger' : ''}}">{{$abs->jam_in}}</td>
+                                <td class="text-center"> 
                                     <img src="{{ asset('storage/absensi/'.$abs->pegawai->nip.'/'.$abs->foto_in) }}" width="40px">
                                 </td>
                                 <td class="text-center">{{$abs->jam_out == null ? 'Belum Absen Pulang' : $abs->jam_out}}</td>
@@ -25,32 +19,15 @@
                                     <img src="{{ asset('storage/absensi/'.$abs->pegawai->nip.'/'.$abs->foto_out) }}" width="40px">
                                     @endif
                                 </td>
-                                <td class="text-center @if($abs->shift == 0)
-                                    {{$abs->jam_in >= '08:00' ? 'text-danger' : ''}}
-                                    @elseif($abs->shift == 1)
-                                    {{$abs->jam_in >= '07:00' ? 'text-danger' : ''}}
-                                    @elseif($abs->shift == 2)
-                                    {{$abs->jam_in >= '13:00' ? 'text-danger' : ''}}
-                                    @endif">
-
+                                <td class="text-center {{$abs->jam_in > $abs->shifts->jam_masuk ? 'text-danger' : ''}}">
                                     @php
-                                    switch ($abs->shift) {
-                                        case '0':
-                                            $jamStandar = Carbon\Carbon::parse('08:00');
-                                            break;
-                                        case '1':
-                                            $jamStandar = Carbon\Carbon::parse('07:00');
-                                            break;
-                                        default: // non shift
-                                            $jamStandar = Carbon\Carbon::parse('13:00');
-                                            break;
-                                    }
+                                        $jamStandar = Carbon\Carbon::parse($abs->shifts->jam_masuk);
 
                                     $jamAktual = Carbon\Carbon::parse($abs->jam_in); // misalnya: '08:23'
 
                                     if ($jamAktual->gt($jamStandar)) {
                                         $selisih = $jamAktual->diff($jamStandar);
-                                         echo "Terlambat " . ($selisih->h == 0 ? '' : $selisih->h . ' jam ') . ($selisih->i == 0 ? '' : $selisih->i . ' menit ') . $selisih->s . ' detik';
+    echo "Terlambat " . ($selisih->h == 0 ? '' : $selisih->h . ' jam ') . ($selisih->i == 0 ? '' : $selisih->i . ' menit ') . $selisih->s . ' detik';
                                     } else {
                                         echo "Tepat waktu";
                                     }
