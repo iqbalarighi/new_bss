@@ -319,4 +319,9 @@ public function update(Request $request, $id)
     {
         return view('pegawai.laporan');
     }
+
+    public function preview()
+    {
+        return view('pegawai.preview');
+    }
 }

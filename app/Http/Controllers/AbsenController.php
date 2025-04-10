@@ -58,10 +58,17 @@ class AbsenController extends Controller
         $cek = AbsenModel::where('tgl_absen', $harini)->where('nip', $nip_id)->count();
         $cek2 = AbsenModel::where('tgl_absen', $harini)->where('nip', $nip_id)->first();
 
+        if($cek2 == null){
         $absenTerakhir = AbsenModel::where('nip', $nip_id)
-                ->where('tgl_absen', '<', $harini)
-                ->orderByDesc('tgl_absen')
-                ->first();
+            ->where('tgl_absen', '<', $harini)
+            ->whereNull('jam_out')
+            ->latest()
+            ->orderByDesc('created_at')
+            ->first();
+        } else {
+            $absenTerakhir = null;
+        }
+        
 
             // Cek apakah absen terakhir belum absen pulang
             // if ($absenTerakhir && $absenTerakhir->jam_out === null) {
@@ -75,6 +82,7 @@ class AbsenController extends Controller
 
     public function store(Request $request)
     {
+        // dd($request->confirm != null);
         $nip = Auth::guard('pegawai')->user()->nip;
         $nip_id = Auth::guard('pegawai')->user()->id;
         $shift_id = Auth::guard('pegawai')->user()->shift;
@@ -99,10 +107,12 @@ class AbsenController extends Controller
             return;
         }
 
+if ($request->confirm != null) {
         // Ambil absen terakhir sebelum hari ini yang belum pulang
         $absenSebelumnya = AbsenModel::where('nip', $nip_id)
             ->where('tgl_absen', '<', $tgl_absen)
             ->whereNull('jam_out')
+            ->latest()
             ->orderByDesc('tgl_absen')
             ->first();
 
@@ -128,7 +138,7 @@ class AbsenController extends Controller
                 return;
             }
         }
-
+}
         // Cek apakah hari ini sudah absen masuk
         $cek = AbsenModel::where('tgl_absen', $tgl_absen)->where('nip', $nip_id)->count();
         if ($cek > 0) {

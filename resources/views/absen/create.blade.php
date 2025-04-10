@@ -47,34 +47,10 @@
         <div class="row">
             <div class="col" style="margin-bottom: -30px">
                 <input type="hidden" id="lokasi">
+                <input type="text" id="confirm" hidden disabled>
             <div class="webcam-capture"></div>
             </div>
         </div>
-        {{-- <div class="row" style="margin-top: -84px;">
-            <div class="col">
-                @if($cek == 1)
-                    @if($cek2->jam_out == null)
-                        <button id="capture" class="btn btn-danger btn-block" disabled>
-                        <ion-icon name="camera-outline"></ion-icon>
-                        Absen Pulang
-                    </button>
-                @else
-                <button class="btn btn-secondary btn-block" disabled>
-                    Terima Kasih &nbsp;
-                    <ion-icon name="thumbs-up"></ion-icon>
-                </button>
-                @endif
-            @else
-                <button id="capture" class="btn btn-primary btn-block" disabled>
-                    <ion-icon name="camera-outline"></ion-icon>
-                    Absen Masuk
-                </button>
-            @endif
-        </div>
-        </div> --}}
-    {{-- <center>
-        <img src="{{asset('storage/img/person.svg')}}" width="400px" style="position: relative; margin-top: -500px; margin-left: -35px; opacity: ;">
-    </center> --}}
         <div class="row mt-1">
             <div class="col" style="margin-top: -50px">
                 <div id="map" style="z-index: 0;"></div>
@@ -92,13 +68,28 @@
 @if($absenTerakhir && $absenTerakhir->jam_out == null)
 <script type="text/javascript">
     let msg = "{{$absenTerakhir->tgl_absen}}";
+
     Swal.fire({
             icon: 'warning',
             title: 'Oops!',
             html: `
-                  Anda belum melakukan absen pulang pada tanggal ` + msg + `. Harap selesaikan terlebih dahulu.`,
-            confirmButtonText: 'OK'
-        });
+                  Anda belum melakukan absen pulang pada tanggal ` + msg + `. Apakah Anda ingin melakukan absen pulang ?`,
+            confirmButtonText: 'OK', 
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Absen',
+            reverseButtons: true,
+            cancelButtonText: 'Tidak',
+            allowOutsideClick: false,
+        }).then((result) => {
+                    if (result.isConfirmed) {
+                            $('#confirm').prop('disabled', false);
+                            $('#confirm').attr('name', 'confirm');
+                            $('#confirm').attr('value', 1);
+                    } else {
+                        $('#confirm').removeAttr('name');
+                        $('#confirm').removeAttr('value');
+                    }
+                });
 </script>
 @endif
 <script>
@@ -204,6 +195,10 @@ $(document).ready(function () {
             let ctx = canvas.getContext("2d");
             let img = new Image();
             let lokasi = $('#lokasi').val();
+            let confirm = $('#confirm').val();
+
+
+           
 
             img.onload = function() {
                 canvas.width = img.width;
@@ -213,6 +208,7 @@ $(document).ready(function () {
                 ctx.drawImage(img, 0, 0);
 
                 let mirroredImage = canvas.toDataURL('image/png');
+                 
 
                 Swal.fire({
                     html: `
@@ -224,26 +220,36 @@ $(document).ready(function () {
                     showCancelButton: true,
                     confirmButtonText: 'Kirim',
                     cancelButtonText: 'Batal',
-                    reverseButtons: true
+                    reverseButtons: true,
+                    allowOutsideClick: false,
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        Swal.fire({
-                            title: 'Mengirim Data...',
-                            allowOutsideClick: false,
-                            didOpen: () => {
-                                Swal.showLoading();
-                            }
-                        });
-
                         var lokasi = $('#lokasi').val();
-
+                        if (lokasi == "") {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'Lokasi tidak terdeteksi, Aktifkan GPS perangkat atau reload halaman ini!',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
+                            } else {
+                                Swal.fire({
+                                            title: 'Mengirim Data...',
+                                            allowOutsideClick: false,
+                                            didOpen: () => {
+                                                Swal.showLoading();
+                                            }
+                                        });
+                            }
+                        
                         $.ajax({
                             type: 'POST',
                             url: '/absen/store',
                             data: {
                                 _token: '{{ csrf_token() }}',
                                 image: mirroredImage,
-                                lokasi: lokasi
+                                lokasi: lokasi,
+                                confirm: confirm,
                             },
                             cache: false,
                             success: function (respond) {
