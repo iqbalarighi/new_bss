@@ -63,7 +63,7 @@
 @endsection --}}
 
 @section('content')
-<div class="container-xl">
+<div class="container-xl mw-100">
     <div class="row g-2 align-items-center">
       <div class="col">
         <!-- Page pre-title -->

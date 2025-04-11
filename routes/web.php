@@ -81,7 +81,7 @@ Route::middleware(['auth:web'])->group(function () {
         Route::post('/cek-nip', [PegawaiController::class, 'cekNIP'])->name('cek.nip');
         Route::get('/pegawai/absensi/', [PegawaiController::class, 'absensi'])->name('pegawai.absensi');
         Route::get('/pegawai/absensi/laporan', [PegawaiController::class, 'lapor'])->name('pegawai.absensi.laporan');
-        Route::get('/pegawai/absensi/preview', [PegawaiController::class, 'preview'])->name('pegawai.absensi.preview');
+        Route::post('/pegawai/absensi/preview', [PegawaiController::class, 'preview'])->name('pegawai.absensi.preview');
         Route::get('/get-abs', [PegawaiController::class, 'getAbs'])->name('get.abs');
 
         Route::get('/users', [MasterController::class, 'user'])->name('users');

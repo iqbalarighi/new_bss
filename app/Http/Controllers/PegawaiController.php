@@ -317,11 +317,17 @@ public function update(Request $request, $id)
 
     public function lapor()
     {
-        return view('pegawai.laporan');
+        $karyawans = PegawaiModel::get();
+        return view('pegawai.laporan', compact('karyawans'));
     }
 
-    public function preview()
+    public function preview(Request $request)
     {
-        return view('pegawai.preview');
+        $periode = $request->periode;
+        $orng = $request->pegawai;
+        $pegawai = PegawaiModel::findOrFail($orng);
+        $absen = AbsenModel::where('nip', $pegawai->id)->where('tgl_absen', 'LIKE', '%'.$periode.'%')->get();
+        
+        return view('pegawai.preview', compact('pegawai', 'absen', 'periode'));
     }
 }
