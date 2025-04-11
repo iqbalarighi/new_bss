@@ -28,7 +28,7 @@ class AbsenController extends Controller
                 ->where('tgl_absen', 'LIKE',  '%'.carbon::now()->format('Y-m').'%')
                 ->selectRaw('
                     COUNT(nip) as jmlhadir,
-                    SUM(CASE WHEN jam_in > "'.($absen->shifts->jam_masuk ?? 0).'" THEN 1 ELSE 0 END) as jmltelat
+                    SUM(CASE WHEN jam_in > "'.($pegawai->shifts->jam_masuk).'" THEN 1 ELSE 0 END) as jmltelat
                 ')
                 ->first();
 
