@@ -97,6 +97,10 @@
     .text-capitalize {
         text-transform: capitalize;
     }
+
+      .red {
+    color: red;
+  }
   </style>
 </head>
 
@@ -145,7 +149,7 @@
         <tr>
           <td>{{ $loop->iteration }}</td>
           <td>{{$a->tgl_absen}}</td>
-          <td>{{$a->jam_in}}</td>
+          <td class="{{$a->jam_in > $a->shifts->jam_masuk ? 'red' : ''}}">{{$a->jam_in}}</td>
           <td><img src="{{ asset('storage/absensi/'. $a->pegawai->nip.'/'.$a->foto_in) }}" width="30"></td>
           <td>{{$a->jam_out}}</td>
           <td><img src="{{ asset('storage/absensi/'. $a->pegawai->nip.'/'.$a->foto_out) }}" width="30"></td>

@@ -54,6 +54,7 @@ Route::middleware(['auth:web'])->group(function () {
         Route::get('/get-sat/{kantId}', [MasterController::class, 'getsat']);
         Route::get('/get-satker-by-departemen/{deptId}', [MasterController::class, 'getSatkerByDepartemen']);
         Route::get('/get-position-by-satker/{satId}', [MasterController::class, 'getPositionBySatker']);
+        Route::get('/get-pegawai/{id}', [MasterController::class, 'bysatker']);
         
         Route::get('/departemen', [MasterController::class, 'dept'])->name('departemen');
         Route::post('/departemen/store', [MasterController::class, 'deptstore'])->name('departemen.store');
@@ -84,6 +85,8 @@ Route::middleware(['auth:web'])->group(function () {
         Route::post('/pegawai/absensi/preview', [PegawaiController::class, 'preview'])->name('pegawai.absensi.preview');
         Route::get('/get-abs', [PegawaiController::class, 'getAbs'])->name('get.abs');
         Route::get('/pegawai/absensi/izin', [PegawaiController::class, 'izin'])->name('pegawai.absensi.izin');
+        Route::get('/pegawai/absensi/rekap', [PegawaiController::class, 'rekap'])->name('pegawai.absensi.rekap');
+        Route::post('/pegawai/absensi/rekapview', [PegawaiController::class, 'rekapview'])->name('pegawai.absensi.rekapview');
 
         Route::get('/users', [MasterController::class, 'user'])->name('users');
         Route::post('/users/add', [MasterController::class, 'adduser'])->name('adduser');

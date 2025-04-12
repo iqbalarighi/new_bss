@@ -299,10 +299,8 @@ public function update(Request $request, $id)
             $absen = AbsenModel::latest()->paginate(10);
         } elseif (Auth::user()->role == 1) {
             $comp = Auth::user()->perusahaan;
-            $kantor = $request->kantor;
 
                 $absen = AbsenModel::where('perusahaan', $comp)
-                    ->where('kantor', $kantor)
                     ->latest()
                     ->paginate(10); // Sesuaikan kolomnya
 
@@ -340,12 +338,10 @@ public function update(Request $request, $id)
 
             if($bultah == ""){
             $absen = AbsenModel::where('perusahaan', $comp)
-                ->where('kantor', $kantor)
                 ->latest()
                 ->paginate(10);
                 } else {
                 $absen = AbsenModel::where('perusahaan', $comp)
-                    ->where('kantor', $kantor)
                     ->where('tgl_absen', 'LIKE', '%'.$bultah.'%')
                     ->latest()
                     ->paginate(10); // Sesuaikan kolomnya
@@ -379,21 +375,59 @@ public function update(Request $request, $id)
     {
         if (Auth::user()->role == 0) {
             $karyawans = PegawaiModel::all();
+
+        return view('pegawai.laporan', compact('karyawans', 'kantors', 'departemens'));
         } elseif (Auth::user()->role == 1) {
             $comp = Auth::user()->perusahaan;
             $karyawans = PegawaiModel::where('perusahaan', $comp)->get();
+            $kantors = KantorModel::where('perusahaan', $comp)->get();
+            $tabul = PegawaiModel::get('created_at')->first();
+
+        return view('pegawai.laporan', compact('karyawans', 'kantors', 'tabul'));
         } elseif (Auth::user()->role == 3) {
             $comp = Auth::user()->perusahaan;
             $kantor = Auth::user()->kantor;
         $karyawans = PegawaiModel::where('perusahaan', $comp)->where('nama_kantor', $kantor)->get();
+        return view('pegawai.laporan', compact('karyawans', 'kantors'));
         } 
 
-        return view('pegawai.laporan', compact('karyawans'));
     }
 
     public function preview(Request $request)
     {
 
+        $periode = $request->periode;
+
+        $orng = $request->pegawais;
+        $pegawai = PegawaiModel::findOrFail($orng);
+        $absen = AbsenModel::where('nip', $pegawai->id)
+        ->where('tgl_absen', 'LIKE', '%'.$periode.'%')
+        ->get();
+
+    return view('pegawai.preview', compact('pegawai', 'absen', 'periode'));
+
+    }
+
+    public function rekap()
+    {
+        if (Auth::user()->role == 0) {
+            $kantors = KantorModel::all();
+        } else if (Auth::user()->role == 1) {
+            $comp = Auth::user()->perusahaan;
+            $kantors = KantorModel::where('perusahaan', $comp)->get();
+        } else if (Auth::user()->role == 3) {
+            $comp = Auth::user()->perusahaan;
+            $kantor = Auth::user()->kantor;
+            $kantors = KantorModel::where('perusahaan', $comp)->where('nama_kantor', $kantor)->get();
+        } 
+
+        
+        return view('pegawai.rekap', compact('kantors'));
+    }
+
+    public function rekapview(Request $request)
+    {
+        $periode = $request->periode;
 
         if (Auth::user()->role == 0) {
             $comp = $request->perusahaan;
@@ -401,31 +435,32 @@ public function update(Request $request, $id)
         } elseif (Auth::user()->role == 1) {
             $comp = Auth::user()->perusahaan;
             $kantor = $request->kantor;
+            $dept = $request->departemen;
+            $satker = $request->satker;
+
+            $karyawan = PegawaiModel::where('perusahaan', $comp)
+            ->where('nama_kantor', $kantor)
+            ->where('dept', $dept)
+            ->where('satker', $satker)
+            ->get();
         } elseif (Auth::user()->role == 3) {
             $comp = Auth::user()->perusahaan;
             $kantor = Auth::user()->kantor;
-        } 
-        
+            $dept = $request->departemen;
 
-                $periode = $request->periode;
-        if($request->action == "cetak"){
-                $orng = $request->pegawai;
-                $pegawai = PegawaiModel::where('perusahaan', $comp)->where('nama_kantor', $kantor)->findOrFail($orng);
-                $absen = AbsenModel::where('perusahaan', $comp)
-                ->where('kantor', $kantor)
-                ->where('nip', $pegawai->id)
-                ->where('tgl_absen', 'LIKE', '%'.$periode.'%')
-                ->get();
-
-            return view('pegawai.preview', compact('pegawai', 'absen', 'periode'));
-        } else {
+            $karyawan = PegawaiModel::where('perusahaan', $comp)
+            ->where('nama_kantor', $kantor)
+            ->where('dept', $dept)
+            ->where('satker', $satker)
+            ->get();
+        }
             $inputBulan = $request->periode ?? now()->format('Y-m');
             [$tahun, $bulan] = explode('-', $inputBulan); // parsing "2025-04"
 
             $start = Carbon::createFromDate($tahun, $bulan, 1)->startOfMonth();
             $end = $start->copy()->endOfMonth();
 
-            $karyawan = PegawaiModel::where('perusahaan', $comp)->where('nama_kantor', $kantor)->get();
+            
             $rekap = [];
 
             foreach ($karyawan as $k) {
@@ -447,7 +482,6 @@ public function update(Request $request, $id)
             }
 
             return view('pegawai.excel', compact('rekap', 'bulan', 'tahun', 'periode'));
-        }
     }
 
     public function izin()

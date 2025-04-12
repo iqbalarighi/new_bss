@@ -20,7 +20,7 @@
    @page { size: A4 landscape }
 
   body {
-    font-size: 10px;
+    font-size: 8px;
     font-family: Arial, sans-serif;
   }
 
@@ -90,7 +90,7 @@
   <section class="sheet padding-10mm">
     <div class="header">
       <img src="{{ asset('storage/img/logo.png') }}" alt="Logo" />
-      <div>
+      <div style="font-size: 10pt !important;">
         <h3 style="text-align: center;">Rekap Absensi Bulanan</h3>
         <strong>PERIODE <font class="text-uppercase">{{Carbon::parse($periode)->isoFormat('MMMM YYYY')}}</font></strong><br>
       </div>

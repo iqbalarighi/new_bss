@@ -57,6 +57,7 @@
                         <thead class="text-center table-dark px-1">
                             <tr>
                                 <th>No</th>
+                                <th>Tgl Absen</th>
                                 <th>Nip</th>
                                 <th>Nama Pegawai</th>
                                 <th>Shift</th>
@@ -75,9 +76,10 @@
                             @foreach($absen as $key => $abs)
                             <tr>
                                 <td class="text-center">{{$absen->firstitem() + $key}}</td>
+                                <td class="text-center" style="white-space: nowrap;">{{ Carbon\Carbon::parse($abs->tgl_absen)->isoFormat('DD-MM-YYYY')}}</td>
                                 <td class="text-center">{{$abs->pegawai->nip}}</td>
                                 <td>{{$abs->pegawai->nama_lengkap}}</td>
-                                <td>{{ $abs->shifts->shift}}</td>
+                                <td class="text-center">{{ $abs->shifts->shift}}</td>
 @if(Auth::user()->role == 0 || Auth::user()->role == 1)<td>{{$abs->pegawai->kantor->nama_kantor}}</td> @endif
                                 <td>{{$abs->pegawai->deptmn->nama_dept}}</td>
                                 <td>{{$abs->pegawai->sat->satuan_kerja}}</td>
@@ -149,7 +151,7 @@
                     tbody.empty(); // Kosongkan tabel
 
                     if (response.length === 0) {
-                        tbody.append('<tr><td colspan="13" class="text-center">Data tidak ditemukan</td></tr>');
+                        tbody.append('<tr><td colspan="14" class="text-center">Data tidak ditemukan</td></tr>');
                         return;
                     }
 

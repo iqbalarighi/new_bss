@@ -16,7 +16,7 @@
     <div class="row justify-content-center">
         <div class="col mw-100">
             <div class="card">
-                <div class="card-header d-flex justify-content-between">{{ __('Daftar Pegawai') }}
+                <div class="card-header d-flex justify-content-between fw-bold">{{ __('Daftar Pegawai') }}
 
         <a href="{{ route('pegawai.input') }}" class="btn btn-danger bi bi-person-add"></a>
                 </div>

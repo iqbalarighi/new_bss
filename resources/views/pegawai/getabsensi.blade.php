@@ -1,6 +1,7 @@
 @foreach($absen as $key => $abs)
                             <tr>
                                 <td class="text-center">{{$absen->firstitem() + $key}}</td>
+                                <td class="text-center" style="white-space: nowrap;">{{ Carbon\Carbon::parse($abs->tgl_absen)->isoFormat('DD-MM-YYYY')}}</td>
                                 <td class="text-center">{{$abs->pegawai->nip}}</td>
                                 <td>{{$abs->pegawai->nama_lengkap}}</td>
                                 <td>{{ $abs->shifts->shift}}</td>

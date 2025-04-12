@@ -792,6 +792,12 @@ public function deluser($id)
         ]);
     }
 
+    public function bysatker($sat_id)
+    {
+        $pegawai = PegawaiModel::where('satker', $sat_id)->get();
+        return response()->json($pegawai);
+    }
+
 
     public function getSatkerByDepartemen($id)
 {
