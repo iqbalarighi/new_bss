@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\AbsenModel;
 use App\Models\DeptModel;
+use App\Models\IzinabsenModel;
 use App\Models\JabatanModel;
 use App\Models\KantorModel;
 use App\Models\PegawaiModel;
 use App\Models\PerusahaanModel;
 use App\Models\SatkerModel;
 use App\Models\ShiftModel;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -293,7 +295,27 @@ public function update(Request $request, $id)
     public function absensi(Request $request)
     {
         
-        $absen = AbsenModel::latest()->paginate(10);
+        if (Auth::user()->role == 0) {
+            $absen = AbsenModel::latest()->paginate(10);
+        } elseif (Auth::user()->role == 1) {
+            $comp = Auth::user()->perusahaan;
+            $kantor = $request->kantor;
+
+                $absen = AbsenModel::where('perusahaan', $comp)
+                    ->where('kantor', $kantor)
+                    ->latest()
+                    ->paginate(10); // Sesuaikan kolomnya
+
+        } elseif (Auth::user()->role == 3) {
+            $comp = Auth::user()->perusahaan;
+            $kantor = Auth::user()->kantor;
+
+                $absen = AbsenModel::where('perusahaan', $comp)
+                    ->where('kantor', $kantor)
+                    ->latest()
+                    ->paginate(10); // Sesuaikan kolomnya
+
+        } 
 
         return view('pegawai.absensi', compact('absen'));
     }
@@ -302,32 +324,130 @@ public function update(Request $request, $id)
     {
         $bultah = $request->bultah; // Format: YYYY-MM
 
-        if($bultah == ""){
+        if (Auth::user()->role == 0) {
+            if($bultah == ""){
             $absen = AbsenModel::latest()->paginate(10);
-        } else {
-        $absen = AbsenModel::where('tgl_absen', 'LIKE', '%'.$bultah.'%')
-            ->latest()
-            ->paginate(10); // Sesuaikan kolomnya
+            } else {
+            $absen = AbsenModel::where('tgl_absen', 'LIKE', '%'.$bultah.'%')
+                ->latest()
+                ->paginate(10); // Sesuaikan kolomnya
 
-            $absen->appends(['bultah' => $bultah]);
-        }
+                $absen->appends(['bultah' => $bultah]);
+            }
+        } elseif (Auth::user()->role == 1) {
+            $comp = Auth::user()->perusahaan;
+            $kantor = $request->kantor;
+
+            if($bultah == ""){
+            $absen = AbsenModel::where('perusahaan', $comp)
+                ->where('kantor', $kantor)
+                ->latest()
+                ->paginate(10);
+                } else {
+                $absen = AbsenModel::where('perusahaan', $comp)
+                    ->where('kantor', $kantor)
+                    ->where('tgl_absen', 'LIKE', '%'.$bultah.'%')
+                    ->latest()
+                    ->paginate(10); // Sesuaikan kolomnya
+
+                    $absen->appends(['bultah' => $bultah]);
+                }
+        } elseif (Auth::user()->role == 3) {
+            $comp = Auth::user()->perusahaan;
+            $kantor = Auth::user()->kantor;
+
+            if($bultah == ""){
+            $absen = AbsenModel::where('perusahaan', $comp)
+                ->where('kantor', $kantor)
+                ->latest()
+                ->paginate(10);
+                } else {
+                $absen = AbsenModel::where('perusahaan', $comp)
+                    ->where('kantor', $kantor)
+                    ->where('tgl_absen', 'LIKE', '%'.$bultah.'%')
+                    ->latest()
+                    ->paginate(10); // Sesuaikan kolomnya
+
+                    $absen->appends(['bultah' => $bultah]);
+                }
+        } 
 
         return view('pegawai.getabsensi', compact('absen'));
     }
 
     public function lapor()
     {
-        $karyawans = PegawaiModel::get();
+        if (Auth::user()->role == 0) {
+            $comp = $request->perusahaan;
+            $kantor = $request->kantor;
+        } elseif (Auth::user()->role == 1) {
+            $comp = Auth::user()->perusahaan;
+            $kantor = $request->kantor;
+        } elseif (Auth::user()->role == 3) {
+            $comp = Auth::user()->perusahaan;
+            $kantor = Auth::user()->kantor;
+        } 
+
+        $karyawans = PegawaiModel::where('perusahaan', $comp)->where('nama_kantor', $kantor)->get();
         return view('pegawai.laporan', compact('karyawans'));
     }
 
     public function preview(Request $request)
     {
-        $periode = $request->periode;
-        $orng = $request->pegawai;
-        $pegawai = PegawaiModel::findOrFail($orng);
-        $absen = AbsenModel::where('nip', $pegawai->id)->where('tgl_absen', 'LIKE', '%'.$periode.'%')->get();
+
+
+        if (Auth::user()->role == 0) {
+            $comp = $request->perusahaan;
+            $kantor = $request->kantor;
+        } elseif (Auth::user()->role == 1) {
+            $comp = Auth::user()->perusahaan;
+            $kantor = $request->kantor;
+        } elseif (Auth::user()->role == 3) {
+            $comp = Auth::user()->perusahaan;
+            $kantor = Auth::user()->kantor;
+        } 
         
-        return view('pegawai.preview', compact('pegawai', 'absen', 'periode'));
+
+                $periode = $request->periode;
+        if($request->action == "cetak"){
+                $orng = $request->pegawai;
+                $pegawai = PegawaiModel::where('perusahaan', $comp)->where('nama_kantor', $kantor)->findOrFail($orng);
+                $absen = AbsenModel::where('perusahaan', $comp)
+                ->where('kantor', $kantor)
+                ->where('nip', $pegawai->id)
+                ->where('tgl_absen', 'LIKE', '%'.$periode.'%')
+                ->get();
+
+            return view('pegawai.preview', compact('pegawai', 'absen', 'periode'));
+        } else {
+            $inputBulan = $request->periode ?? now()->format('Y-m');
+            [$tahun, $bulan] = explode('-', $inputBulan); // parsing "2025-04"
+
+            $start = Carbon::createFromDate($tahun, $bulan, 1)->startOfMonth();
+            $end = $start->copy()->endOfMonth();
+
+            $karyawan = PegawaiModel::where('perusahaan', $comp)->where('nama_kantor', $kantor)->get();
+            $rekap = [];
+
+            foreach ($karyawan as $k) {
+                $absensi = AbsenModel::where('nip', $k->id)
+                    ->whereBetween('tgl_absen', [$start, $end])
+                    ->get();
+
+                $izin = IzinabsenModel::where('nip', $k->id)
+                    ->whereBetween('tanggal', [$start, $end])
+                    ->where('status_approve', 1)
+                    ->get();
+
+                $rekap[] = [
+                    'nip' => $k->nip,
+                    'nama' => $k->nama_lengkap,
+                    'absensi' => $absensi,
+                    'izin' => $izin,
+                ];
+            }
+
+            return view('pegawai.excel', compact('rekap', 'bulan', 'tahun', 'periode'));
+        }
     }
 }

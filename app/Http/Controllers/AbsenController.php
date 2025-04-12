@@ -43,7 +43,8 @@ class AbsenController extends Controller
                     ->where('tanggal', 'LIKE', '%'.Carbon::now()->format('Y-m').'%')
                     ->selectRaw("
                         SUM(CASE WHEN jenis_izin = 'i' THEN 1 ELSE 0 END) as izin, 
-                        SUM(CASE WHEN jenis_izin = 's' THEN 1 ELSE 0 END) as sakit
+                        SUM(CASE WHEN jenis_izin = 's' THEN 1 ELSE 0 END) as sakit,
+                        SUM(CASE WHEN jenis_izin = 'c' THEN 1 ELSE 0 END) as cuti
                     ")
                     ->where('status_approve', 1)
                     ->first();
@@ -356,7 +357,7 @@ if ($request->confirm != null) {
     {
         $request->validate([
             'tanggal' => 'required|date',
-            'jenisIzin' => 'required|in:i,s',
+            'jenisIzin' => 'required|in:i,s,c',
             'keterangan' => 'required|string|max:255',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);

@@ -28,6 +28,7 @@
                     <option value="" class="text-muted">Pilih Jenis Izin</option>
                     <option value="i">Izin</option>
                     <option value="s">Sakit</option>
+                    <option value="c">Cuti</option>
                 </select>
             </div>
 
