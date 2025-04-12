@@ -289,6 +289,13 @@
                                 <p class="mb-0 text-dark">Sakit</p>
                             </div>
                             <div class="card-presensi">
+                                @if ($rekapizin->cuti != null)
+                                <div class="badge-presensi">{{$rekapizin->cuti}}</div>
+                                @endif
+                                <ion-icon name="airplane-outline" size="large" style="color: greenyellow;"></ion-icon>
+                                <p class="mb-0 text-dark">Cuti</p>
+                            </div>
+                            <div class="card-presensi">
                                 @if ($rekap->jmltelat != null)
                                 <div class="badge-presensi">{{$rekap->jmltelat}}</div>
                                 @endif
