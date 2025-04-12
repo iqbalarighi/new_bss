@@ -378,17 +378,16 @@ public function update(Request $request, $id)
     public function lapor()
     {
         if (Auth::user()->role == 0) {
-            $comp = $request->perusahaan;
-            $kantor = $request->kantor;
+            $karyawans = PegawaiModel::all();
         } elseif (Auth::user()->role == 1) {
             $comp = Auth::user()->perusahaan;
-            $kantor = $request->kantor;
+            $karyawans = PegawaiModel::where('perusahaan', $comp)->get();
         } elseif (Auth::user()->role == 3) {
             $comp = Auth::user()->perusahaan;
             $kantor = Auth::user()->kantor;
+        $karyawans = PegawaiModel::where('perusahaan', $comp)->where('nama_kantor', $kantor)->get();
         } 
 
-        $karyawans = PegawaiModel::where('perusahaan', $comp)->where('nama_kantor', $kantor)->get();
         return view('pegawai.laporan', compact('karyawans'));
     }
 
@@ -449,5 +448,10 @@ public function update(Request $request, $id)
 
             return view('pegawai.excel', compact('rekap', 'bulan', 'tahun', 'periode'));
         }
+    }
+
+    public function izin()
+    {
+        return view('pegawai.izin');
     }
 }

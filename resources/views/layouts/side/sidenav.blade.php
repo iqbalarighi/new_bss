@@ -39,6 +39,7 @@
                 <div class="list-group list-group-flush">
                     <a href="{{ route('pegawai.index') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('pegawai') ? 'active' : '' }}" style="width: 95%;">Daftar Pegawai</a>
                     <a href="{{ route('pegawai.absensi') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('pegawai/absensi') ? 'active' : '' }}" style="width: 95%;">Absensi</a>
+                    <a href="{{ route('pegawai.absensi.izin') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('pegawai/absensi/izin') ? 'active' : '' }}" style="width: 95%;">Izin</a>
                     <a href="{{ route('pegawai.absensi.laporan') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('pegawai/absensi/laporan') ? 'active' : '' }}" style="width: 95%;">Laporan</a>
                 </div>
             </div>
@@ -56,6 +57,7 @@
                     <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Admin</a>
                     <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">MEP</a>
                     <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Sipil</a>
+                    <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Pengamanan</a>
                     <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Cleaning Service</a>
                     <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Pengemudi</a>
                     <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Facad</a>
