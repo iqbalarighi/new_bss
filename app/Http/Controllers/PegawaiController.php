@@ -77,20 +77,13 @@ class PegawaiController extends Controller
     {
         $pegawai = PegawaiModel::findOrFail($id);
         $tenant = PerusahaanModel::get();
-        if(Auth::user()->role === 0){
-            $tenant = PerusahaanModel::get();
-            $kantorList = KantorModel::get();
-            $jabatanList = JabatanModel::get();
-            $satkerList = SatkerModel::get();
-            $departemenList = DeptModel::get();
-            $shift = ShiftModel::get();
-        } else {
-            $kantorList = KantorModel::where('perusahaan', $pegawai->perusahaan)->where('id', $pegawai->nama_kantor)->get();
+
+            $kantorList = KantorModel::where('perusahaan', $pegawai->perusahaan)->get();
             $departemenList = DeptModel::where('perusahaan', $pegawai->perusahaan)->where('nama_kantor', $pegawai->nama_kantor)->get();
             $satkerList = SatkerModel::where('perusahaan', $pegawai->perusahaan)->where('kantor', $pegawai->nama_kantor)->where('dept_id', $pegawai->dept)->get();
             $jabatanList = JabatanModel::where('perusahaan', $pegawai->perusahaan)->where('kantor_id', $pegawai->nama_kantor)->where('dept_id', $pegawai->dept)->where('satker_id', $pegawai->satker)->get();
             $shift = ShiftModel::where('satker_id', $pegawai->satker)->get();
-        }
+
 
 
         return view('pegawai.edit', compact('pegawai', 'tenant', 'kantorList', 'jabatanList', 'satkerList', 'departemenList', 'shift'));
@@ -375,8 +368,10 @@ public function update(Request $request, $id)
     {
         if (Auth::user()->role == 0) {
             $karyawans = PegawaiModel::all();
+            $kantors = KantorModel::all();
+            $tabul = PegawaiModel::get('created_at')->first();
 
-        return view('pegawai.laporan', compact('karyawans', 'kantors', 'departemens'));
+        return view('pegawai.laporan', compact('karyawans', 'kantors', 'tabul'));
         } elseif (Auth::user()->role == 1) {
             $comp = Auth::user()->perusahaan;
             $karyawans = PegawaiModel::where('perusahaan', $comp)->get();
@@ -387,8 +382,11 @@ public function update(Request $request, $id)
         } elseif (Auth::user()->role == 3) {
             $comp = Auth::user()->perusahaan;
             $kantor = Auth::user()->kantor;
-        $karyawans = PegawaiModel::where('perusahaan', $comp)->where('nama_kantor', $kantor)->get();
-        return view('pegawai.laporan', compact('karyawans', 'kantors'));
+            $tabul = PegawaiModel::get('created_at')->first();
+            $karyawans = PegawaiModel::where('perusahaan', $comp)->where('nama_kantor', $kantor)->get();
+            $depts = DeptModel::where('perusahaan', $comp)->where('nama_kantor', $kantor)->get();
+
+        return view('pegawai.laporan', compact('karyawans', 'tabul', 'depts'));
         } 
 
     }
@@ -430,29 +428,66 @@ public function update(Request $request, $id)
         $periode = $request->periode;
 
         if (Auth::user()->role == 0) {
-            $comp = $request->perusahaan;
+            $comp = $request->tenant;
             $kantor = $request->kantor;
+            $dept = $request->departemen;
+            $satker = $request->satker;
+        if($satker == null){
+             $sat = null;
+            $karyawan = PegawaiModel::where('perusahaan', $comp)
+                ->where('nama_kantor', $kantor)
+                ->where('dept', $dept)
+                ->get();
+
+            } else {
+                 $sat = SatkerModel::findOrFail($satker);
+            $karyawan = PegawaiModel::where('perusahaan', $comp)
+                ->where('nama_kantor', $kantor)
+                ->where('dept', $dept)
+                ->where('satker', $satker)
+                ->get();
+            }
         } elseif (Auth::user()->role == 1) {
             $comp = Auth::user()->perusahaan;
             $kantor = $request->kantor;
             $dept = $request->departemen;
             $satker = $request->satker;
+            if($satker == null){
+                 $sat = null;
+                $karyawan = PegawaiModel::where('perusahaan', $comp)
+                    ->where('nama_kantor', $kantor)
+                    ->where('dept', $dept)
+                    ->get();
 
-            $karyawan = PegawaiModel::where('perusahaan', $comp)
-            ->where('nama_kantor', $kantor)
-            ->where('dept', $dept)
-            ->where('satker', $satker)
-            ->get();
+                } else {
+                     $sat = SatkerModel::findOrFail($satker);
+                $karyawan = PegawaiModel::where('perusahaan', $comp)
+                    ->where('nama_kantor', $kantor)
+                    ->where('dept', $dept)
+                    ->where('satker', $satker)
+                    ->get();
+                }
+
         } elseif (Auth::user()->role == 3) {
             $comp = Auth::user()->perusahaan;
             $kantor = Auth::user()->kantor;
             $dept = $request->departemen;
+            $satker = $request->satker;
+            if($satker == null){
+                 $sat = null;
+                $karyawan = PegawaiModel::where('perusahaan', $comp)
+                    ->where('nama_kantor', $kantor)
+                    ->where('dept', $dept)
+                    ->get();
 
-            $karyawan = PegawaiModel::where('perusahaan', $comp)
-            ->where('nama_kantor', $kantor)
-            ->where('dept', $dept)
-            ->where('satker', $satker)
-            ->get();
+                } else {
+                     $sat = SatkerModel::findOrFail($satker);
+                $karyawan = PegawaiModel::where('perusahaan', $comp)
+                    ->where('nama_kantor', $kantor)
+                    ->where('dept', $dept)
+                    ->where('satker', $satker)
+                    ->get();
+                }
         }
             $inputBulan = $request->periode ?? now()->format('Y-m');
             [$tahun, $bulan] = explode('-', $inputBulan); // parsing "2025-04"
@@ -462,6 +497,8 @@ public function update(Request $request, $id)
 
             
             $rekap = [];
+            $depar = DeptModel::findOrFail($dept);
+           
 
             foreach ($karyawan as $k) {
                 $absensi = AbsenModel::where('nip', $k->id)
@@ -472,20 +509,30 @@ public function update(Request $request, $id)
                     ->whereBetween('tanggal', [$start, $end])
                     ->where('status_approve', 1)
                     ->get();
-
+        if($satker != null ){
                 $rekap[] = [
                     'nip' => $k->nip,
                     'nama' => $k->nama_lengkap,
                     'absensi' => $absensi,
                     'izin' => $izin,
                 ];
+            } else {
+                $rekap[] = [
+                    'nip' => $k->nip,
+                    'nama' => $k->nama_lengkap,
+                    'sat' => $k->sat->satuan_kerja,
+                    'absensi' => $absensi,
+                    'izin' => $izin,
+                ];
+            }
             }
 
-            return view('pegawai.excel', compact('rekap', 'bulan', 'tahun', 'periode'));
+            return view('pegawai.excel', compact('rekap', 'bulan', 'tahun', 'periode', 'satker', 'depar', 'sat'));
     }
 
     public function izin()
     {
-        return view('pegawai.izin');
+        $izinList = IzinabsenModel::get();
+        return view('pegawai.izin', compact('izinList'));
     }
 }

@@ -24,22 +24,48 @@
                 <form id="formAbsensi" action="{{ route('pegawai.absensi.preview') }}" method="POST" target="_blank">
                     @csrf
                     <div class="row g-3 align-items-end">
-                       {{-- Kantor --}}
+                       @php
+                       use App\Models\PerusahaanModel;
+                           $tenants = PerusahaanModel::all();
+                       @endphp
+                       @if (Auth::user()->role == 0)
+                        {{-- Kantor --}}
+                        <div class="">
+                            <label for="tenant" class="form-label">Pilih Tenant</label>
+                            <select name="tenant" id="tenant" class="form-select">
+                                <option value="">-- Pilih Tenant --</option>
+                                @foreach ($tenants as $tenan)
+                                    <option value="{{ $tenan->id }}">{{ $tenan->perusahaan }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                       @endif
+
+                       @if (Auth::user()->role == 1 || Auth::user()->role == 0)
+                        {{-- Kantor --}}
                         <div class="">
                             <label for="kantor" class="form-label">Pilih Kantor</label>
                             <select name="kantor" id="kantor" class="form-select">
                                 <option value="">-- Pilih Kantor --</option>
-                                @foreach ($kantors as $kantor)
-                                    <option value="{{ $kantor->id }}">{{ $kantor->nama_kantor }}</option>
-                                @endforeach
+                                @if (Auth::user()->role != 0)
+                                    @foreach ($kantors as $kantor)
+                                        <option value="{{ $kantor->id }}">{{ $kantor->nama_kantor }}</option>
+                                    @endforeach
+                                @endif
                             </select>
                         </div>
-
+                       @endif
+                       
                         {{-- Departemen --}}
                         <div class="">
                             <label for="departemen" class="form-label">Pilih Departemen</label>
                             <select name="departemen" id="departemen" class="form-select">
                                 <option value="">-- Pilih Departemen --</option>
+                                @if (Auth::user()->role == 3)
+                                    @foreach ($depts as $dept)
+                                        <option value="{{ $dept->id }}">{{ $dept->nama_dept }}</option>
+                                    @endforeach
+                                @endif
                             </select>
                         </div>
 
@@ -94,21 +120,43 @@
 @endsection
 @push('script')
 <script>
-    // Load Departemen saat Kantor dipilih
-    $('#kantor').on('change', function () {
-        let kantorId = $(this).val();
+    @if (Auth::user()->role == 0)
+        // Load Departemen saat Kantor dipilih
+    $('#tenant').on('change', function () {
+        let tenanrId = $(this).val();
+        $('#kantor').empty().append('<option value="">-- Pilih Kantor --</option>');
         $('#departemen').empty().append('<option value="">-- Pilih Departemen --</option>');
         $('#satker').empty().append('<option value="">-- Pilih Satker --</option>');
         $('#pegawais').empty().append('<option value="">-- Pilih Karyawan --</option>');
 
-        if (kantorId) {
-            $.get('/get-sat/' + kantorId, function (data) {
-                data.departemen.forEach(function (dept) {
-                    $('#departemen').append('<option value="' + dept.id + '">' + dept.nama_dept + '</option>');
+        if (tenanrId) {
+            $.get('/get-konten/' + tenanrId, function (data) {
+                data.offices.forEach(function (kant) {
+                    $('#kantor').append('<option value="' + kant.id + '">' + kant.nama_kantor + '</option>');
                 });
             });
         }
-    });
+    });    
+    @endif
+    
+    @if (Auth::user()->role == 1 || Auth::user()->role == 0)
+        // Load Departemen saat Kantor dipilih
+        $('#kantor').on('change', function () {
+            let kantorId = $(this).val();
+            $('#departemen').empty().append('<option value="">-- Pilih Departemen --</option>');
+            $('#satker').empty().append('<option value="">-- Pilih Satker --</option>');
+            $('#pegawais').empty().append('<option value="">-- Pilih Karyawan --</option>');
+
+            if (kantorId) {
+                $.get('/get-sat/' + kantorId, function (data) {
+                    data.departemen.forEach(function (dept) {
+                        $('#departemen').append('<option value="' + dept.id + '">' + dept.nama_dept + '</option>');
+                    });
+                });
+            }
+        });
+
+     @endif
 
 $('#departemen').on('change', function () {
         let deptId = $(this).val();

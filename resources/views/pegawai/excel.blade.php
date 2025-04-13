@@ -56,7 +56,7 @@
     justify-content: space-between;
   }
 
-      h2, h3 {
+      h2, h3, h4 {
       margin: 0;
       padding: 0;
     }
@@ -90,9 +90,15 @@
   <section class="sheet padding-10mm">
     <div class="header">
       <img src="{{ asset('storage/img/logo.png') }}" alt="Logo" />
-      <div style="font-size: 10pt !important;">
-        <h3 style="text-align: center;">Rekap Absensi Bulanan</h3>
-        <strong>PERIODE <font class="text-uppercase">{{Carbon::parse($periode)->isoFormat('MMMM YYYY')}}</font></strong><br>
+      <div class="text-uppercase" style="font-size: 10pt !important;">
+        <h4 style="text-align: center;">Rekap Absensi Bulanan</h4>
+        @if ($satker == null)
+        <strong>Departemen {{$depar->nama_dept}}<br></strong>
+          @else
+          <strong>Departemen {{$depar->nama_dept}}<br></strong>
+        <strong>Satuan Kerja {{$sat->satuan_kerja}}<br></strong>
+        @endif
+        <strong>PERIODE {{Carbon::parse($periode)->isoFormat('MMMM YYYY')}}</strong><br>
       </div>
     </div>
 
@@ -103,6 +109,9 @@
           <th rowspan="2">No</th>
           <th rowspan="2">NIK</th>
           <th rowspan="2">Nama</th>
+          @if($satker == null)
+          <th rowspan="2">Satker</th>
+          @endif
           <th colspan="31">Tanggal</th>
           <th rowspan="2">THE</th>
         </tr>
@@ -120,7 +129,9 @@
           <td>{{ $index + 1 }}</td>
           <td>{{ $r['nip'] }}</td>
           <td class="text-start" style="white-space: wrap;">{{ $r['nama'] }}</td>
-
+          @if($satker == null)
+          <td class="text-start" style="white-space: wrap;">{{ $r['sat'] }}</td>
+          @endif
           @for ($i = 1; $i <= 31; $i++)
           @php
             $tgl = \Carbon\Carbon::createFromDate($tahun, $bulan, $i)->toDateString();

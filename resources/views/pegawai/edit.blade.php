@@ -20,7 +20,7 @@
 <form method="POST" action="{{ route('pegawai.update', $pegawai->id) }}" enctype="multipart/form-data" id="formEditPegawai">
     @csrf
     @method('PUT')
-    
+
     <div class="mb-3">
         <label class="form-label">Nama Pegawai</label>
         <input type="text" class="form-control" name="nama" value="{{ $pegawai->nama_lengkap }}" required>
@@ -69,7 +69,7 @@
     @if(Auth::user()->role === 0)
     <div class="mb-3">
         <label class="form-label">Perusahaan</label>
-        <select name="perusahaan" class="form-select" required>
+        <select name="perusahaan" id="select-perusahaan" class="form-select" required>
             <option selected disabled value="">Pilih Perusahaan</option>
             @foreach($tenant as $item)
             <option value="{{$item->id}}" {{ $pegawai->perusahaan == $item->id ? 'selected' : '' }}>{{$item->perusahaan}}</option>
@@ -81,9 +81,9 @@
     @if(Auth::user()->role === 0 || Auth::user()->role === 1)
     <div class="mb-3">
         <label class="form-label">Penempatan Kerja</label>
-        <select name="kantor" class="form-select" required>
+        <select name="kantor" id="select-kantor" class="form-select" required>
             @foreach($kantorList as $item)
-            <option value="{{ $item->id }}" {{ $pegawai->nama_kantor == $item->id ? 'selected' : '' }}>{{ $item->nama_kantor }}</option>
+            <option value="{{ $item->id }}" {{ "$pegawai->kantor" == $item->id ? 'selected' : '' }}>{{ $item->nama_kantor }}</option>
             @endforeach
         </select>
     </div>
@@ -91,7 +91,7 @@
 
     <div class="mb-3">
         <label class="form-label">Departemen</label>
-        <select name="dept" class="form-select" required>
+        <select name="dept" id="select-dept" class="form-select" required>
             @foreach($departemenList as $item)
             <option value="{{ $item->id }}" {{ $pegawai->dept == $item->id ? 'selected' : '' }}>{{ $item->nama_dept }}</option>
             @endforeach
@@ -100,7 +100,7 @@
 
     <div class="mb-3">
         <label class="form-label">Satuan Kerja</label>
-        <select name="satker" class="form-select" required>
+        <select name="satker" id="select-satker" class="form-select" required>
             @foreach($satkerList as $item)
             <option value="{{ $item->id }}" {{ $pegawai->satker == $item->id ? 'selected' : '' }}>{{ $item->satuan_kerja }}</option>
             @endforeach
@@ -109,7 +109,7 @@
 
     <div class="mb-3">
         <label class="form-label">Jabatan</label>
-        <select name="jabatan" class="form-select" required>
+        <select name="jabatan" id="select-jabat" class="form-select" required>
             @foreach($jabatanList as $item)
             <option value="{{ $item->id }}" {{ $pegawai->jabatan == $item->id ? 'selected' : '' }}>{{ $item->jabatan }}</option>
             @endforeach
@@ -120,7 +120,9 @@
         <label class="form-label">Shift</label>
         <select name="shift" class="form-select" required>
             @foreach($shift as $item)
-            <option value="{{ $item->id }}" {{ $pegawai->shift == $item->id ? 'selected' : '' }}>{{ $item->shift }} {{ Carbon\Carbon::parse($item->jam_masuk)->format('H:i') }}-{{ Carbon\Carbon::parse($item->jam_keluar)->format('H:i') }} WIB</option>
+            <option value="{{ $item->id }}" {{ $pegawai->shift == $item->id ? 'selected' : '' }}>
+                {{ $item->shift }} {{ Carbon\Carbon::parse($item->jam_masuk)->format('H:i') }}-{{ Carbon\Carbon::parse($item->jam_keluar)->format('H:i') }} WIB
+            </option>
             @endforeach
         </select>
     </div>
@@ -148,6 +150,7 @@
         <button type="submit" class="btn btn-primary">Perbarui</button>
     </div>
 </form>
+
         </div>
     </div>
 </div>
@@ -205,5 +208,64 @@
             });
         }
     });
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const perusahaanSelect = document.getElementById('select-perusahaan');
+    const kantorSelect = document.getElementById('select-kantor');
+    const deptSelect = document.getElementById('select-dept');
+    const satkerSelect = document.getElementById('select-satker');
+    const jabatSelect = document.getElementById('select-jabat');
+
+    perusahaanSelect?.addEventListener('change', function () {
+        const perusahaanId = this.value;
+        fetch(`/get-konten/${perusahaanId}`)
+            .then(response => response.json())
+            .then(data => {
+                kantorSelect.innerHTML = '<option value="">Pilih Kantor</option>';
+                data.offices.forEach(item => {
+                    kantorSelect.innerHTML += `<option value="${item.id}">${item.nama_kantor}</option>`;
+                });
+                kantorSelect.dispatchEvent(new Event('change'));
+            });
+    });
+
+    kantorSelect?.addEventListener('change', function () {
+        const kantorId = this.value;
+        fetch(`/get-sat/${kantorId}`)
+            .then(response => response.json())
+            .then(data => {
+                deptSelect.innerHTML = '<option value="">Pilih Departemen</option>';
+                data.departemen.forEach(item => {
+                    deptSelect.innerHTML += `<option value="${item.id}">${item.nama_dept}</option>`;
+                });
+                deptSelect.dispatchEvent(new Event('change'));
+            });
+    });
+
+    deptSelect?.addEventListener('change', function () {
+        const deptId = this.value;
+        fetch(`/get-satker-by-departemen/${deptId}`)
+            .then(response => response.json())
+            .then(data => {
+                satkerSelect.innerHTML = '<option value="">Pilih Satuan Kerja</option>';
+                data.satker.forEach(item => {
+                    satkerSelect.innerHTML += `<option value="${item.id}">${item.satuan_kerja}</option>`;
+                });
+            });
+    });
+
+    satkerSelect?.addEventListener('change', function () {
+        const satId = this.value;
+        fetch(`/get-position-by-satker/${satId}`)
+            .then(response => response.json())
+            .then(data => {
+                jabatSelect.innerHTML = '<option value="">Pilih Jabatan</option>';
+                data.positions.forEach(item => {
+                    jabatSelect.innerHTML += `<option value="${item.id}">${item.jabatan}</option>`;
+                });
+            });
+    });
+});
 </script>
 @endpush

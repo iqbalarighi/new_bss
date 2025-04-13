@@ -964,7 +964,8 @@ public function deluser($id)
         if(Auth::user()->role == 0){
             $satker = SatkerModel::get();
         $shift = ShiftModel::paginate(10);
-        return view('master.shift', compact('satker', 'shift'));
+        $kantor = KantorModel::get();
+        return view('master.shift', compact('satker', 'shift', 'kantor'));
         } elseif(Auth::user()->role == 1){
             $satker = SatkerModel::where('perusahaan', Auth::user()->perusahaan)->get();
             $kantor = KantorModel::where('perusahaan', Auth::user()->perusahaan)->get();
