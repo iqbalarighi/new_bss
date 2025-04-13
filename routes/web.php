@@ -85,6 +85,7 @@ Route::middleware(['auth:web'])->group(function () {
         Route::post('/pegawai/absensi/preview', [PegawaiController::class, 'preview'])->name('pegawai.absensi.preview');
         Route::get('/get-abs', [PegawaiController::class, 'getAbs'])->name('get.abs');
         Route::get('/pegawai/absensi/izin', [PegawaiController::class, 'izin'])->name('pegawai.absensi.izin');
+        Route::post('/pegawai/absensi/izin/{id}/status', [PegawaiController::class, 'izinstatus']);
         Route::get('/pegawai/absensi/rekap', [PegawaiController::class, 'rekap'])->name('pegawai.absensi.rekap');
         Route::post('/pegawai/absensi/rekapview', [PegawaiController::class, 'rekapview'])->name('pegawai.absensi.rekapview');
 

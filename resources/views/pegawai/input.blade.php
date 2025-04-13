@@ -236,9 +236,9 @@
             $('#dept').empty();
             $('#dept').append('<option value="">Pilih Departemen</option>');
             
-            $.each(response.depts, function(key, dept) {
-                $('#dept').append('<option value="' + dept.id + '">' + dept.nama_dept + '</option>');
-            });
+            //$.each(response.depts, function(key, dept) {
+            //    $('#dept').append('<option value="' + dept.id + '">' + dept.nama_dept + '</option>');
+            //});
 
             $('#satker').empty();
             $('#satker').append('<option value="">Pilih Satuan Kerja</option>');
@@ -368,7 +368,7 @@
         });
 </script>
 <script>
-    $('#kantor').change(function() {
+    $('#office').change(function() {
             let perusahaanId = $(this).val();
             if (perusahaanId) {
                 $.ajax({
@@ -381,7 +381,7 @@
                             departemenOptions += `<option value="${dept.id}">${dept.nama_dept}</option>`;
                         });
 
-                        $('#departemen').html(departemenOptions);
+                        $('#dept').html(departemenOptions);
                     },
                     error: function(xhr) {
                         console.log(xhr.responseText);

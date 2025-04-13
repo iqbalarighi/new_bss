@@ -364,7 +364,7 @@ public function update(Request $request, $id)
         return view('pegawai.getabsensi', compact('absen'));
     }
 
-    public function lapor()
+    public function lapor() //untuk role 1 dan 3 nya masih ngebug
     {
         if (Auth::user()->role == 0) {
             $karyawans = PegawaiModel::all();
@@ -532,7 +532,30 @@ public function update(Request $request, $id)
 
     public function izin()
     {
-        $izinList = IzinabsenModel::get();
+
+        if(Auth::user()->role == 0){
+        $izinList = IzinabsenModel::paginate(15);
+        } else if(Auth::user()->role == 1) {
+        $izinList = IzinabsenModel::where('perusahaan', Auth::user()->perusahaan)->paginate(15);
+        } else if(Auth::user()->role == 3){
+        $izinList = IzinabsenModel::where('perusahaan', Auth::user()->perusahaan)->where('nama_kantor', Auth::user()->kantor)->paginate(15);
+        }
+
         return view('pegawai.izin', compact('izinList'));
+    }
+
+    public function izinstatus(Request $request, $id)
+    {
+        $request->validate([
+            'status_approve' => 'required|in:1,2'
+        ]);
+
+        $izin = IzinabsenModel::findOrFail($id);
+        $izin->status_approve = $request->status_approve;
+        $izin->save();
+
+        return response()->json([
+            'message' => 'Status izin berhasil diperbarui.'
+        ]);
     }
 }

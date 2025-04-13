@@ -20,7 +20,7 @@
                 <div class="card-header d-flex justify-content-between fw-bold">{{ __('Rekap Absensi Pegawai') }}
                 </div>
                 <div class="card-body d-flex justify-content-center">
-                    <div class="col-md-10 d-flex justify-content-center">
+                    <div class="col-md-6 d-flex justify-content-center">
                 <form id="formAbsensi" action="{{ route('pegawai.absensi.preview') }}" method="POST" target="_blank">
                     @csrf
                     <div class="row g-3 align-items-end">
@@ -31,7 +31,7 @@
                        @if (Auth::user()->role == 0)
                         {{-- Kantor --}}
                         <div class="">
-                            <label for="tenant" class="form-label">Pilih Tenant</label>
+                            <label for="tenant" class="form-label mb-0">Pilih Tenant</label>
                             <select name="tenant" id="tenant" class="form-select">
                                 <option value="">-- Pilih Tenant --</option>
                                 @foreach ($tenants as $tenan)
@@ -44,7 +44,7 @@
                        @if (Auth::user()->role == 1 || Auth::user()->role == 0)
                         {{-- Kantor --}}
                         <div class="">
-                            <label for="kantor" class="form-label">Pilih Kantor</label>
+                            <label for="kantor" class="form-label mb-0">Pilih Kantor</label>
                             <select name="kantor" id="kantor" class="form-select">
                                 <option value="">-- Pilih Kantor --</option>
                                 @if (Auth::user()->role != 0)
@@ -58,7 +58,7 @@
                        
                         {{-- Departemen --}}
                         <div class="">
-                            <label for="departemen" class="form-label">Pilih Departemen</label>
+                            <label for="departemen" class="form-label mb-0">Pilih Departemen</label>
                             <select name="departemen" id="departemen" class="form-select">
                                 <option value="">-- Pilih Departemen --</option>
                                 @if (Auth::user()->role == 3)
@@ -71,7 +71,7 @@
 
                         {{-- Satker --}}
                         <div class="">
-                            <label for="satker" class="form-label">Pilih Satker</label>
+                            <label for="satker" class="form-label mb-0">Pilih Satker</label>
                             <select name="satker" id="satker" class="form-select">
                                 <option value="">-- Pilih Satker --</option>
                             </select>
@@ -79,7 +79,7 @@
 
                         {{-- Pilih Karyawan --}}
                         <div class="">
-                            <label for="pegawais" class="form-label">Pilih Karyawan</label>
+                            <label for="pegawais" class="form-label mb-0">Pilih Karyawan</label>
                             <select name="pegawais" id="pegawais" class="form-select">
                                 <option value="">-- Pilih Karyawan --</option>
                             </select>
@@ -87,7 +87,7 @@
 
                          {{-- Bulan & Tahun --}}
                         <div class="">
-                            <label for="periode" class="form-label">Bulan & Tahun</label>
+                            <label for="periode" class="form-label mb-0">Bulan & Tahun</label>
                             <input 
                             type="month" 
                             name="periode" 
@@ -186,7 +186,7 @@ $('#departemen').on('change', function () {
     });
 </script>
 <script>
-    $('#formAbsensi').on('submit', function(e) {
+    $('#formAbsensi').on('submit', function(e) { //edit bagian ini masih nge bug
         const kantor = $('#kantor').val();
         const departemen = $('#departemen').val();
         const satker = $('#satker').val();
