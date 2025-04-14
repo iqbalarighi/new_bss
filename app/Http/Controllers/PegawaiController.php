@@ -14,6 +14,7 @@ use App\Models\PegawaiModel;
 use Illuminate\Http\Request;
 use App\Models\IzinabsenModel;
 use App\Models\PerusahaanModel;
+use App\Exports\PresensiExport;
 use App\Exports\RekapAbsensiExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Auth;
@@ -395,21 +396,28 @@ public function update(Request $request, $id)
 
     public function preview(Request $request)
     {
-
         $periode = $request->periode;
+        $id = $request->pegawais;
 
-        $orng = $request->pegawais;
-        $pegawai = PegawaiModel::findOrFail($orng);
-        $absen = AbsenModel::where('nip', $pegawai->id)
-        ->where('tgl_absen', 'LIKE', '%'.$periode.'%')
-        ->get();
+        $pegawai = PegawaiModel::findOrFail($id);
 
-    return view('pegawai.preview', compact('pegawai', 'absen', 'periode'));
+        $absen = AbsenModel::with(['pegawai', 'shifts'])
+            ->where('nip', $pegawai->id)
+            ->where('tgl_absen', 'LIKE', '%' . $periode . '%')
+            ->get();
 
+        if ($request->action == "cetak") {
+            return view('pegawai.preview', compact('pegawai', 'absen', 'periode'));
+        } else {
+            // Export to Excel
+            return Excel::download(new PresensiExport($absen, $pegawai, $periode), 'presensi_' . $pegawai->id . '_' . $periode . '.xlsx');
+
+        }
     }
 
     public function rekap()
     {
+                $tabul = PegawaiModel::get('created_at')->first();
         if (Auth::user()->role == 0) {
             $kantors = KantorModel::all();
         } else if (Auth::user()->role == 1) {
@@ -420,11 +428,11 @@ public function update(Request $request, $id)
             $kantor = Auth::user()->kantor;
             $kantors = KantorModel::where('perusahaan', $comp)->where('nama_kantor', $kantor)->get();
             $depts = DeptModel::where('perusahaan', $comp)->where('nama_kantor', $kantor)->get();
+        return view('pegawai.rekap', compact('kantors', 'tabul', 'depts'));
         } 
-                $tabul = PegawaiModel::get('created_at')->first();
 
         
-        return view('pegawai.rekap', compact('kantors', 'tabul', 'depts'));
+        return view('pegawai.rekap', compact('kantors', 'tabul'));
     }
 
     public function rekapview(Request $request)
