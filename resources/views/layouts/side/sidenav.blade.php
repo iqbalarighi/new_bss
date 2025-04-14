@@ -3,7 +3,7 @@
     <div class="list-group list-group-flush sticky-top" style="background-color: darkgrey;">
         <div class="sidebar-heading text-center text-white" style="background: linear-gradient(135deg, #8B0000, #FF6347);">BPBSmartSystem</div>
 @if(Auth::user()->role == 0 || Auth::user()->role == 1 || Auth::user()->role == 3)
-        <?php $masterActive = request()->is('tenant') ||request()->is('users') || request()->is('kantor') || request()->is('satker') || request()->is('jabatan')|| request()->is('departemen'); ?>
+        <?php $masterActive = request()->is('tenant') ||request()->is('users') || request()->is('kantor') || request()->is('satker') || request()->is('jabatan') || request()->is('shift') || request()->is('departemen'); ?>
         <a class="list-group-item list-group-item-action bg-light {{ $masterActive ? 'active' : '' }}" style="width: 100%;" data-bs-toggle="collapse" href="#master" role="button" aria-expanded="false" aria-controls="master" onclick="toggleIcon('mas')">
             Master Data <i id="mas" class="bi {{ $masterActive ? 'bi-caret-down-fill' : 'bi-caret-right-fill' }}"></i>
         </a>

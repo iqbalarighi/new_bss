@@ -56,19 +56,19 @@ class RekapAbsensiExport implements FromView, WithEvents
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 $totalKolom = ($this->satker == null ? 4 : 3) + $this->jumlahHari + 1;
-                $kolomAkhir = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($totalKolom);
-                $kolomMerge = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($totalKolom - 1);
+                $kolomAkhir = Coordinate::stringFromColumnIndex($totalKolom);
 
+                $judulEndRow = ($this->satker != null ? 4 : 3);
 
-                // Merge dan center judul (baris 1-3)
-                $event->sheet->mergeCells("A1:{$kolomMerge}1");
-                $event->sheet->mergeCells("A2:{$kolomMerge}2");
-                $event->sheet->mergeCells("A3:{$kolomMerge}3");
+                // Pastikan tidak merge lebih dari baris yang tersedia
+                for ($i = 1; $i <= $judulEndRow; $i++) {
+                    $event->sheet->mergeCells("A{$i}:{$kolomAkhir}{$i}");
+                }
 
-                $event->sheet->getStyle("A1:A3")->applyFromArray([
+                $event->sheet->getStyle("A1:A{$judulEndRow}")->applyFromArray([
                     'alignment' => [
                         'horizontal' => Alignment::HORIZONTAL_CENTER,
-                        'vertical'   => Alignment::VERTICAL_CENTER,
+                        'vertical' => Alignment::VERTICAL_CENTER,
                     ],
                     'font' => [
                         'bold' => true,
@@ -76,9 +76,10 @@ class RekapAbsensiExport implements FromView, WithEvents
                     ]
                 ]);
 
-                // Border full tabel
                 $lastRow = $event->sheet->getDelegate()->getHighestRow();
-                $event->sheet->getStyle("A5:{$kolomAkhir}{$lastRow}")->applyFromArray([
+                $borderStartRow = (!empty($this->satker) ? 6 : 5);
+
+                $event->sheet->getStyle("A{$borderStartRow}:{$kolomAkhir}{$lastRow}")->applyFromArray([
                     'borders' => [
                         'allBorders' => [
                             'borderStyle' => Border::BORDER_THIN,
@@ -87,19 +88,17 @@ class RekapAbsensiExport implements FromView, WithEvents
                     ],
                     'alignment' => [
                         'horizontal' => Alignment::HORIZONTAL_CENTER,
-                        'vertical'   => Alignment::VERTICAL_CENTER,
+                        'vertical' => Alignment::VERTICAL_CENTER,
                     ],
                 ]);
 
-                // 🔥 Auto-fit semua kolom
                 for ($col = 1; $col <= $totalKolom; $col++) {
-                    $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
+                    $colLetter = Coordinate::stringFromColumnIndex($col);
                     $event->sheet->getDelegate()->getColumnDimension($colLetter)->setAutoSize(true);
                 }
 
-            // Tambahkan logika pewarnaan jam masuk terlambat
                 $sheet = $event->sheet->getDelegate();
-                $startRow = 7; // karena header judul di baris 1-3, dan tabel di mulai dari baris 5, data mulai baris 6
+                $startRow = (!empty($this->satker) ? 8 : 7);
 
                 foreach ($this->rekap as $rowIndex => $r) {
                     $barisExcel = $startRow + $rowIndex;
@@ -109,35 +108,32 @@ class RekapAbsensiExport implements FromView, WithEvents
                         $absen = $r['absensi']->firstWhere('tgl_absen', $tgl);
 
                         if ($absen) {
-                $jamMasuk = $absen->jam_in ?? '';
-                $jamKeluar = $absen->jam_out ?? '00:00:00';
-                $shiftMasuk = $r['shift'];
+                            $jamMasuk = $absen->jam_in ?? '';
+                            $jamKeluar = $absen->jam_out ?? '00:00:00';
+                            $shiftMasuk = $r['shift'];
 
-                $jamText = new RichText();
+                            $jamText = new RichText();
 
-                // Jam Masuk
-                $textMasuk = $jamText->createTextRun($jamMasuk);
-                $textMasuk->getFont()->setColor(new Color(
-                    $jamMasuk > $shiftMasuk ? Color::COLOR_RED : Color::COLOR_BLACK
-                ));
+                            $textMasuk = $jamText->createTextRun($jamMasuk);
+                            $textMasuk->getFont()->setColor(new Color(
+                                $jamMasuk > $shiftMasuk ? Color::COLOR_RED : Color::COLOR_BLACK
+                            ));
 
-                $jamText->createText("\n");
+                            $jamText->createText("\n");
 
-                // Jam Keluar
-                $textKeluar = $jamText->createTextRun($jamKeluar);
-                $textKeluar->getFont()->setColor(new Color(
-                    $jamKeluar === '00:00:00' ? Color::COLOR_RED : Color::COLOR_BLACK
-                ));
+                            $textKeluar = $jamText->createTextRun($jamKeluar);
+                            $textKeluar->getFont()->setColor(new Color(
+                                $jamKeluar === '00:00:00' ? Color::COLOR_RED : Color::COLOR_BLACK
+                            ));
 
-                $kolomIndex = ($this->satker == null ? 5 : 4) + $i - 1;
-                $kolomExcel = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($kolomIndex);
+                            $kolomIndex = ($this->satker == null ? 5 : 4) + $i - 1;
+                            $kolomExcel = Coordinate::stringFromColumnIndex($kolomIndex);
 
-                $sheet->getCell("{$kolomExcel}{$barisExcel}")->setValue($jamText);
-                $sheet->getStyle("{$kolomExcel}{$barisExcel}")->getAlignment()->setWrapText(true);
-            }
+                            $sheet->getCell("{$kolomExcel}{$barisExcel}")->setValue($jamText);
+                            $sheet->getStyle("{$kolomExcel}{$barisExcel}")->getAlignment()->setWrapText(true);
+                        }
                     }
                 }
-
             }
         ];
     }

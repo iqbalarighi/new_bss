@@ -419,10 +419,12 @@ public function update(Request $request, $id)
             $comp = Auth::user()->perusahaan;
             $kantor = Auth::user()->kantor;
             $kantors = KantorModel::where('perusahaan', $comp)->where('nama_kantor', $kantor)->get();
+            $depts = DeptModel::where('perusahaan', $comp)->where('nama_kantor', $kantor)->get();
         } 
+                $tabul = PegawaiModel::get('created_at')->first();
 
         
-        return view('pegawai.rekap', compact('kantors'));
+        return view('pegawai.rekap', compact('kantors', 'tabul', 'depts'));
     }
 
     public function rekapview(Request $request)
@@ -491,6 +493,8 @@ public function update(Request $request, $id)
                     ->get();
                 }
         }
+
+
             $inputBulan = $request->periode ?? now()->format('Y-m');
             [$tahun, $bulan] = explode('-', $inputBulan); // parsing "2025-04"
 

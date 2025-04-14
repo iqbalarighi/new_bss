@@ -1,8 +1,10 @@
 @php
     use Carbon\Carbon;
+    use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
     $tanggalAwal = Carbon::createFromDate($tahun, $bulan, 1);
     $jumlahHari = $tanggalAwal->daysInMonth;
+    $totalKolom = ($satker == null ? 4 : 3) + $jumlahHari + 1; // sesuai controller
 @endphp
 
 <!DOCTYPE html>
@@ -37,9 +39,12 @@
 </head>
 <body>
     <table>
-        <tr><td colspan="35" style="text-align:center;"><strong>Rekap Absensi Bulanan</strong></td></tr>
-        <tr><td colspan="35" style="text-align:center;"><strong>Departemen: {{ $depar->nama_dept }}</strong></td></tr>
-        <tr><td colspan="35" style="text-align:center;">
+        <tr><td colspan="{{ $totalKolom }}" style="text-align:center;"><strong>Rekap Absensi Bulanan</strong></td></tr>
+        <tr><td colspan="{{ $totalKolom }}" style="text-align:center;"><strong>Departemen: {{ $depar->nama_dept }}</strong></td></tr>
+         @if ($satker != null)
+        <tr><td colspan="{{ $totalKolom }}" style="text-align:center;"><strong>Satker: {{ $sat->satuan_kerja }}</strong></td></tr>
+        @endif
+        <tr><td colspan="{{ $totalKolom }}" style="text-align:center;">
             <strong>Periode: {{ Carbon::parse($periode)->isoFormat('MMMM YYYY') }}</strong>
         </td></tr>
     </table>
@@ -80,7 +85,8 @@
                         <td>
                             @if ($absen)
                                 {{-- ✓ --}}
-
+                                <span class="{{$absen->jam_in > $absen->shifts->jam_masuk ? 'red' : ''}}">{{ $absen->jam_in ?? '' }}</span><br>
+                                <span class="{{$absen->jam_out ?? 'red'}}">{{ $absen->jam_out ?? '00:00:00' }}</span>
                             @elseif ($izin)
                                 @if (Str::contains(strtolower($izin->jenis_izin), 's'))
                                     S

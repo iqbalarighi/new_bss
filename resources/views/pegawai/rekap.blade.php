@@ -77,9 +77,15 @@
                         </div>
                         {{-- Bulan & Tahun --}}
                         <div class="">
-                            <label for="periode" class="form-label">Bulan & Tahun</label>
-                            <input type="month" name="periode" id="periode" class="form-control"
-                                value="{{ request('periode') ?? now()->format('Y-m') }}">
+                            <label for="periode" class="form-label mb-0">Bulan & Tahun</label>
+                            <input 
+                            type="month" 
+                            name="periode" 
+                            id="periode" 
+                            class="form-control" 
+                            min="{{ Carbon\Carbon::parse($tabul->created_at)->format('Y-m')}}"
+                            max="{{ now()->format('Y-m') }}" 
+                            value="{{ now()->format('Y-m') }}">
                         </div>
 
                         {{-- Tombol Aksi --}}
@@ -183,6 +189,16 @@
                 return false;
             }
 
+            if (!departemen) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Departemen belum dipilih',
+                    text: 'Silakan pilih departemen terlebih dahulu.',
+                });
+                return false;
+            }
+        } else {
             if (!departemen) {
                 e.preventDefault();
                 Swal.fire({
