@@ -2,21 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AbsenModel;
-use App\Models\DeptModel;
-use App\Models\IzinabsenModel;
-use App\Models\JabatanModel;
-use App\Models\KantorModel;
-use App\Models\PegawaiModel;
-use App\Models\PerusahaanModel;
-use App\Models\SatkerModel;
-use App\Models\ShiftModel;
 use Carbon\Carbon;
+use App\Models\DeptModel;
+use App\Models\ShiftModel;
+use App\Models\AbsenModel;
+use App\Models\SatkerModel;
+use App\Models\KantorModel;
+use Illuminate\Support\Str;
+use App\Models\JabatanModel;
+use App\Models\PegawaiModel;
 use Illuminate\Http\Request;
+use App\Models\IzinabsenModel;
+use App\Models\PerusahaanModel;
+use App\Exports\RekapAbsensiExport;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class PegawaiController extends Controller
 {
@@ -494,8 +496,8 @@ public function update(Request $request, $id)
 
             $start = Carbon::createFromDate($tahun, $bulan, 1)->startOfMonth();
             $end = $start->copy()->endOfMonth();
+            $jumlahHari = Carbon::createFromDate($tahun, $bulan, 1)->daysInMonth();
 
-            
             $rekap = [];
             $depar = DeptModel::findOrFail($dept);
            
@@ -512,6 +514,7 @@ public function update(Request $request, $id)
         if($satker != null ){
                 $rekap[] = [
                     'nip' => $k->nip,
+                    'shift' => $k->shifts->jam_masuk,
                     'nama' => $k->nama_lengkap,
                     'absensi' => $absensi,
                     'izin' => $izin,
@@ -519,6 +522,7 @@ public function update(Request $request, $id)
             } else {
                 $rekap[] = [
                     'nip' => $k->nip,
+                    'shift' => $k->shifts->jam_masuk,
                     'nama' => $k->nama_lengkap,
                     'sat' => $k->sat->satuan_kerja,
                     'absensi' => $absensi,
@@ -527,7 +531,15 @@ public function update(Request $request, $id)
             }
             }
 
-            return view('pegawai.excel', compact('rekap', 'bulan', 'tahun', 'periode', 'satker', 'depar', 'sat'));
+            if($request->action == "cetak"){
+            return view('pegawai.excelview', compact('rekap', 'bulan', 'tahun', 'periode', 'satker', 'depar', 'sat'));
+            } else {
+                return Excel::download(
+                    new RekapAbsensiExport($rekap, $bulan, $tahun, $periode, $satker, $depar, $sat, $jumlahHari),
+                    'Rekap_Absensi_'.$periode.'.xlsx'
+                );
+            }
+
     }
 
     public function izin()

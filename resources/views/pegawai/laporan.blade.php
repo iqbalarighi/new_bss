@@ -186,14 +186,16 @@ $('#departemen').on('change', function () {
     });
 </script>
 <script>
-    $('#formAbsensi').on('submit', function(e) { //edit bagian ini masih nge bug
+    $('#formAbsensi').on('submit', function(e) { 
+         @if (Auth::user()->role == 1 || Auth::user()->role == 0)
         const kantor = $('#kantor').val();
+        @endif
         const departemen = $('#departemen').val();
         const satker = $('#satker').val();
         const pegawai = $('#pegawais').val();
         const periode = $('#periode').val();
 
-        if (!kantor || !departemen || !satker || !pegawai || !periode) {
+        if ({{Auth::user()->role == 0 || Auth::user()->role == 1 ? '!kantor || ' : ''}}!departemen || !satker || !pegawai || !periode) {
             e.preventDefault();
 
             Swal.fire({

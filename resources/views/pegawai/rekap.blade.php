@@ -19,8 +19,8 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between fw-bold">{{ __('Rekap Absensi Bulanan Pegawai') }}
                 </div>
-                <div class="card-body d-flex ">
-                    <div class="col-md-10 d-flex justify-content-center">
+                <div class="card-body d-flex justify-content-center">
+                    <div class="col-md-6 d-flex ">
                     <form id="formRekap" action="{{ route('pegawai.absensi.rekapview') }}" method="POST" target="_blank">
                     @csrf
                     <div class="row g-3 align-items-end">
