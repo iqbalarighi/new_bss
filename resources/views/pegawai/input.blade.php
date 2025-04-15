@@ -235,11 +235,12 @@
 
             $('#dept').empty();
             $('#dept').append('<option value="">Pilih Departemen</option>');
-            
-            //$.each(response.depts, function(key, dept) {
-            //    $('#dept').append('<option value="' + dept.id + '">' + dept.nama_dept + '</option>');
-            //});
-
+    
+    @if(Auth::user()->role == 3)
+            $.each(response.depts, function(key, dept) {
+            $('#dept').append('<option value="' + dept.id + '">' + dept.nama_dept + '</option>');
+            });
+    @endif
             $('#satker').empty();
             $('#satker').append('<option value="">Pilih Satuan Kerja</option>');
             

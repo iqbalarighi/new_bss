@@ -83,7 +83,7 @@
                             name="periode" 
                             id="periode" 
                             class="form-control" 
-                            min="{{ Carbon\Carbon::parse($tabul->created_at)->format('Y-m')}}"
+                            min="{{ Carbon\Carbon::parse($tabul->created_at ?? '')->format('Y-m')}}"
                             max="{{ now()->format('Y-m') }}" 
                             value="{{ now()->format('Y-m') }}">
                         </div>
