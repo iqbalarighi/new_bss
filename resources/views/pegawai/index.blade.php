@@ -1,7 +1,7 @@
 @extends('layouts.side.side')
 @section('content')
 
-<div class="container">
+<div class="container mw-100">
 
 @if(Session::get('success'))
 <script type="text/javascript">

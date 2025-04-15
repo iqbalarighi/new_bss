@@ -9,8 +9,11 @@
         .modal.show .modal-dialog {
             transform: scale(1);
         }
+        .dropdown-menu select {
+        width: 100%;
+    }
 </style>
-<div class="container">
+<div class="container mw-100">
     <div class="row justify-content-center">
         <div class="col mw-100">
             <div class="card">
@@ -118,18 +121,38 @@
                 <div class="card-body" style="overflow-x: auto;">
                     <table class="table table-striped table-bordered table-hover">
                         <thead class="text-center table-dark">
-                            <tr>
-                                <th>No</th>
-                                <th>Departemen</th>
-                                @if(Auth::user()->role == 0)
-                                <th>Perusahaan</th>
-                                @endif
-                                @if(Auth::user()->role == 0 || Auth::user()->role == 1)
-                                <th>Kantor</th>
-                                @endif
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Departemen</th>
+
+                            @if(Auth::user()->role == 0)
+                            <th>Perusahaan</th>
+                            @endif
+
+                            @if(Auth::user()->role == 0 || Auth::user()->role == 1)
+                            <th class="text-start position-relative">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>Kantor</span>
+                                    <div class="dropdown">
+                                        <i class="fas fa-filter ms-2 text-white" role="button" data-bs-toggle="dropdown"></i>
+                                        <ul class="dropdown-menu dropdown-menu-end p-2" style="min-width: 150px;">
+                                            <li>
+                                                <select id="filterKantor" class="form-select form-select-sm" onchange="filterKantor()">
+                                                    <option value="">Semua</option>
+                                                    @foreach($kantor as $kantor)
+                                                        <option value="{{ $kantor->nama_kantor }}">{{ $kantor->nama_kantor }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </th>
+                            @endif
+
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
                         <tbody>
                             @foreach($dept as $key => $item)
                             <tr id="row-{{$item->id}}">
@@ -331,5 +354,18 @@ $('.btnHapus').click(function() {
 
     });
 </script>
+<script>
+    function filterKantor() {
+        var selectedKantor = document.getElementById("filterKantor").value.toLowerCase();
+        var rows = document.querySelectorAll("table tbody tr");
 
+        rows.forEach(function(row) {
+            var kantorCell = row.querySelectorAll("td")[@if(Auth::user()->role == 0 || Auth::user()->role == 1) 2 @else 1 @endif];
+            if (!kantorCell) return;
+
+            var kantor = kantorCell.innerText.toLowerCase();
+            row.style.display = (selectedKantor === "" || kantor === selectedKantor) ? "" : "none";
+        });
+    }
+</script>
 @endpush

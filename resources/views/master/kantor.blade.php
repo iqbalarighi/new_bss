@@ -6,7 +6,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-control-geocoder@3.1.0/dist/Control.Geocoder.js"></script>
     
-    <div class="container">
+    <div class="container mw-100">
         <div class="row justify-content-center">
             <div class="col mw-100">
                 <div class="card">

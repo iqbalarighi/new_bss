@@ -1,7 +1,7 @@
 @extends('layouts.side.side')
 
 @section('content')
-<div class="container">
+<div class="container mw-100">
     <div class="row justify-content-center">
         <div class="col mw-100">
             <div class="card">
@@ -190,10 +190,61 @@
             <th>Perusahaan</th>
             @endif
             @if(Auth::user()->role == 0 || Auth::user()->role == 1 )
-            <th>Kantor</th>
+            <th class="text-start position-relative">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Kantor</span>
+                    <div class="dropdown">
+                        <i class="fas fa-filter ms-2 text-white" role="button" data-bs-toggle="dropdown"></i>
+                        <ul class="dropdown-menu dropdown-menu-end p-2" style="min-width: 150px;">
+                            <li>
+                                <select id="filterKantor" class="form-select form-select-sm" onchange="filterTable('kantor', this.value)">
+                                    <option value="">Semua</option>
+                                    @foreach($kantor as $kantor)
+                                        <option value="{{ $kantor->nama_kantor }}">{{ $kantor->nama_kantor }}</option>
+                                    @endforeach
+                                </select>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </th>
             @endif
-            <th>Departemen</th>
-            <th>Satuan Kerja</th>
+            <th class="text-start position-relative">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Departemen</span>
+                    <div class="dropdown">
+                        <i class="fas fa-filter ms-2 text-white" role="button" data-bs-toggle="dropdown"></i>
+                        <ul class="dropdown-menu dropdown-menu-end p-2" style="min-width: 150px;">
+                            <li>
+                                <select id="filterDepartemen" class="form-select form-select-sm" onchange="filterTable('departemen', this.value)">
+                                    <option value="">Semua</option>
+                                    @foreach($departemen->unique('nama_dept') as $d)
+                                        <option value="{{ $d->nama_dept }}">{{ $d->nama_dept }}</option>
+                                    @endforeach
+                                </select>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </th>
+            <th class="text-start position-relative">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Satuan Kerja</span>
+                    <div class="dropdown">
+                        <i class="fas fa-filter ms-2 text-white" role="button" data-bs-toggle="dropdown"></i>
+                        <ul class="dropdown-menu dropdown-menu-end p-2" style="min-width: 150px;">
+                            <li>
+                                <select id="filterSatker" class="form-select form-select-sm" onchange="filterTable('satker', this.value)">
+                                    <option value="">Semua</option>
+                                    @foreach($satker->unique('satuan_kerja') as $s)
+                                        <option value="{{ $s->satuan_kerja }}">{{ $s->satuan_kerja }}</option>
+                                    @endforeach
+                                </select>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </th>
             <th>Aksi</th>
         </tr>
     </thead>
@@ -531,6 +582,41 @@ $('#formEditJabatan').submit(function (e) {
             }
         });
     });
+</script>
+<script>
+    function filterTable(type, value) {
+        const selectedValue = value.toLowerCase();
+        const rows = document.querySelectorAll("table tbody tr");
+
+        // Tentukan index kolom berdasarkan role user
+        let kantorIndex = {{ Auth::user()->role == 0 || Auth::user()->role == 1 ? 2 : 1 }};
+        let departemenIndex = kantorIndex + 1;
+        let satkerIndex = departemenIndex + 1;  // Tentukan index kolom untuk satuan kerja (satker) sesuai tabelmu
+
+        rows.forEach(row => {
+            const cells = row.querySelectorAll("td");
+            if (!cells.length) return;
+
+            let isMatch = true;
+
+            if (type === 'kantor' && kantorIndex >= 0) {
+                const cellValue = cells[kantorIndex].innerText.toLowerCase();
+                if (selectedValue && cellValue !== selectedValue) isMatch = false;
+            }
+
+            if (type === 'departemen') {
+                const cellValue = cells[departemenIndex].innerText.toLowerCase();
+                if (selectedValue && cellValue !== selectedValue) isMatch = false;
+            }
+
+            if (type === 'satker') {  // Filter berdasarkan satuan kerja
+                const cellValue = cells[satkerIndex].innerText.toLowerCase();
+                if (selectedValue && cellValue !== selectedValue) isMatch = false;
+            }
+
+            row.style.display = isMatch ? '' : 'none';
+        });
+    }
 </script>
 
 @endpush

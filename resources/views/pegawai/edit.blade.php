@@ -1,6 +1,6 @@
 @extends('layouts.side.side')
 @section('content')
-<div class="container mt-1">
+<div class="container mt-1 mw-100">
     <div class="card shadow-lg rounded-lg">
 
     @if ($errors->any())

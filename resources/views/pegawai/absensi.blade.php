@@ -34,7 +34,7 @@
     }
 </style>
     <div class="row justify-content-center">
-        <div class="col mw-100">
+        <div class="col">
             <div class="card">
                 <div class="card-header d-flex justify-content-between fw-bold">{{ __('Monitoring Absensi Pegawai') }}
                 </div>
