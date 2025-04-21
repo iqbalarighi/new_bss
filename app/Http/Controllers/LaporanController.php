@@ -15,8 +15,8 @@ class LaporanController extends Controller
 {
     public function index()
     {
-        $lapor = LaporanModel::paginate(10);
-        
+        $lapor = LaporanModel::latest()->paginate(10);
+
         return view('laporan.admin.index', compact('lapor'));
     }
 

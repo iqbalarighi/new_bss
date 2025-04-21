@@ -9,7 +9,7 @@
                 </div>
 
                 <div class="card-body d-flex justify-content-center" style="overflow: auto;">
-                    <div class="col-md-8">
+                    <div class="col-md-8 fw-bold">
                         <div class="mb-1">
                             Nama : {{Auth::user()->name}}
                         </div>
