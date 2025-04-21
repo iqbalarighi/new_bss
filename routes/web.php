@@ -3,13 +3,14 @@
 use App\Http\Controllers\AbsenController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\MasterController;
 use App\Http\Controllers\PegawaiController;
 use App\Http\Middleware\RedirectIfNotAuthenticated;
 use App\Http\Middleware\RedirectIfPegawaiAuthenticated;
 use App\Http\Middleware\RoleMiddleware;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
         if(Auth::guard('web')->check()){
@@ -98,7 +99,12 @@ Route::middleware(['auth:web'])->group(function () {
         Route::get('/shift', [MasterController::class, 'shift'])->name('shift');
         Route::post('/shift/store', [MasterController::class, 'shiftStore'])->name('master.shift.store');
         Route::put('/shift/update/{id}', [MasterController::class, 'shiftUpdate'])->name('master.shift.update');
+
     });
+    
+        Route::get('/laporan/admin/', [LaporanController::class, 'index'])->name('lapor.admin');
+        Route::get('/laporan/admin/input', [LaporanController::class, 'input'])->name('lapor.admin.input');
+        Route::post('/laporan/admin/store', [LaporanController::class, 'store'])->name('lapor.admin.store');
 });
 
 

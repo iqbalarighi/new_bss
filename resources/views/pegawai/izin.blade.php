@@ -8,7 +8,7 @@
                 <div class="card-header d-flex justify-content-between fw-bold">{{ __('Daftar Izin Pegawai') }}
                 </div>
 
-                <div class="card-body">
+                <div class="card-body" style="overflow: auto;">
                    <table class="table table-bordered table-striped">
         <thead class="table-dark text-center">
             <tr>

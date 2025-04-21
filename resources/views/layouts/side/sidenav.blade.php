@@ -12,10 +12,10 @@
                 <div class="list-group list-group-flush">
                     @if(Auth::user()->role == 0)
                         <a href="{{ route('tenant') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('tenant') ? 'active' : '' }}" style="width: 95%;">Tenant</a>
-                    @endif
+@endif
     @if(Auth::user()->role == 1 || Auth::user()->role == 0)
                     <a href="{{ route('kantor') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('kantor') ? 'active' : '' }}" style="width: 95%;">Kantor</a>
-                    @endif
+        @endif
 
     @if(Auth::user()->role == 0 || Auth::user()->role == 1 || Auth::user()->role == 3)
                     <a href="{{ route('departemen') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('departemen') ? 'active' : '' }}" style="width: 95%;">Departemen</a>
@@ -23,7 +23,7 @@
                     <a href="{{ route('jabatan') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('jabatan') ? 'active' : '' }}" style="width: 95%;">Jabatan</a>
                     <a href="{{ route('shift') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('shift') ? 'active' : '' }}" style="width: 95%;">Shift</a>
                     <a href="{{ route('users') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('users') ? 'active' : '' }}" style="width: 95%;">Manage User</a>
-                    @endif
+        @endif
                 </div>
             </div>
         </div>
@@ -55,7 +55,7 @@
         <div class="collapse {{ $laporanActive ? 'show' : '' }}" id="laporan">
             <div class="card card-body p-1">
                 <div class="list-group list-group-flush">
-                    <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Admin</a>
+                    <a href="{{ route('lapor.admin') }}" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Admin</a>
                     <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">MEP</a>
                     <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Sipil</a>
                     <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Pengamanan</a>
