@@ -73,6 +73,7 @@ Route::middleware(['auth:web'])->group(function () {
         Route::put('/jabatan/edit/{id}', [MasterController::class, 'updatejabatan']);
 
         Route::get('/pegawai', [PegawaiController::class, 'index'])->name('pegawai.index');
+        Route::delete('/pegawai/delete/{id}', [PegawaiController::class, 'delete'])->name('pegawai.delete');
         Route::get('/pegawai/detail/{id}', [PegawaiController::class, 'detail'])->name('pegawai.detail');
         Route::get('/pegawai/input', [PegawaiController::class, 'input'])->name('pegawai.input');
         Route::post('/pegawai/store', [PegawaiController::class, 'store'])->name('pegawai.store');

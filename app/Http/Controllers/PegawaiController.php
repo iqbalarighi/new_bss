@@ -18,6 +18,7 @@ use App\Exports\PresensiExport;
 use App\Exports\RekapAbsensiExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
@@ -582,4 +583,55 @@ public function update(Request $request, $id)
             'message' => 'Status izin berhasil diperbarui.'
         ]);
     }
+
+public function delete($id)
+{
+    try {
+        $pegawai = PegawaiModel::findOrFail($id);
+
+        // Hapus file foto jika ada
+        if ($pegawai->foto) {
+            Storage::delete('public/foto_pegawai/'.$pegawai->nip.'/'.$pegawai->foto);
+        }
+
+        $pegawai->delete();
+
+        return response()->json(['message' => 'Pegawai berhasil dihapus.']);
+    } catch (\Exception $e) {
+        return response()->json(['message' => 'Terjadi kesalahan.'], 500);
+    }
+}
+
+// live view
+// public function delete($id)
+// {
+//     try {
+//         $pegawai = PegawaiModel::findOrFail($id);
+
+//         // Hapus file foto jika ada
+//         if ($pegawai->foto) {
+//             $filePath = base_path('../public_html/foto_pegawai/' . $pegawai->nip . '/' . $pegawai->foto);
+
+//             // Hapus file jika ada
+//             if (File::exists($filePath)) {
+//                 File::delete($filePath);
+//             }
+
+//             // Hapus folder jika kosong
+//             $folderPath = base_path('../public_html/foto_pegawai/' . $pegawai->nip);
+//             if (File::isDirectory($folderPath) && count(File::files($folderPath)) === 0) {
+//                 File::deleteDirectory($folderPath);
+//             }
+//         }
+
+//         // Hapus data pegawai dari database
+//         $pegawai->delete();
+
+//         return response()->json(['message' => 'Pegawai berhasil dihapus.']);
+//     } catch (\Exception $e) {
+//         return response()->json(['message' => 'Terjadi kesalahan.'], 500);
+//     }
+// }
+
+
 }

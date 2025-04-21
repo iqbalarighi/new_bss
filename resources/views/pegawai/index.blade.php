@@ -63,7 +63,8 @@
                             <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;">{{ $pegawai->shifts->shift}}</td>
                             <td class="align-middle text-center">
                                 <button class="btn btn-primary btn-sm px-1" onclick="window.location='{{route('pegawai.edit', $pegawai->id)}}'">Edit</button>
-                                <button class="btn btn-danger btn-sm px-1">Hapus</button>
+                                <button class="btn btn-danger btn-sm px-1 btn-hapus" data-id="{{ $pegawai->id }}" data-nama="{{ $pegawai->nama_lengkap }}">Hapus</button>
+
                             </td>
                         </tr>
                     @endforeach
@@ -83,3 +84,40 @@
 
 @endsection
 
+@push('script')
+<script>
+$(document).ready(function() {
+    $('.btn-hapus').click(function() {
+        const id = $(this).data('id');
+        const nama = $(this).data('nama');
+
+        Swal.fire({
+            title: `Hapus Pegawai?`,
+            text: `Data pegawai ${nama} akan dihapus!`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: `/pegawai/delete/${id}`,
+                    type: 'DELETE',
+                    data: {
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        Swal.fire('Berhasil', response.message, 'success').then(() => {
+                            location.reload();
+                        });
+                    },
+                    error: function() {
+                        Swal.fire('Gagal', 'Terjadi kesalahan saat menghapus.', 'error');
+                    }
+                });
+            }
+        });
+    });
+});
+</script>
+@endpush
