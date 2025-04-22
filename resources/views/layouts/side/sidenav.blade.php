@@ -30,6 +30,8 @@
     @endif
 
     @if(Auth::user()->role == 1 || Auth::user()->role == 0|| Auth::user()->role == 3)
+        <a href="{{route('home')}}" class="list-group-item list-group-item-action bg-light {{ request()->is('home') ? 'active' : '' }}" style="width: 100%;">Dashboard</a>
+
         <?php $pegawaiActive = request()->is('pegawai*'); ?>
         <a class="list-group-item list-group-item-action bg-light {{ $pegawaiActive ? 'active' : '' }}" style="width: 100%;" data-bs-toggle="collapse" href="#pegawai" role="button" aria-expanded="false" aria-controls="pegawai" onclick="toggleIcon('peg')">
             Pegawai <i id="peg" class="bi {{ $pegawaiActive ? 'bi-caret-down-fill' : 'bi-caret-right-fill' }}"></i>
@@ -55,7 +57,7 @@
         <div class="collapse {{ $laporanActive ? 'show' : '' }}" id="laporan">
             <div class="card card-body p-1">
                 <div class="list-group list-group-flush">
-                    <a href="{{ route('lapor.admin') }}" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Admin</a>
+                    <a href="{{ route('lapor.admin') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('laporan/admin') ? 'active' : '' }}" style="width: 95%;">Admin</a>
                     <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">MEP</a>
                     <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Sipil</a>
                     <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Pengamanan</a>

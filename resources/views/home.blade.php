@@ -63,6 +63,11 @@
 @endsection --}}
 
 @section('content')
+@if(Auth::user()->role == 2)
+    <script type="text/javascript">
+        window.location.href = "{{ route('lapor.admin') }}";
+    </script>
+@endif
 <div class="container-xl mw-100">
     <div class="row g-2 align-items-center">
       <div class="col">
