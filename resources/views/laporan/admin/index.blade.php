@@ -27,7 +27,7 @@
                                 <td>{{$lapor->firstItem() + $num}}</td>
                                 <td>{{$lap->no_lap}}</td>
                                 <td>{{$lap->usr->name}}</td>
-                                <td>{{$lap->usr->kant->nama_kantor}}</td>
+                                <td>{{$lap->usr->kant->nama_kantor ?? ''}}</td>
                                 <td>{{Carbon\Carbon::parse($lap->created_at)->format('d-m-Y')}}</td>
                                 <td>{{Carbon\Carbon::parse($lap->created_at)->format('H:i')}}</td>
                                 <td></td>
