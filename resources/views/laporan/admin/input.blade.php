@@ -26,7 +26,8 @@
                             @csrf
                             <div class="mb-3">
                                 <label for="personil" class="form-label mb-0">Personil</label>
-                                <textarea class="form-control" id="personil" name="personil" rows="3" required></textarea>
+                                <textarea class="form-control" id="personil" name="personil" rows="3" required>Supervisor : {{Auth::user()->name}}
+Anggota : </textarea>
                             </div>
                             <div class="mb-3">
                                 <label for="kegiatan" class="form-label mb-0">Kegiatan</label>
@@ -38,7 +39,7 @@
                             </div>
                             <div class="mb-3">
                                 <label for="foto" class="form-label mb-0">Foto</label>
-                                <input type="file" class="form-control" id="foto" name="foto" accept="image/*" multiple>
+                                <input type="file" class="form-control" id="foto" name="foto[]" accept="image/*" multiple>
                             </div>
                             <div class="d-flex justify-content-center">
                             <button type="submit" class="btn btn-primary">Simpan</button>

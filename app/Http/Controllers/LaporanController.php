@@ -10,12 +10,21 @@ use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
 use Illuminate\Support\Facades\File;
 use Intervention\Image\Drivers\Gd\Driver;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class LaporanController extends Controller
 {
     public function index()
     {
-        $lapor = LaporanModel::latest()->paginate(10);
+        if(Auth::user()->role == 0){
+            $lapor = LaporanModel::atest()->paginate(10);
+        } elseif(Auth::user()->role == 1) {
+            $lapor = LaporanModel::where('perusahaan', Auth::user()->perusahaan)->latest()->paginate(10);
+        } elseif (Auth::user()->role == 3) {
+            $lapor = LaporanModel::where('kantor', Auth::user()->kantor)->latest()->paginate(10);
+        } else {
+            $lapor = LaporanModel::where('user_id', Auth::user()->id)->latest()->paginate(10);
+        }
 
         return view('laporan.admin.index', compact('lapor'));
     }
@@ -31,39 +40,33 @@ class LaporanController extends Controller
         $request->validate([
             'personil' => 'required',
             'kegiatan' => 'required',
-            'foto' => 'image|mimes:jpeg,png,jpg,gif|max:4096', // Validasi file gambar
+            'foto.*' => 'image|mimes:jpeg,png,jpg,gif|max:4096', // Validasi file gambar
         ]);
 
         // Generate no_lap
+        $noLap = LaporanModel::generateNoLap();
+        $files = $request->file('foto');
+        $fotoNames = [];
 
         // Handle upload foto
-        if ($request->hasFile('foto')) {
-        // Buat direktori penyimpanan
-        $noLap = LaporanModel::generateNoLap();
-        $directory = public_path('storage/laporan/admin/' . $noLap);
+    if ($files != null) {
+       // $directory = base_path('../public_html/storage/laporan/admin/' . $noLap); // Buat direktori penyimpanan live instance
+        $directory = public_path('storage/laporan/admin/' . $noLap); // Buat direktori penyimpanan
 
         // Buat folder jika belum ada
         if (!File::exists($directory)) {
-            File::makeDirectory($directory, 0777, true);
+            File::makeDirectory($directory, 0755, true);
         }
-
-        $files = $request->file('foto');
-        $fotoNames = [];
 
         $manager = new ImageManager(new Driver()); // Inisialisasi di luar loop
 
         foreach ($files as $file) {
             $extension = strtolower($file->getClientOriginalExtension());
             $fotoName = Str::random(20) . '.' . $extension;
-
             $image = $manager->read($file->getPathname());
-
-            // Resize (aspect ratio & upsize)
-            $image->scale(width: 800, keepAspectRatio: true);
-
-            // Simpan sebagai JPEG dengan kualitas 75%
-            $image->toJpeg(75)->save($directory . '/' . $fotoName);
-
+            // Resize skala
+            $image->scale(800, null); // Tanpa named parameter!
+            $image->toJpeg(75)->save($directory . '/' . $fotoName);// Simpan sebagai JPEG dengan kualitas 75%
             $fotoNames[] = $fotoName;
         }
 
@@ -97,5 +100,114 @@ class LaporanController extends Controller
         $detail = LaporanModel::findOrFail($id);
 
        return view('laporan.admin.detail', compact('detail'));
+    }
+
+    public function savepdf($id)
+    {
+        $detail = LaporanModel::findOrFail($id);
+
+        $pdf = Pdf::loadView('laporan.admin.savepdf', compact('detail'))
+                  ->setPaper('A4', 'portrait');
+
+        return $pdf->stream('laporan-kegiatan.pdf');
+    }
+
+
+    public function edit($id)
+    {
+        $edit = LaporanModel::findOrFail($id);
+
+        return view('laporan.admin.edit', compact('edit'));
+    }
+
+public function destroy($id)
+{
+    $laporan = LaporanModel::findOrFail($id);
+
+    // Path folder foto
+    // $folderPath = base_path('../public_html/storage/laporan/admin/' . $laporan->no_lap);
+    $folderPath = public_path('storage/laporan/admin/' . $laporan->no_lap);
+
+    // Hapus semua file di dalam folder
+    if (File::exists($folderPath)) {
+        File::deleteDirectory($folderPath);
+    }
+
+    // Hapus data laporan dari database
+    $laporan->delete();
+
+    return response()->json(['success' => true]);
+}
+
+    public function hapusFoto(Request $request, $id)
+    {
+        $laporan = LaporanModel::findOrFail($id);
+        $fotoToDelete = $request->foto;
+
+        if ($laporan->foto) {
+            $fotos = explode('|', $laporan->foto);
+            if (($key = array_search($fotoToDelete, $fotos)) !== false) {
+                unset($fotos[$key]);
+
+                // Hapus file fisik dari storage
+                // $filePath = base_path('../public_path/storage/laporan/admin/' . $laporan->no_lap . '/' . $fotoToDelete);
+                $filePath = public_path('storage/laporan/admin/' . $laporan->no_lap . '/' . $fotoToDelete);
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
+
+                // Update field foto di database
+                $laporan->foto = count($fotos) > 0 ? implode('|', $fotos) : null;
+                $laporan->save();
+            }
+        }
+
+        return response()->json(['success' => true]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $laporan = LaporanModel::findOrFail($id);
+        $files = $request->file('foto');
+        $fotoNames = [];
+
+        // Handle upload foto
+    if ($files != null) {
+       // $directory = base_path('../public_html/storage/laporan/admin/' . $noLap); // Buat direktori penyimpanan live instance
+        $directory = public_path('storage/laporan/admin/' . $laporan->no_lap); // Buat direktori penyimpanan
+
+        // Buat folder jika belum ada
+        if (!File::exists($directory)) {
+            File::makeDirectory($directory, 0755, true);
+        }
+
+        $manager = new ImageManager(new Driver()); // Inisialisasi di luar loop
+
+        foreach ($files as $file) {
+            $extension = strtolower($file->getClientOriginalExtension());
+            $fotoName = Str::random(20) . '.' . $extension;
+            $image = $manager->read($file->getPathname());
+            // Resize skala
+            $image->scale(800, null); // Tanpa named parameter!
+            $image->toJpeg(75)->save($directory . '/' . $fotoName);// Simpan sebagai JPEG dengan kualitas 75%
+            $fotoNames[] = $fotoName;
+        }
+
+            if ($laporan->foto == null) {
+                $tambah = implode('|', $fotoNames);
+            } else {
+                $tambah = $laporan->foto.'|'.implode('|', $fotoNames);
+            }
+
+            $laporan->foto = $tambah;
+    }
+
+
+        $laporan->personil = $request->personil;
+        $laporan->kegiatan = $request->kegiatan;
+        $laporan->keterangan = $request->keterangan;
+        $laporan->save();
+
+        return response()->json(['success' => true]);
     }
 }

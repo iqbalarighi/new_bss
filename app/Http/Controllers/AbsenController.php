@@ -466,7 +466,7 @@ if ($request->confirm != null) {
     //         $filename = Str::random(40) . '.' . $file->getClientOriginalExtension();
 
     //         // Path ke folder tujuan di public_html
-    //         $destinationPath = base_path('public_html/bukti_izin/' . $user->nip . '/');
+    //         $destinationPath = base_path('../public_html/bukti_izin/' . $user->nip . '/');
 
     //         // Buat folder jika belum ada
     //         if (!File::exists($destinationPath)) {

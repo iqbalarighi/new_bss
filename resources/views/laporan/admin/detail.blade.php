@@ -53,6 +53,9 @@
                     </tr>
                     
                     </table>
+                @if($detail->user_id == Auth::user()->id || Auth::user()->role == "0"|| Auth::user()->role == "1"|| Auth::user()->role == "3")
+                <center><a href="/laporan/admin/pdf/{{$detail->id}}" target="_blank"><span class="btn btn-primary btn-sm ml-2">Download Laporan</span></a></center>
+                @endif
                 </div>
                 </div>
             </div>

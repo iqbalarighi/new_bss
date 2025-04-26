@@ -106,6 +106,12 @@ Route::middleware(['auth:web'])->group(function () {
         Route::get('/laporan/admin/input', [LaporanController::class, 'input'])->name('lapor.admin.input');
         Route::post('/laporan/admin/store', [LaporanController::class, 'store'])->name('lapor.admin.store');
         Route::get('/laporan/admin/detail/{id}', [LaporanController::class, 'detail'])->name('lapor.admin.detail');
+        Route::get('/laporan/admin/pdf/{id}', [LaporanController::class, 'savepdf'])->name('lapor.admin.pdf');
+        Route::get('/laporan/admin/edit/{id}', [LaporanController::class, 'edit'])->name('lapor.admin.edit');
+        Route::put('/laporan/admin/update/{id}', [LaporanController::class, 'update'])->name('lapor.admin.update');
+        Route::post('/laporan/admin/hapus-foto/{id}', [LaporanController::class, 'hapusFoto'])->name('lapor.admin.hapusFoto');
+        Route::delete('/laporan/admin/hapus/{id}', [LaporanController::class, 'destroy'])->name('lapor.admin.destroy');
+
 });
 
 
