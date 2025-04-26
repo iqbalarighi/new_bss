@@ -11,7 +11,7 @@
                 <div class="card-body d-flex justify-content-center" style="overflow: auto;">
                     <div class="col-md-8 fw-bold">
                         <div class="mb-1">
-                            Nama : {{Auth::user()->name}}
+                            Supervisor : {{Auth::user()->name}}
                         </div>
                         <div class="mb-1">
                             Kantor : {{Auth::user()->kant->nama_kantor ?? ""}}
@@ -22,23 +22,23 @@
                         <div class="mb-3">
                             Satuan Kerja : {{Auth::user()->sat->satuan_kerja ?? ""}}
                         </div>
-                        <form id="laporanForm" action="{{ route('lapor.admin.store') }}" method="POST">
+                        <form id="laporanForm" action="{{ route('lapor.admin.store') }}" method="POST" >
                             @csrf
                             <div class="mb-3">
-                                <label for="personil" class="form-label">Personil</label>
+                                <label for="personil" class="form-label mb-0">Personil</label>
                                 <textarea class="form-control" id="personil" name="personil" rows="3" required></textarea>
                             </div>
                             <div class="mb-3">
-                                <label for="kegiatan" class="form-label">Kegiatan</label>
+                                <label for="kegiatan" class="form-label mb-0">Kegiatan</label>
                                 <textarea class="form-control" id="kegiatan" name="kegiatan" rows="3" required></textarea>
                             </div>
                             <div class="mb-3">
-                                <label for="keterangan" class="form-label">Keterangan</label>
-                                <textarea class="form-control" id="keterangan" name="keterangan" rows="3" required></textarea>
+                                <label for="keterangan" class="form-label mb-0">Keterangan</label>
+                                <textarea class="form-control" id="keterangan" name="keterangan" rows="3"></textarea>
                             </div>
                             <div class="mb-3">
-                                <label for="foto" class="form-label">Foto</label>
-                                <input type="file" class="form-control" id="foto" name="foto" accept="image/*">
+                                <label for="foto" class="form-label mb-0">Foto</label>
+                                <input type="file" class="form-control" id="foto" name="foto" accept="image/*" multiple>
                             </div>
                             <div class="d-flex justify-content-center">
                             <button type="submit" class="btn btn-primary">Simpan</button>

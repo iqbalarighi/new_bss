@@ -38,34 +38,36 @@ class LaporanController extends Controller
 
         // Handle upload foto
         if ($request->hasFile('foto')) {
-        // Buat direktori penyimpanan di dalam folder public
-        $noLap = LaporanModel::generateNoLap(); // pastikan variabel $noLap tersedia
+        // Buat direktori penyimpanan
+        $noLap = LaporanModel::generateNoLap();
         $directory = public_path('storage/laporan/admin/' . $noLap);
-        // $directory = base_path('../public_html/storage/admin/' . $noLap);
 
-        // Buat direktori jika belum ada
+        // Buat folder jika belum ada
         if (!File::exists($directory)) {
             File::makeDirectory($directory, 0777, true);
         }
 
-        // Buat nama file acak
-        $extension = $request->file('foto')->getClientOriginalExtension();
-        $fotoName = Str::random(20) . '.' . $extension;
+        $files = $request->file('foto');
+        $fotoNames = [];
 
-        // Kompres dan simpan foto menggunakan Intervention Image v3
-        $manager = new ImageManager(new Driver());  // default pakai 'gd'
-        $image = $manager->read($request->file('foto')->getPathname());
+        $manager = new ImageManager(new Driver()); // Inisialisasi di luar loop
 
-        // Resize dengan aspect ratio dan upsize
-        $image->resize(800, null, function ($constraint) {
-            $constraint->aspectRatio();
-            $constraint->upsize();
-        });
+        foreach ($files as $file) {
+            $extension = strtolower($file->getClientOriginalExtension());
+            $fotoName = Str::random(20) . '.' . $extension;
 
-        // Simpan dengan kualitas 75%
-        $image->toJpeg(75)->save($directory . '/' . $fotoName);
-    } else {
-        $fotoName = null;
+            $image = $manager->read($file->getPathname());
+
+            // Resize (aspect ratio & upsize)
+            $image->scale(width: 800, keepAspectRatio: true);
+
+            // Simpan sebagai JPEG dengan kualitas 75%
+            $image->toJpeg(75)->save($directory . '/' . $fotoName);
+
+            $fotoNames[] = $fotoName;
+        }
+
+        $foto = implode('|', $fotoNames);
     }
 
         // Simpan data ke database
@@ -80,7 +82,7 @@ class LaporanController extends Controller
             'personil' => $request->personil,
             'kegiatan' => $request->kegiatan,
             'keterangan' => $request->keterangan,
-            'foto' => $fotoName,
+            'foto' => $foto,
         ]);
 
         // Response JSON untuk AJAX
@@ -88,5 +90,12 @@ class LaporanController extends Controller
             'success' => true,
             'message' => 'Laporan berhasil disimpan!',
         ]);
+    }
+
+    public function detail($id)
+    {
+        $detail = LaporanModel::findOrFail($id);
+
+       return view('laporan.admin.detail', compact('detail'));
     }
 }

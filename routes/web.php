@@ -105,6 +105,7 @@ Route::middleware(['auth:web'])->group(function () {
         Route::get('/laporan/admin/', [LaporanController::class, 'index'])->name('lapor.admin');
         Route::get('/laporan/admin/input', [LaporanController::class, 'input'])->name('lapor.admin.input');
         Route::post('/laporan/admin/store', [LaporanController::class, 'store'])->name('lapor.admin.store');
+        Route::get('/laporan/admin/detail/{id}', [LaporanController::class, 'detail'])->name('lapor.admin.detail');
 });
 
 
