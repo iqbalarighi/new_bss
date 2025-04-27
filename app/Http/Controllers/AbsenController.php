@@ -194,6 +194,61 @@ if ($request->confirm != null) {
         return view('absen.profile', compact('profile'));
     }
 
+    // public function profilimage(Request $request)
+    // {
+    //     // Validasi input
+    //     $request->validate([
+    //         'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:4096', // Maksimal 4MB
+    //     ]);
+
+    //     try {
+    //         // Ambil file dari request
+    //         $file = $request->file('profile_image');
+
+    //         $user = Auth::guard('pegawai')->user();
+
+    //         if ($user->foto != null) {
+    //                 File::deleteDirectory(public_path('storage/foto_pegawai/'.$user->nip));
+    //             }
+
+
+    //     $directory = public_path('storage/foto_pegawai/admin/' . $user->nip); // Buat direktori penyimpanan
+
+    //     // Buat folder jika belum ada
+    //     if (!File::exists($directory)) {
+    //         File::makeDirectory($directory, 0755, true);
+    //     }
+
+
+    //         // Buat nama file unik
+    //         $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
+
+    //         // Simpan file ke direktori public/profile-images
+    //         $filePath = $file->storeAs('public/foto_pegawai/'.$user->nip.'/', $fileName);
+
+    //         // URL file yang disimpan
+    //         $fileUrl = Storage::url($filePath);
+
+    //         $user->foto = $fileName;
+    //         $user->save();
+
+    //         // Respon jika berhasil
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Foto profil berhasil diunggah.',
+    //             'file_url' => $fileUrl,
+    //         ], 200);
+
+    //     } catch (\Exception $e) {
+    //         // Respon jika gagal
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Terjadi kesalahan saat mengunggah: ' . $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
+    
+    // versi live
     public function profilimage(Request $request)
     {
         // Validasi input
@@ -203,25 +258,35 @@ if ($request->confirm != null) {
 
         try {
             // Ambil file dari request
-            $file = $request->file('profile_image');
-
+$file = $request->file('profile_image');
             $user = Auth::guard('pegawai')->user();
-
-            if ($user->foto != null) {
-                    File::deleteDirectory(public_path('storage/foto_pegawai/'.$user->nip));
-                }
+            
+            // Path ke folder penyimpanan di public_html
+            $destinationPath = public_path('storage/foto_pegawai/' . $user->nip . '/');
+            
+            // Hapus folder lama jika ada
+            if ($user->foto != null && File::exists($destinationPath)) {
+                File::deleteDirectory($destinationPath);
+            }
+            
             // Buat nama file unik
             $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
-
-            // Simpan file ke direktori public/profile-images
-            $filePath = $file->storeAs('public/foto_pegawai/'.$user->nip.'/', $fileName);
-
-            // URL file yang disimpan
-            $fileUrl = Storage::url($filePath);
-
+            
+            // Buat folder jika belum ada
+            if (!File::exists($destinationPath)) {
+                File::makeDirectory($destinationPath, 0755, true);
+            }
+            
+            // Simpan file ke folder tujuan
+            $file->move($destinationPath, $fileName);
+            
+            // Simpan nama file ke database
             $user->foto = $fileName;
             $user->save();
-
+            
+            // Buat URL file (akses publik)
+            $fileUrl = asset('storage/foto_pegawai/' . $user->nip . '/' . $fileName);
+            
             // Respon jika berhasil
             return response()->json([
                 'success' => true,
@@ -237,61 +302,6 @@ if ($request->confirm != null) {
             ], 500);
         }
     }
-    
-//     versi live
-//     public function profilimage(Request $request)
-//     {
-//         // Validasi input
-//         $request->validate([
-//             'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:4096', // Maksimal 4MB
-//         ]);
-
-//         try {
-//             // Ambil file dari request
-// $file = $request->file('profile_image');
-//             $user = Auth::guard('pegawai')->user();
-            
-//             // Path ke folder penyimpanan di public_html
-//             $destinationPath = base_path('../public_html/storage/foto_pegawai/' . $user->nip . '/');
-            
-//             // Hapus folder lama jika ada
-//             if ($user->foto != null && File::exists($destinationPath)) {
-//                 File::deleteDirectory($destinationPath);
-//             }
-            
-//             // Buat nama file unik
-//             $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
-            
-//             // Buat folder jika belum ada
-//             if (!File::exists($destinationPath)) {
-//                 File::makeDirectory($destinationPath, 0755, true);
-//             }
-            
-//             // Simpan file ke folder tujuan
-//             $file->move($destinationPath, $fileName);
-            
-//             // Simpan nama file ke database
-//             $user->foto = $fileName;
-//             $user->save();
-            
-//             // Buat URL file (akses publik)
-//             $fileUrl = asset('storage/foto_pegawai/' . $user->nip . '/' . $fileName);
-            
-//             // Respon jika berhasil
-//             return response()->json([
-//                 'success' => true,
-//                 'message' => 'Foto profil berhasil diunggah.',
-//                 'file_url' => $fileUrl,
-//             ], 200);
-
-//         } catch (\Exception $e) {
-//             // Respon jika gagal
-//             return response()->json([
-//                 'success' => false,
-//                 'message' => 'Terjadi kesalahan saat mengunggah: ' . $e->getMessage(),
-//             ], 500);
-//         }
-//     }
 
     public function updateNama(Request $request)
     {
@@ -407,47 +417,13 @@ if ($request->confirm != null) {
         return view('absen.formizin');
     }
 
-    public function formizinsimpan(Request $request)
-    {
-        $request->validate([
-            'tanggal' => 'required|date',
-            'jenisIzin' => 'required|in:i,s,c',
-            'keterangan' => 'required|string|max:255',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
-
-        $user = Auth::guard('pegawai')->user();
-
-        $data = [
-            'nip' => $user->id,
-            'perusahaan' => $user->perusahaan,
-            'nama_kantor' => $user->nama_kantor,
-            'tanggal' => $request->tanggal,
-            'jenis_izin' => $request->jenisIzin,
-            'keterangan' => $request->keterangan,
-        ];
-
-        if ($request->hasFile('buktiFoto')) {
-            $filename = Str::random(40) . '.' . $request->file('buktiFoto')->getClientOriginalExtension();
-            $path = $request->file('buktiFoto')->storeAs("bukti_izin/$user->nip", $filename, 'public');
-            $data['foto'] = $filename;
-        }
-
-        // Simpan ke database (sesuai model yang digunakan, contoh: Izin)
-        IzinabsenModel::create($data);
-
-        return redirect('absen/izin')->with('success', 'Data izin berhasil disimpan.');
-    }
-
-    // versi live
-
     // public function formizinsimpan(Request $request)
     // {
     //     $request->validate([
     //         'tanggal' => 'required|date',
     //         'jenisIzin' => 'required|in:i,s,c',
     //         'keterangan' => 'required|string|max:255',
-    //         'buktiFoto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+    //         'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
     //     ]);
 
     //     $user = Auth::guard('pegawai')->user();
@@ -462,27 +438,61 @@ if ($request->confirm != null) {
     //     ];
 
     //     if ($request->hasFile('buktiFoto')) {
-    //         $file = $request->file('buktiFoto');
-    //         $filename = Str::random(40) . '.' . $file->getClientOriginalExtension();
-
-    //         // Path ke folder tujuan di public_html
-    //         $destinationPath = base_path('../public_html/bukti_izin/' . $user->nip . '/');
-
-    //         // Buat folder jika belum ada
-    //         if (!File::exists($destinationPath)) {
-    //             File::makeDirectory($destinationPath, 0755, true);
-    //         }
-
-    //         // Simpan file ke folder tujuan
-    //         $file->move($destinationPath, $filename);
-
-    //         // Simpan nama file ke kolom 'foto'
+    //         $filename = Str::random(40) . '.' . $request->file('buktiFoto')->getClientOriginalExtension();
+    //         $path = $request->file('buktiFoto')->storeAs("bukti_izin/$user->nip", $filename, 'public');
     //         $data['foto'] = $filename;
     //     }
 
-    //     // Simpan data ke database
+    //     // Simpan ke database (sesuai model yang digunakan, contoh: Izin)
     //     IzinabsenModel::create($data);
 
     //     return redirect('absen/izin')->with('success', 'Data izin berhasil disimpan.');
     // }
+
+    // versi live
+
+    public function formizinsimpan(Request $request)
+    {
+        $request->validate([
+            'tanggal' => 'required|date',
+            'jenisIzin' => 'required|in:i,s,c',
+            'keterangan' => 'required|string|max:255',
+            'buktiFoto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $user = Auth::guard('pegawai')->user();
+
+        $data = [
+            'nip' => $user->id,
+            'perusahaan' => $user->perusahaan,
+            'nama_kantor' => $user->nama_kantor,
+            'tanggal' => $request->tanggal,
+            'jenis_izin' => $request->jenisIzin,
+            'keterangan' => $request->keterangan,
+        ];
+
+        if ($request->hasFile('buktiFoto')) {
+            $file = $request->file('buktiFoto');
+            $filename = Str::random(40) . '.' . $file->getClientOriginalExtension();
+
+            // Path ke folder tujuan di public_html
+            $destinationPath = public_path('storage/bukti_izin/' . $user->nip . '/');
+
+            // Buat folder jika belum ada
+            if (!File::exists($destinationPath)) {
+                File::makeDirectory($destinationPath, 0755, true);
+            }
+
+            // Simpan file ke folder tujuan
+            $file->move($destinationPath, $filename);
+
+            // Simpan nama file ke kolom 'foto'
+            $data['foto'] = $filename;
+        }
+
+        // Simpan data ke database
+        IzinabsenModel::create($data);
+
+        return redirect('absen/izin')->with('success', 'Data izin berhasil disimpan.');
+    }
 }
