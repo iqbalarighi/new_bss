@@ -135,7 +135,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: '/laporan/admin/hapus-foto/' + id,
+                        url: '/laporan/admin/hapus-foto/' + id + '',
                         method: 'POST',
                         data: {
                             _token: '{{ csrf_token() }}',
