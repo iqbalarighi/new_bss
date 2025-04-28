@@ -1,7 +1,18 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/paper-css/0.4.1/paper.css">
         <title>{{ config('app.name', 'SISPAM') }}</title>
         <style type="text/css">
+            @page {
+              size: A4
+            }
+
+            body {
+              font-family: Arial, sans-serif;
+              font-size: 12pt;
+            }
+
             pre {
                 font-family : Calibri;
             }
@@ -17,9 +28,9 @@
         \Carbon\Carbon::setLocale('id');
         @endphp
     </head>
-<body>
-                <div>
-                    <img src="{{public_path('storage/img/logo.png')}}" style="margin-top: 1px; width: 80px; position: fixed;">
+<body class="A4">
+                <div style="margin-top: -20px;">
+                    <img src="{{public_path('storage/img/logo.png')}}" style="margin-top: 1px; width: 75px; position: fixed;">
                     <h4>
                         <b><center>Laporan Kegiatan Admin</center></b>
                         <b><center>Gedung {{$detail->kant->nama_kantor ?? ''}}</center></b>

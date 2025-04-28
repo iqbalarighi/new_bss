@@ -17,7 +17,7 @@ class LaporanController extends Controller
     public function index()
     {
         if(Auth::user()->role == 0){
-            $lapor = LaporanModel::atest()->paginate(10);
+            $lapor = LaporanModel::latest()->paginate(10);
         } elseif(Auth::user()->role == 1) {
             $lapor = LaporanModel::where('perusahaan', Auth::user()->perusahaan)->latest()->paginate(10);
         } elseif (Auth::user()->role == 3) {
