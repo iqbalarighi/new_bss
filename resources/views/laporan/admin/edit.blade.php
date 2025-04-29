@@ -10,19 +10,30 @@
 
                 <div class="card-body d-flex justify-content-center" style="overflow: auto;">
                     <div class="col-md-8 fw-bold">
-                        <div class="mb-1">
-                            Supervisor : {{ Auth::user()->name }}
+                        {{-- <div class="mb-1">
+                            Supervisor : {{ $edit->usr->name}}
                         </div>
                         <div class="mb-1">
-                            Kantor : {{ Auth::user()->kant->nama_kantor ?? "" }}
+                            Kantor : {{ $edit->kant->nama_kantor ?? "" }}
                         </div>
                         <div class="mb-1">
-                            Departemen : {{ Auth::user()->deptmn->nama_dept ?? "" }}
+                            Departemen : {{ $edit->deptmn->nama_dept ?? "" }}
                         </div>
                         <div class="mb-3">
-                            Satuan Kerja : {{ Auth::user()->sat->satuan_kerja ?? "" }}
-                        </div>
+                            Satuan Kerja : {{ $edit->sat->satuan_kerja ?? "" }}
+                        </div> --}}
 
+                    <tr>
+                        <td>
+                            <b><center>Laporan Kegiatan Admin</center></b>
+                            <b><center>{{$edit->kant->nama_kantor ?? ''}}</center></b>
+                            <b><center>{{Carbon\Carbon::parse($edit->tanggal)->isoFormat('dddd, D MMMM Y')}}</center></b>
+                            <b><center>Pukul {{Carbon\Carbon::parse($edit->updated_at)->isoFormat('HH:mm:ss')}} WIB</center></b>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                    </tr>
                         <form id="laporanForm" action="{{ route('lapor.admin.update', $edit->id) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')

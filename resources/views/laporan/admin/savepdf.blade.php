@@ -33,7 +33,7 @@
                     <img src="{{public_path('storage/img/logo.png')}}" style="margin-top: 1px; width: 75px; position: fixed;">
                     <h4>
                         <b><center>Laporan Kegiatan Admin</center></b>
-                        <b><center>Gedung {{$detail->kant->nama_kantor ?? ''}}</center></b>
+                        <b><center>{{$detail->kant->nama_kantor ?? ''}}</center></b>
                         <b><center>{{Carbon\Carbon::parse($detail->tanggal)->isoFormat('dddd, D MMMM Y')}}</center></b>
                         <b><center>Pukul {{Carbon\Carbon::parse($detail->updated_at)->isoFormat('HH:mm:ss')}} WIB</center></b>
                     </h4>
@@ -61,7 +61,7 @@
                             @if ($detail->foto != null)
                     @foreach(explode('|',$detail->foto) as $item)
 
-                    <img  src="{{ public_path('storage/laporan/admin')}}/{{$detail->no_lap}}/{{$item}}" style="height:200px;  margin-bottom: 5pt">  &nbsp;
+                    <img  src="{{ public_path('storage/laporan/admin')}}/{{$detail->no_lap}}/{{$item}}" style="height:180px;  margin-bottom: 5pt">  &nbsp;
                     @endforeach
                         @else 
                         Harap Upload Foto Dokumentasi

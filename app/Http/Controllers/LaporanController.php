@@ -11,6 +11,7 @@ use Intervention\Image\ImageManager;
 use Illuminate\Support\Facades\File;
 use Intervention\Image\Drivers\Gd\Driver;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Jenssegers\Agent\Agent;
 
 class LaporanController extends Controller
 {
@@ -105,11 +106,15 @@ class LaporanController extends Controller
     public function savepdf($id)
     {
         $detail = LaporanModel::findOrFail($id);
+        $agent = new Agent();
 
         $pdf = Pdf::loadView('laporan.admin.savepdf', compact('detail'))
                   ->setPaper('A4', 'portrait');
-
-        return $pdf->stream('laporan-kegiatan.pdf');
+        if ($agent->isMobile()){
+            return $pdf->download('Laporan Kegiatan Admin '.$detail->no_lap.'.pdf');
+        } else {
+            return $pdf->stream('Laporan Kegiatan Admin '.$detail->no_lap.'.pdf');
+        }
     }
 
 

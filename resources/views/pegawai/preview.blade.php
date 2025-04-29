@@ -200,14 +200,14 @@
       </tbody>
     </table>
 
-    <div class="location-date">Jakarta, {{Carbon\Carbon::now()->locale('id')->isoFormat('DD-MM-YYYY')}}</div>
+{{--     <div class="location-date">Jakarta, {{Carbon\Carbon::now()->locale('id')->isoFormat('DD-MM-YYYY')}}</div>
 
     <table class="signature">
       <tr>
         <td>Qiana Aqila<br><strong>HRD Manager</strong></td>
         <td>Daffa<br><strong>Direktur</strong></td>
       </tr>
-    </table>
+    </table> --}}
   </section>
 </body>
 

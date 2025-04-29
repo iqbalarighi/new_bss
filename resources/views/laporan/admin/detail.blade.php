@@ -9,7 +9,7 @@
                 </div>
                 <div class="card-body d-flex justify-content-center" style="overflow: auto;">
                     <div class="col-md-auto p-auto">
-                    <table class="table table-responsive" width="100%">
+                    <table class="table" width="100%">
                     <tr>
                         <td>
                         <b><center>Laporan Kegiatan Admin</center></b>
@@ -31,13 +31,19 @@
                         <td><b>Update Giat : </b></td>
                     </tr>
                     <tr>
-                        <td colspan="3"><pre class="mb-0" style="text-align:justify;text-justify:inter-word;">{{$detail->kegiatan}}</pre></td>
+                        <td colspan="3">
+                            <div style="text-align:justify; text-justify:inter-word; white-space:pre-wrap; word-wrap:break-word;" class="mb-0">{{$detail->kegiatan}}
+                            </div>
+                        </td>
                     </tr>
                     <tr>
                         <td><b>Keterangan : </b></td>
                     </tr>
                     <tr>
-                        <td colspan="3"><pre class="mb-0">{{$detail->keterangan}}</pre></td>
+                        <td colspan="3">
+                            <div style="white-space:pre-wrap; word-wrap:break-word;" class="mb-0">{{$detail->keterangan}}
+                            </div>
+                        </td>
                     </tr>
                     <tr>
                         <td align="center" colspan="3"><b>Dokumentasi : </b>
