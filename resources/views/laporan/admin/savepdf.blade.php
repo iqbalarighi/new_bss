@@ -38,12 +38,6 @@
                         <b><center>Pukul {{Carbon\Carbon::parse($detail->updated_at)->isoFormat('HH:mm:ss')}} WIB</center></b>
                     </h4>
                 </div>
-{{--                 <table class="table table-responsive" width="100%" style="">
-                
-                    <tr>
-                        <td><b>No. laporan: </b>{{$detail->no_lap}} </td> 
-                    </tr>
-                </table> --}}
                 <p></p>
                     <span class="table table-responsive " width="100%">
                     <b>No. laporan: </b>{{$detail->no_lap}}

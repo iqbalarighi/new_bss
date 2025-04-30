@@ -50,7 +50,7 @@
                                 <textarea class="form-control" id="keterangan" name="keterangan" rows="3">{{ $edit->keterangan }}</textarea>
                             </div>
                             <div class="mb-3">
-                                <label for="foto" class="form-label mb-0">Foto (Opsional, jika ingin ganti atau tambah)</label>
+                                <label for="foto" class="form-label mb-0">Foto</label>
                                 <input type="file" class="form-control" id="foto" name="foto[]" accept="image/*" multiple>
                                 
                                 @if ($edit->foto)
