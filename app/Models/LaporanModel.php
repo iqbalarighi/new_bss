@@ -32,7 +32,7 @@ class LaporanModel extends Model
         $bulanTahun = date('m') . substr(date('Y'), -2);
 
         // Ambil nomor urut terakhir
-        $lastRecord = self::where('no_lap', 'like', 'ADM-' . $bulanTahun . '-%')->orderBy('no_lap', 'desc')->first();
+        $lastRecord = self::where('no_lap', 'like', 'LAP-' . $bulanTahun . '-%')->orderBy('no_lap', 'desc')->first();
 
         // Jika ada record sebelumnya, increment nomor urut
         if ($lastRecord) {
@@ -43,7 +43,7 @@ class LaporanModel extends Model
         }
 
         // Format no_lap
-        return 'ADM-' . $bulanTahun . '-' . $nextNumber;
+        return 'LAP-' . $bulanTahun . '-' . $nextNumber;
     }
 
 public function perusa()
@@ -71,6 +71,6 @@ public function deptmn() {
     }
 
 public function usr() {
-    return $this->belongsTo(User::class, 'user_id');
+    return $this->belongsTo(PegawaiModel::class, 'user_id');
     }
 }

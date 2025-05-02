@@ -5,17 +5,20 @@
         <div class="col mw-100">
             <div class="card">
                 <div class="card-header d-flex justify-content-between fw-bold">{{ __('Detail Laporan Admin') }}
-                    <a href="{{route('lapor.admin')}}" class="btn btn-sm btn-danger">Kembali</a>
+                    <a href="{{route('laporan.satker', $id)}}" class="btn btn-sm btn-danger">Kembali</a>
                 </div>
+                @php
+        \Carbon\Carbon::setLocale('id');
+        @endphp
                 <div class="card-body d-flex justify-content-center" style="overflow: auto;">
                     <div class="col-md-auto p-auto">
                     <table class="table" width="100%">
                     <tr>
                         <td>
-                        <b><center>Laporan Kegiatan Admin</center></b>
+                        <b><center>Laporan Kegiatan {{$satker->satuan_kerja}}</center></b>
                         <b><center>{{$detail->kant->nama_kantor ?? ''}}</center></b>
-                        <b><center>{{Carbon\Carbon::parse($detail->tanggal)->isoFormat('dddd, D MMMM Y')}}</center></b>
-                        <b><center>Pukul {{Carbon\Carbon::parse($detail->updated_at)->isoFormat('HH:mm:ss')}} WIB</center></b>
+                        <b><center>{{Carbon\Carbon::parse($detail->created_at)->isoFormat('dddd, D MMMM Y')}}</center></b>
+                        <b><center>Pukul {{Carbon\Carbon::parse($detail->created_at)->isoFormat('HH:mm:ss')}} WIB</center></b>
                     </td>
                     </tr>
                     <tr>
@@ -60,7 +63,7 @@
                     
                     </table>
                 @if($detail->user_id == Auth::user()->id || Auth::user()->role == "0"|| Auth::user()->role == "1"|| Auth::user()->role == "3")
-                <center><a href="/laporan/admin/pdf/{{$detail->id}}" target="_blank"><span class="btn btn-primary btn-sm ml-2">Download Laporan</span></a></center>
+                <center><a href="/laporan/{{$id}}/pdf/{{$detail->id}}" target="_blank"><span class="btn btn-primary btn-sm ml-2">Download Laporan</span></a></center>
                 @endif
                 </div>
                 </div>

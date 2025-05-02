@@ -2,30 +2,97 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
 use App\Models\LaporanModel;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
-use Intervention\Image\ImageManager;
-use Illuminate\Support\Facades\File;
-use Intervention\Image\Drivers\Gd\Driver;
+use App\Models\SatkerModel;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 use Jenssegers\Agent\Agent;
 
 class LaporanController extends Controller
 {
-    public function index()
-    {
-        if(Auth::user()->role == 0){
-            $lapor = LaporanModel::latest()->paginate(10);
-        } elseif(Auth::user()->role == 1) {
-            $lapor = LaporanModel::where('perusahaan', Auth::user()->perusahaan)->latest()->paginate(10);
-        } elseif (Auth::user()->role == 3) {
-            $lapor = LaporanModel::where('kantor', Auth::user()->kantor)->latest()->paginate(10);
-        } else {
-            $lapor = LaporanModel::where('user_id', Auth::user()->id)->latest()->paginate(10);
+
+public function perSatker(Request $request, $id)
+{
+    $query = LaporanModel::with('usr')
+        ->where('satker', $id)
+        ->when(Auth::user()->role == 1, fn($q) => $q->where('perusahaan', Auth::user()->perusahaan))
+        ->when(Auth::user()->role == 3, fn($q) => $q->where('kantor', Auth::user()->kantor));
+
+    // Filter pencarian (nama, no_lap, kantor)
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function ($q) use ($search) {
+            $q->where('no_lap', 'like', "%$search%")
+              ->orWhereHas('usr', function ($qu) use ($search) {
+                  $qu->where('nama_lengkap', 'like', "%$search%")
+                     ->orWhereHas('kantor', function ($que) use ($search) {
+                         $que->where('nama_kantor', 'like', "%$search%");
+                     });
+              });
+        });
+    }
+
+    // Filter berdasarkan tanggal
+    if ($request->filled('tanggal')) {
+        try {
+            $tanggal = \Carbon\Carbon::createFromFormat('d-m-Y', $request->tanggal)->format('Y-m-d');
+            $query->whereDate('created_at', $tanggal);
+        } catch (\Exception $e) {
+            // Tanggal tidak valid, bisa diabaikan atau log
         }
+    }
+
+    $lapor = $query->latest()->paginate(10)->withQueryString();
+
+    return view('laporan.admin.index', compact('lapor', 'id'));
+}
+
+
+    public function index(Request $request)
+    {
+            $query = LaporanModel::with('usr');
+
+        if(Auth::user()->role == 0){
+            // admin: akses semua
+        } elseif(Auth::user()->role == 1) {
+            $query->where('perusahaan', Auth::user()->perusahaan);
+        } elseif (Auth::user()->role == 3) {
+            $query->where('kantor', Auth::user()->kantor);
+        } else {
+            $query->where('user_id', Auth::user()->id);
+        }
+
+
+        // Filter pencarian
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('no_lap', 'like', "%$search%")
+                  ->orWhereHas('usr', function ($qu) use ($search) {
+                      $qu->where('nama_lengkap', 'like', "%$search%")
+                        ->orWhereHas('kantor', function ($que) use ($search) {
+                            $que->where('nama_kantor', 'like', "%$search%");
+                        });
+                  });
+            });
+        }
+
+        if ($request->filled('tanggal')) {
+            try {
+                $tanggal = \Carbon\Carbon::createFromFormat('d-m-Y', $request->tanggal)->format('Y-m-d');
+                $query->whereDate('created_at', $tanggal);
+            } catch (\Exception $e) {
+                // Optional: log or ignore invalid date
+            }
+        }
+
+        $lapor = $query->latest()->paginate(10)->withQueryString();
 
         return view('laporan.admin.index', compact('lapor'));
     }
@@ -96,19 +163,21 @@ class LaporanController extends Controller
         ]);
     }
 
-    public function detail($id)
+    public function detail($id, $ids)
     {
-        $detail = LaporanModel::findOrFail($id);
+        $detail = LaporanModel::findOrFail($ids);
+        $satker = SatkerModel::findOrFail($id);
 
-       return view('laporan.admin.detail', compact('detail'));
+       return view('laporan.admin.detail', compact('detail', 'id', 'satker'));
     }
 
-    public function savepdf($id)
+    public function savepdf($id, $ids)
     {
-        $detail = LaporanModel::findOrFail($id);
+        $detail = LaporanModel::findOrFail($ids);
+        $satker = SatkerModel::findOrFail($id);
         $agent = new Agent();
 
-        $pdf = Pdf::loadView('laporan.admin.savepdf', compact('detail'))
+        $pdf = Pdf::loadView('laporan.admin.savepdf', compact('detail', 'satker'))
                   ->setPaper('A4', 'portrait');
         if ($agent->isMobile()){
             return $pdf->download('Laporan Kegiatan Admin '.$detail->no_lap.'.pdf');
@@ -118,14 +187,14 @@ class LaporanController extends Controller
     }
 
 
-    public function edit($id)
+    public function edit($id, $ids)
     {
         $edit = LaporanModel::findOrFail($id);
 
         return view('laporan.admin.edit', compact('edit'));
     }
 
-public function destroy($id)
+public function destroy($id, $ids)
 {
     $laporan = LaporanModel::findOrFail($id);
 

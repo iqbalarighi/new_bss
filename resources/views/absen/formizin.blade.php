@@ -13,6 +13,16 @@
 @endsection
 
 @section('content')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+@if (Session::get('error'))
+<script type="text/javascript">
+    Swal.fire({
+  icon: "warning",
+  title: "{{Session::get('error')}}",
+  showConfirmButton: true,
+});
+</script>
+@endif
 <div class="container mb-4" style="margin-top: 3.5rem;">
     <div class="col mx-0 px-0" style=" margin-bottom: 5rem;">
         <form method="POST" action="{{ route('absen.storeizin') }}" enctype="multipart/form-data" onsubmit="return validateForm()">

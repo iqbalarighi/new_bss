@@ -32,7 +32,7 @@
                 <div style="margin-top: -20px;">
                     <img src="{{public_path('storage/img/logo.png')}}" style="margin-top: 1px; width: 75px; position: fixed;">
                     <h4>
-                        <b><center>Laporan Kegiatan Admin</center></b>
+                        <b><center>Laporan Kegiatan {{$satker->satuan_kerja}}</center></b>
                         <b><center>{{$detail->kant->nama_kantor ?? ''}}</center></b>
                         <b><center>{{Carbon\Carbon::parse($detail->tanggal)->isoFormat('dddd, D MMMM Y')}}</center></b>
                         <b><center>Pukul {{Carbon\Carbon::parse($detail->updated_at)->isoFormat('HH:mm:ss')}} WIB</center></b>

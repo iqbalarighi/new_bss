@@ -101,16 +101,17 @@ Route::middleware(['auth:web'])->group(function () {
         Route::put('/shift/update/{id}', [MasterController::class, 'shiftUpdate'])->name('master.shift.update');
 
     });
-    
-        Route::get('/laporan/admin/', [LaporanController::class, 'index'])->name('lapor.admin');
-        Route::get('/laporan/admin/input', [LaporanController::class, 'input'])->name('lapor.admin.input');
-        Route::post('/laporan/admin/store', [LaporanController::class, 'store'])->name('lapor.admin.store');
-        Route::get('/laporan/admin/detail/{id}', [LaporanController::class, 'detail'])->name('lapor.admin.detail');
-        Route::get('/laporan/admin/pdf/{id}', [LaporanController::class, 'savepdf'])->name('lapor.admin.pdf');
-        Route::get('/laporan/admin/edit/{id}', [LaporanController::class, 'edit'])->name('lapor.admin.edit');
-        Route::put('/laporan/admin/update/{id}', [LaporanController::class, 'update'])->name('lapor.admin.update');
-        Route::post('/laporan/admin/hapus-foto/{id}', [LaporanController::class, 'hapusFoto'])->name('lapor.admin.hapusFoto');
-        Route::delete('/laporan/admin/hapus/{id}', [LaporanController::class, 'destroy'])->name('lapor.admin.destroy');
+    // web.php
+        Route::get('/laporan/{id}', [LaporanController::class, 'perSatker'])->name('laporan.satker');
+
+        Route::get('/laporan/{id}/input', [LaporanController::class, 'input'])->name('lapor.admin.input');
+        Route::post('/laporan/{id}/store', [LaporanController::class, 'store'])->name('lapor.admin.store');
+        Route::get('/laporan/{id}/detail/{ids}', [LaporanController::class, 'detail'])->name('lapor.admin.detail');
+        Route::get('/laporan/{id}/pdf/{ids}', [LaporanController::class, 'savepdf'])->name('lapor.admin.pdf');
+        Route::get('/laporan/{id}/edit/{ids}', [LaporanController::class, 'edit'])->name('lapor.admin.edit');
+        Route::put('/laporan/{id}/update/{ids}', [LaporanController::class, 'update'])->name('lapor.admin.update');
+        Route::post('/laporan/{id}/hapus-foto/{ids}', [LaporanController::class, 'hapusFoto'])->name('lapor.admin.hapusFoto');
+        Route::delete('/laporan/{id}/hapus/{ids}', [LaporanController::class, 'destroy'])->name('lapor.admin.destroy');
 
 });
 
@@ -134,6 +135,7 @@ Route::controller(AbsenController::class)->middleware(['redirif:pegawai'])->grou
     Route::post('/absen/formizinsimpan', 'formizinsimpan')->name('absen.storeizin');
     Route::post('/absen/update-nowa', 'updateNowa');
     Route::post('/absen/update-pass', 'updatePass');
+    Route::get('/absen/laporan', 'lapor')->name('absen.lapor');
 });
 
 Route::post('/absen/logout', [AuthController::class, 'logout'])->middleware(['redirif:pegawai'])->name('absen.logout');

@@ -10,19 +10,37 @@
         <div class="col mw-100">
             <div class="card">
                 <div class="card-header d-flex justify-content-between fw-bold">{{ __('Laporan Admin') }}
-                    <a href="{{route('lapor.admin.input')}}" class="btn btn-sm btn-danger">Buat Laporan</a>
+                    {{-- <a href="{{route('lapor.admin.input')}}" class="btn btn-sm btn-danger">Buat Laporan</a> --}}
                 </div>
+                <div class="card-body">
+                    <form method="GET" action="{{  route('laporan.satker', $id) }}" class="row gy-2 align-items-center mb-3">
+                        <div class="col-12 col-md-3">
+                            <input type="text" name="search" class="form-control" placeholder="Cari Laporan" value="{{ request('search') }}">
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <input type="text" name="tanggal" id="tanggal" class="form-control" placeholder="Tanggal (dd-mm-yyyy)" value="{{ request('tanggal') }}">
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-primary w-100 w-md-auto">Cari</button>
+                        </div>
+                        <div class="col-auto">
+                            <a href="{{ route('laporan.satker', $id) }}" class="btn btn-secondary w-100 w-md-auto">Reset</a>
+                        </div>
+                    </form>
 
-                <div class="card-body d-flex justify-content-center" style="overflow: auto;">
+                <div class="d-flex justify-content-center" style="overflow: auto;">
                     <table class="table table-striped table-hover table-bordered">
                         <thead class="table-dark text-center">
                             <tr>
                                 <th>No</th>
                                 <th>No. Laporan</th>
-                                <th>Nama</th>
                             @if(Auth::user()->role == 0 || Auth::user()->role == 1 || Auth::user()->role == 3)
+                                <th>Nama</th>
+                            @endif
+                            @if(Auth::user()->role == 0 )
                                 <th>Kantor</th>
                             @endif
+                                <th>Satker</th>
                                 <th>Tanggal</th>
                                 <th>Jam</th>
                                 <th>Aksi</th>
@@ -31,35 +49,52 @@
                         <tbody>
                         @foreach ($lapor as $num => $lap)
                             <tr class="text-center">
-                                <td onclick="window.location='/laporan/admin/detail/{{$lap->id}}'" style="cursor:pointer;">{{$lapor->firstItem() + $num}}</td>
-                                <td onclick="window.location='/laporan/admin/detail/{{$lap->id}}'" style="cursor:pointer;">{{$lap->no_lap}}</td>
-                                <td onclick="window.location='/laporan/admin/detail/{{$lap->id}}'" style="cursor:pointer;">{{$lap->usr->name}}</td>
-                            @if(Auth::user()->role == 0 || Auth::user()->role == 1 || Auth::user()->role == 3)
-                                <td onclick="window.location='/laporan/admin/detail/{{$lap->id}}'" style="cursor:pointer;">{{$lap->usr->kant->nama_kantor ?? ''}}</td>
+                                <td onclick="window.location='/laporan/{{$id}}/detail/{{$lap->id}}'" style="cursor:pointer;">{{$lapor->firstItem() + $num}}</td>
+                                <td onclick="window.location='/laporan/{{$id}}/detail/{{$lap->id}}'" style="cursor:pointer;">{{$lap->no_lap}}</td>
+                                <td onclick="window.location='/laporan/{{$id}}/detail/{{$lap->id}}'" style="cursor:pointer;">{{$lap->usr->nama_lengkap ?? ''}}</td>
+                            @if(Auth::user()->role == 0 )
+                                <td onclick="window.location='/laporan/{{$id}}/detail/{{$lap->id}}'" style="cursor:pointer;">{{$lap->usr->kantor->nama_kantor ?? ''}}</td>
                             @endif
-                                <td onclick="window.location='/laporan/admin/detail/{{$lap->id}}'" style="cursor:pointer;">{{Carbon\Carbon::parse($lap->created_at)->format('d-m-Y')}}</td>
-                                <td onclick="window.location='/laporan/admin/detail/{{$lap->id}}'" style="cursor:pointer;">{{Carbon\Carbon::parse($lap->created_at)->format('H:i')}}</td>
+                                <td onclick="window.location='/laporan/{{$id}}/detail/{{$lap->id}}'" style="cursor:pointer;">{{$lap->sat->satuan_kerja ?? ''}}</td>
+                                <td onclick="window.location='/laporan/{{$id}}/detail/{{$lap->id}}'" style="cursor:pointer;">{{Carbon\Carbon::parse($lap->created_at)->format('d-m-Y')}}</td>
+                                <td onclick="window.location='/laporan/{{$id}}/detail/{{$lap->id}}'" style="cursor:pointer;">{{Carbon\Carbon::parse($lap->created_at)->format('H:i')}}</td>
                                 <td class="text-center">
                                     <button type="button" class="btn btn-sm btn-warning btn-edit" data-id="{{ $lap->id }}">
                                         <i class="bi bi-pencil-square"></i> Edit
                                     </button>
-
+                                @if(Auth::user()->role == 0 || Auth::user()->role == 1 || Auth::user()->role == 3)
                                     <button type="button" class="btn btn-sm btn-danger btn-delete" data-id="{{ $lap->id }}">
                                         <i class="bi bi-trash"></i> Hapus
                                     </button>
+                                @endif
                                 </td>
                             </tr>
                         @endforeach
                         </tbody>
                     </table>
+                    <div class="d-flex justify-content-center mt-3">
+                        {{ $lapor->appends(['search' => request('search')])->links('pagination::bootstrap-5') }}
+                    </div>
                 </div>
+            </div>
             </div>
         </div>
     </div>
 </div>
 @endsection
+@push('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+@endpush
 
 @push('script')
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    flatpickr("#tanggal", {
+        dateFormat: "d-m-Y",
+        allowInput: true
+    });
+</script>
+
 <script>
     $(document).ready(function() {
         // Form simpan
@@ -80,7 +115,7 @@
                         title: 'Sukses!',
                         text: 'Laporan berhasil disimpan!',
                     }).then(() => {
-                        window.location.href = "{{ route('lapor.admin') }}";
+                        window.location.href = "{{ route('laporan.satker', $id) }}";
                     });
                 },
                 error: function(xhr) {

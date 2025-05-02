@@ -1,6 +1,6 @@
 @extends('layouts.absen.absen')
 @section('content')
-    <div class="section p-2" id="user-section">
+    <div class="section p-2" id="user-section" style="z-index: 1;">
             <div id="user-detail">
                 <div class="avatar">
                     <div class="rounded-circle overflow-hidden shadow-sm bg-secondary text-white d-inline-flex justify-content-center align-items-center" style="width: 60px; height: 60px;">
@@ -15,10 +15,42 @@
                     <h2 id="user-name" style="width: 80%;">{{Auth::guard('pegawai')->user()->nama_lengkap}}</h2>
                     <span id="user-role">{{$pegawai->jabat->jabatan}}</span> <br>
                 </div>
+
+    @if(strtolower($pegawai->jabat->jabatan) == 'supervisor' || strtolower($pegawai->jabat->jabatan) == 'danru')
+        {{-- Icon + Dropdown --}}
+        <div style="position: relative;">
+            <button onclick="toggleDropdown()" style="background: none; border: none; font-size: 1.8rem; color: white;">
+                <ion-icon name="menu-outline"></ion-icon>
+            </button>
+            <div id="dropdownMenu" style="display: none; position: absolute; right: 0; background: white; border-radius: 5px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); z-index: 100;">
+                <a href="{{ route('absen.lapor') }}" style="display: block; padding: 8px 16px; text-decoration: none; color: black;">Laporan</a>
             </div>
         </div>
+    @endif
+    </div>
+</div>
 
-        <div class="section" id="menu-section">
+@if(strtolower($pegawai->jabat->jabatan) == 'supervisor' || strtolower($pegawai->jabat->jabatan) == 'danru')
+    <script>
+        function toggleDropdown() {
+            const menu = document.getElementById('dropdownMenu');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // optional: hide dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('dropdownMenu');
+            const button = e.target.closest('button');
+            if (!dropdown.contains(e.target) && !button) {
+                dropdown.style.display = 'none';
+            }
+        });
+</script>
+@endif
+
+
+
+        <div class="section" id="menu-section" style="z-index: 1;">
             <div class="card">
                 <div class="card-body text-center p-2">
                     <div class="list-menu">
@@ -32,20 +64,10 @@
                                 <span class="text-center">Profil</span>
                             </div>
                         </div>
-                        {{-- <div class="item-menu text-center">
+                        <div class="item-menu text-center">
                             <div class="menu-icon">
                                 <a href="" class="danger" style="font-size: 40px;">
                                     <ion-icon name="calendar-number"></ion-icon>
-                                </a>
-                            </div>
-                            <div class="menu-name">
-                                <span class="text-center">Cuti</span>
-                            </div>
-                        </div> --}}
-                        <div class="item-menu text-center">
-                            <div class="menu-icon">
-                                <a href="" class="warning" style="font-size: 40px;">
-                                    <ion-icon name="document-text"></ion-icon>
                                 </a>
                             </div>
                             <div class="menu-name">
@@ -54,6 +76,16 @@
                         </div>
                         <div class="item-menu text-center">
                             <div class="menu-icon">
+                                <a href="" class="warning" style="font-size: 40px;">
+                                    <ion-icon name="document-text"></ion-icon>
+                                </a>
+                            </div>
+                            <div class="menu-name">
+                                <span class="text-center">Izin</span>
+                            </div>
+                        </div>
+                        {{-- <div class="item-menu text-center">
+                            <div class="menu-icon">
                                 <a href="" class="orange" style="font-size: 40px;">
                                     <ion-icon name="location"></ion-icon>
                                 </a>
@@ -61,7 +93,7 @@
                             <div class="menu-name">
                                 Lokasi
                             </div>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
             </div>

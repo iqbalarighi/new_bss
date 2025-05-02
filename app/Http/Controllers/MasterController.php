@@ -822,21 +822,23 @@ public function deluser($id)
     {   
         if (Auth::user()->role == 0) {
             $dept = DeptModel::paginate(10);
+        $kantor = KantorModel::get();
         }
 
         if (Auth::user()->role == 1) {
             $dept = DeptModel::where('perusahaan', Auth::user()->perusahaan)
             ->paginate(10);
+        $kantor = KantorModel::where('perusahaan', Auth::user()->perusahaan)->get();
         }
 
         if (Auth::user()->role == 3) {
             $dept = DeptModel::where('perusahaan', Auth::user()->perusahaan)
             ->where('nama_kantor', Auth::user()->kantor)
             ->paginate(10);
+        $kantor = KantorModel::where('perusahaan', Auth::user()->perusahaan)->get();
         }
 
         $perusahaan = PerusahaanModel::get();
-        $kantor = KantorModel::get();
 
         return view('master.departemen', compact('dept', 'perusahaan', 'kantor'));
     }

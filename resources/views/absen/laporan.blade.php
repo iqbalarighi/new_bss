@@ -7,7 +7,7 @@
             <ion-icon name="chevron-back-outline" class="ion-icon"></ion-icon>
         </a>
     </div>
-    <div class="pageTitle">Izin</div>
+    <div class="pageTitle">Laporan</div>
     <div class="right"></div>
 </div>
 @endsection
@@ -24,29 +24,24 @@
 </script>
 @endif
 
-
 <div class="fab-button bottom-right" style="margin-bottom: 70px;">
     <a href="{{route('absen.formizin')}}" class="fab"><ion-icon name="add-outline"></ion-icon></a>
 </div>
 
 <div class="row" style="margin-top: 4rem;">
     <div class="col">
-        @foreach ($izin as $d)
+        @foreach ($lapor as $nunm => $d)
         <ul class="listview image-listview">
             <li>
                 <div class="item">
                     <div class="in">
                         <div>
-                            <b>{{ date("d-m-Y", strtotime($d->tanggal)) }} ({{ $d->jenis_izin == "s" ? "Sakit" : "Izin" }})</b><br>
-                            <small class="text-muted">{{ $d->keterangan }}</small>
+                            <b>{{ $d->no_lap }}</b><br>
+                            {{-- <small class="text-muted">{{ $d->keterangan }}</small> --}}
                         </div>
-                        @if ($d->status_approve == 0)
-                        <span class="badge bg-warning">Waiting</span>
-                        @elseif($d->status_approve == 1)
+
                         <span class="badge bg-success">Approved</span>
-                        @elseif($d->status_approve == 2)
-                        <span class="badge bg-danger">Decline</span>
-                        @endif
+
                     </div>
                 </div>
             </li>

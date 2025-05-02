@@ -51,22 +51,27 @@
 
 {{-- @if(Auth::user()->role == 2 || Auth::user()->role == 1 || Auth::user()->role == 0) --}}
         <?php $laporanActive = request()->is('laporan*'); ?>
-        <a class="list-group-item list-group-item-action bg-light {{ $laporanActive ? 'active' : '' }}" style="width: 100%;" data-bs-toggle="collapse" href="#laporan" role="button" aria-expanded="false" aria-controls="laporan" onclick="toggleIcon('ubah')">
+        <a class="list-group-item list-group-item-action bg-light {{ $laporanActive ? 'active' : '' }}"
+           style="width: 100%;" data-bs-toggle="collapse" href="#laporan" role="button"
+           aria-expanded="{{ $laporanActive ? 'true' : 'false' }}" aria-controls="laporan"
+           onclick="toggleIcon('ubah')">
             Laporan <i id="ubah" class="bi {{ $laporanActive ? 'bi-caret-down-fill' : 'bi-caret-right-fill' }}"></i>
         </a>
+
         <div class="collapse {{ $laporanActive ? 'show' : '' }}" id="laporan">
             <div class="card card-body p-1">
                 <div class="list-group list-group-flush">
-                    <a href="{{ route('lapor.admin') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('laporan/admin') ? 'active' : '' }}" style="width: 95%;">Admin</a>
-                    <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">MEP</a>
-                    <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Sipil</a>
-                    <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Pengamanan</a>
-                    <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Cleaning Service</a>
-                    <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Pengemudi</a>
-                    <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 95%;">Facad</a>
+                    @foreach($satkers as $satker)
+                        <a href="{{ route('laporan.satker', $satker->id) }}"
+                           class="list-group-item list-group-item-action bg-light {{ request()->is('laporan/'.$satker->id) ? 'active' : '' }}"
+                           style="width: 95%;">
+                            {{ $satker->satuan_kerja }}
+                        </a>
+                    @endforeach
                 </div>
             </div>
         </div>
+
 {{-- @endif --}}
         {{-- <a href="#" class="list-group-item list-group-item-action bg-light" style="width: 100%;">Unras</a> --}}
     </div>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AbsenModel;
 use App\Models\IzinabsenModel;
+use App\Models\LaporanModel;
 use App\Models\PegawaiModel;
 use File;
 use Illuminate\Http\Request;
@@ -407,9 +408,8 @@ $file = $request->file('profile_image');
     {
         $nip_id = Auth::guard('pegawai')->user()->id;
         $izin = IzinabsenModel::where('nip', $nip_id)->get();
-        $cekizin = IzinabsenModel::where('nip', $nip_id)->where('created_at', 'LIKE', '%'.Carbon::now()->format('Y-m-d').'%')->count();
-// dd($cekizin);
-        return view('absen.izin', compact('izin', 'cekizin'));
+
+        return view('absen.izin', compact('izin'));
     }
 
     public function formizin()
@@ -462,6 +462,15 @@ $file = $request->file('profile_image');
 
         $user = Auth::guard('pegawai')->user();
 
+        // Cek apakah sudah ada izin dengan tanggal dan nip yang sama
+        $cekIzin = IzinabsenModel::where('nip', $user->id)
+                    ->whereDate('tanggal', $request->tanggal)
+                    ->exists();
+
+        if ($cekIzin) {
+            return redirect()->back()->with('error', 'Data izin untuk tanggal tersebut sudah ada.');
+        }
+
         $data = [
             'nip' => $user->id,
             'perusahaan' => $user->perusahaan,
@@ -475,24 +484,88 @@ $file = $request->file('profile_image');
             $file = $request->file('buktiFoto');
             $filename = Str::random(40) . '.' . $file->getClientOriginalExtension();
 
-            // Path ke folder tujuan di public_html
             $destinationPath = public_path('storage/bukti_izin/' . $user->nip . '/');
 
-            // Buat folder jika belum ada
             if (!File::exists($destinationPath)) {
                 File::makeDirectory($destinationPath, 0755, true);
             }
 
-            // Simpan file ke folder tujuan
             $file->move($destinationPath, $filename);
-
-            // Simpan nama file ke kolom 'foto'
             $data['foto'] = $filename;
         }
 
-        // Simpan data ke database
         IzinabsenModel::create($data);
 
         return redirect('absen/izin')->with('success', 'Data izin berhasil disimpan.');
+    }
+
+    public function lapor()
+    {
+        $lapor = LaporanModel::where('user_id', Auth::guard('pegawai')->user()->id)
+                ->where('satker', Auth::guard('pegawai')->user()->satker)
+                ->get();
+
+        return view('absen.laporan', compact('lapor'));
+    }
+
+    public function laporan(Request $request)
+    {
+        // Validasi input
+        $request->validate([
+            'personil' => 'required',
+            'kegiatan' => 'required',
+            'foto.*' => 'image|mimes:jpeg,png,jpg,gif|max:4096', // Validasi file gambar
+        ]);
+
+        // Generate no_lap
+        $noLap = LaporanModel::generateNoLap();
+        $files = $request->file('foto');
+        $fotoNames = [];
+
+        // Handle upload foto
+    if ($files != null) {
+       // $directory = base_path('../public_html/storage/laporan/admin/' . $noLap); // Buat direktori penyimpanan live instance
+        $directory = public_path('storage/laporan/admin/' . $noLap); // Buat direktori penyimpanan
+
+        // Buat folder jika belum ada
+        if (!File::exists($directory)) {
+            File::makeDirectory($directory, 0755, true);
+        }
+
+        $manager = new ImageManager(new Driver()); // Inisialisasi di luar loop
+
+        foreach ($files as $file) {
+            $extension = strtolower($file->getClientOriginalExtension());
+            $fotoName = Str::random(20) . '.' . $extension;
+            $image = $manager->read($file->getPathname());
+            // Resize skala
+            $image->scale(800, null); // Tanpa named parameter!
+            $image->toJpeg(75)->save($directory . '/' . $fotoName);// Simpan sebagai JPEG dengan kualitas 75%
+            $fotoNames[] = $fotoName;
+        }
+
+        $foto = implode('|', $fotoNames);
+    }
+
+        // Simpan data ke database
+        LaporanModel::create([
+            'perusahaan' => Auth::guard('pegawai')->user()->perusahaan,
+            'kantor' => Auth::guard('pegawai')->user()->kantor,
+            'dept' => Auth::guard('pegawai')->user()->dept,
+            'satker' => Auth::guard('pegawai')->user()->satker,
+            'jabatan' => Auth::guard('pegawai')->user()->jabatan,
+            'user_id' => Auth::guard('pegawai')->user()->id,
+            'no_lap' => LaporanModel::generateNoLap(),
+            'personil' => $request->personil,
+            'kegiatan' => $request->kegiatan,
+            'keterangan' => $request->keterangan,
+            'foto' => $foto,
+        ]);
+
+        // Response JSON untuk AJAX
+        return response()->json([
+            'success' => true,
+            'message' => 'Laporan berhasil disimpan!',
+        ]);
     }
 }
