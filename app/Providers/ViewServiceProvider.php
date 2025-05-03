@@ -25,7 +25,7 @@ class ViewServiceProvider extends ServiceProvider
             } elseif($user->role == 1){
                 $laporanQuery->where('perusahaan', $user->perusahaan);
             } elseif($user->role == 3){
-                $laporanQuery->where('kantor', $user->kantor);
+                $laporanQuery->where('perusahaan', $user->perusahaan)->where('kantor', $user->kantor);
             }
 
             $satkerIds = $laporanQuery->pluck('satker')->unique(); // Asumsikan kolom satker_id ada di LaporanModel

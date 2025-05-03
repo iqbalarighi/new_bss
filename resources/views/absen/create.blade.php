@@ -183,24 +183,48 @@ $(document).ready(function () {
         $('#capture').on('click', function () {
             const isOutRadius = $(this).hasClass('out-radius');
             const absenStatus = $(this).data('absen'); // 'sudah' / 'belum'
+            const absenStat = $(this).data('stat'); // 'sudah' / 'belum'
+            let confirm = $('#confirm').val();
 
             if (isOutRadius) {
+                if(absenStat === 'pulang' && confirm == 1){
+                    ambilFotoDanAbsen();
+                } else if(absenStat === 'pulang') {
+                    Swal.fire({
+                    icon: 'warning',
+                    title: 'Anda di luar radius!',
+                    text: 'Apakah Anda yakin ingin tetap melakukan absen?',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, lanjut',
+                    cancelButtonText: 'Batal',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        ambilFotoDanAbsen(); // lanjut absen walau di luar radius
+                    }
+                });
+                } else {
                 outofrad();
+                }
             } else if (absenStatus === 'sudah') {
                 showAbsenAlert();
             } else {
                 // Aksi ambil foto atau absen di sini
-            Webcam.snap(function (uri) {
+                    ambilFotoDanAbsen();
+            }
+        });
+    });
+
+function ambilFotoDanAbsen() {
+        Webcam.snap(function (uri) {
             let canvas = document.createElement("canvas");
             let ctx = canvas.getContext("2d");
             let img = new Image();
+
             let lokasi = $('#lokasi').val();
             let confirm = $('#confirm').val();
 
-
-           
-
-            img.onload = function() {
+            img.onload = function () {
                 canvas.width = img.width;
                 canvas.height = img.height;
                 ctx.translate(img.width, 0);
@@ -208,12 +232,13 @@ $(document).ready(function () {
                 ctx.drawImage(img, 0, 0);
 
                 let mirroredImage = canvas.toDataURL('image/png');
-                 
 
                 Swal.fire({
                     html: `
-                        Lokasi Absen </br> <ion-icon name="location" class="text-danger" style="font-size: 20px;"></ion-icon>&nbsp;
-                      ` + lokasi,
+                        Lokasi Absen <br>
+                        <ion-icon name="location" class="text-danger" style="font-size: 20px;"></ion-icon>&nbsp;
+                        ${lokasi}
+                    `,
                     imageUrl: mirroredImage,
                     imageWidth: 300,
                     imageAlt: 'Preview Foto',
@@ -224,24 +249,24 @@ $(document).ready(function () {
                     allowOutsideClick: false,
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        var lokasi = $('#lokasi').val();
-                        if (lokasi == "") {
+                        if (lokasi === "") {
                             Swal.fire({
                                 title: 'Error!',
-                                text: 'Lokasi tidak terdeteksi, Aktifkan GPS perangkat atau reload halaman ini!',
+                                text: 'Lokasi tidak terdeteksi. Aktifkan GPS atau reload halaman!',
                                 icon: 'error',
                                 confirmButtonText: 'OK'
                             });
-                            } else {
-                                Swal.fire({
-                                            title: 'Mengirim Data...',
-                                            allowOutsideClick: false,
-                                            didOpen: () => {
-                                                Swal.showLoading();
-                                            }
-                                        });
+                            return;
+                        }
+
+                        Swal.fire({
+                            title: 'Mengirim Data...',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
                             }
-                        
+                        });
+
                         $.ajax({
                             type: 'POST',
                             url: '/absen/store',
@@ -254,8 +279,9 @@ $(document).ready(function () {
                             cache: false,
                             success: function (respond) {
                                 Swal.close();
-                                var status = respond.split("|");
-                                if (status[0] == "success") {
+                                const status = respond.split("|");
+
+                                if (status[0] === "success") {
                                     Swal.fire({
                                         icon: 'success',
                                         title: 'Berhasil!',
@@ -264,7 +290,7 @@ $(document).ready(function () {
                                     }).then(() => {
                                         window.location.href = '{{ url('/absen') }}';
                                     });
-                                } else if (status[0] == "absplg") {
+                                } else if (status[0] === "absplg") {
                                     Swal.fire({
                                         icon: 'success',
                                         title: 'Berhasil!',
@@ -276,7 +302,7 @@ $(document).ready(function () {
                                 } else {
                                     Swal.fire({
                                         title: 'Error!',
-                                        text: status[1] || 'Gagal Absen, Mohon hubungi Admin',
+                                        text: status[1] || 'Gagal Absen, mohon hubungi Admin',
                                         icon: 'error',
                                         confirmButtonText: 'OK'
                                     });
@@ -289,10 +315,7 @@ $(document).ready(function () {
 
             img.src = uri;
         });
-            }
-        });
-    });
-
+    }
 
 function outofrad() {
         Swal.fire({

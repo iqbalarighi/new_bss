@@ -43,7 +43,7 @@
                     @if($cek2->jam_out == null)
                     <a class="item">
                         <div class="col">
-                            <button class="action-button large bg-danger" id="capture" data-absen="belum">
+                            <button class="action-button large bg-danger" id="capture" data-absen="belum" data-stat="pulang">
                                 <ion-icon name="camera-outline"></ion-icon>
                             </button>
                         </div>
@@ -57,10 +57,18 @@
                         </div>
                     </a>
                     @endif
+                @elseif($absenTerakhir && $absenTerakhir->jam_out == null)
+                    <a class="item">
+                        <div class="col">
+                            <button class="action-button large bg-danger" id="capture" data-absen="belum" data-stat="pulang">
+                                <ion-icon name="camera-outline"></ion-icon>
+                            </button>
+                        </div>
+                    </a>
                 @else
                     <a class="item">
                         <div class="col">
-                            <button class="action-button large" id="capture" data-absen="belum"> 
+                            <button class="action-button large" id="capture" data-absen="belum" data-stat="masuk"> 
                                 <ion-icon name="camera-outline"></ion-icon>
                             </button>
                         </div>

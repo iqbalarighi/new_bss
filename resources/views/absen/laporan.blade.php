@@ -25,22 +25,22 @@
 @endif
 
 <div class="fab-button bottom-right" style="margin-bottom: 70px;">
-    <a href="{{route('absen.formizin')}}" class="fab"><ion-icon name="add-outline"></ion-icon></a>
+    <a href="{{route('absen.formlap')}}" class="fab"><ion-icon name="add-outline"></ion-icon></a>
 </div>
 
 <div class="row" style="margin-top: 4rem;">
     <div class="col">
-        @foreach ($lapor as $nunm => $d)
+        @foreach ($lapor as $num => $d)
         <ul class="listview image-listview">
             <li>
-                <div class="item">
+                <div class="item" onclick="window.location='/absen/laporan/detail/{{$d->id}}'">
                     <div class="in">
                         <div>
                             <b>{{ $d->no_lap }}</b><br>
-                            {{-- <small class="text-muted">{{ $d->keterangan }}</small> --}}
+                            <small class="text-muted">{{ Carbon\Carbon::parse($d->created_at)->isoFormat('DD-MM-YYYY HH:mm:ss') }}</small>
                         </div>
 
-                        <span class="badge bg-success">Approved</span>
+                        {{-- <span class="badge bg-danger"><ion-icon name="trash-sharp"></ion-icon></span> --}}
 
                     </div>
                 </div>

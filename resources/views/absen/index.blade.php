@@ -16,8 +16,7 @@
                     <span id="user-role">{{$pegawai->jabat->jabatan}}</span> <br>
                 </div>
 
-    @if(strtolower($pegawai->jabat->jabatan) == 'supervisor' || strtolower($pegawai->jabat->jabatan) == 'danru')
-        {{-- Icon + Dropdown --}}
+    {{-- @if(strtolower($pegawai->jabat->jabatan) == 'supervisor' || strtolower($pegawai->jabat->jabatan) == 'danru')
         <div style="position: relative;">
             <button onclick="toggleDropdown()" style="background: none; border: none; font-size: 1.8rem; color: white;">
                 <ion-icon name="menu-outline"></ion-icon>
@@ -26,11 +25,12 @@
                 <a href="{{ route('absen.lapor') }}" style="display: block; padding: 8px 16px; text-decoration: none; color: black;">Laporan</a>
             </div>
         </div>
-    @endif
+    @endif --}}
+
     </div>
 </div>
 
-@if(strtolower($pegawai->jabat->jabatan) == 'supervisor' || strtolower($pegawai->jabat->jabatan) == 'danru')
+{{-- @if(strtolower($pegawai->jabat->jabatan) == 'supervisor' || strtolower($pegawai->jabat->jabatan) == 'danru')
     <script>
         function toggleDropdown() {
             const menu = document.getElementById('dropdownMenu');
@@ -46,7 +46,7 @@
             }
         });
 </script>
-@endif
+@endif --}}
 
 
 
@@ -56,7 +56,7 @@
                     <div class="list-menu">
                         <div class="item-menu text-center">
                             <div class="menu-icon">
-                                <a href="#" class="green" style="font-size: 40px;">
+                                <a href="{{ route('absen.profile') }}" class="green" style="font-size: 40px;">
                                     <ion-icon name="person-sharp"></ion-icon>
                                 </a>
                             </div>
@@ -66,7 +66,7 @@
                         </div>
                         <div class="item-menu text-center">
                             <div class="menu-icon">
-                                <a href="" class="danger" style="font-size: 40px;">
+                                <a href="{{ route('absen.histori') }}" class="danger" style="font-size: 40px;">
                                     <ion-icon name="calendar-number"></ion-icon>
                                 </a>
                             </div>
@@ -76,7 +76,7 @@
                         </div>
                         <div class="item-menu text-center">
                             <div class="menu-icon">
-                                <a href="" class="warning" style="font-size: 40px;">
+                                <a href="{{ route('absen.izin') }}" class="warning" style="font-size: 40px;">
                                     <ion-icon name="document-text"></ion-icon>
                                 </a>
                             </div>
@@ -84,16 +84,18 @@
                                 <span class="text-center">Izin</span>
                             </div>
                         </div>
-                        {{-- <div class="item-menu text-center">
+                        @if(strtolower($pegawai->jabat->jabatan) == 'supervisor' || strtolower($pegawai->jabat->jabatan) == 'danru')
+                        <div class="item-menu text-center">
                             <div class="menu-icon">
-                                <a href="" class="orange" style="font-size: 40px;">
-                                    <ion-icon name="location"></ion-icon>
+                                <a href="{{ route('absen.lapor') }}" class="orange" style="font-size: 40px;">
+                                    <ion-icon name="newspaper-outline"></ion-icon>
                                 </a>
                             </div>
                             <div class="menu-name">
-                                Lokasi
+                                Laporan
                             </div>
-                        </div> --}}
+                        </div>
+                        @endif
                     </div>
                 </div>
             </div>

@@ -132,7 +132,7 @@
         @endif
     <div class="login-container">
     <div class="logo-container">
-        <img src="{{asset('storage/img/logo.png')}}" alt="Logo" width="200" class="mb-2">
+        <img src="{{asset('storage/img/logo.png')}}" alt="Logo" width="200" class="mb-2" onclick="window.location='/'">
     </div>
         <h3 class="text-center text-danger fw-bold">Absensi Pegawai</h3>
         <form id="loginForm" action="{{ route('absen.login') }}" method="POST">

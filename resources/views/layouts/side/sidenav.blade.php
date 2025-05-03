@@ -64,8 +64,8 @@
                     @foreach($satkers as $satker)
                         <a href="{{ route('laporan.satker', $satker->id) }}"
                            class="list-group-item list-group-item-action bg-light {{ request()->is('laporan/'.$satker->id) ? 'active' : '' }}"
-                           style="width: 95%;">
-                            {{ $satker->satuan_kerja }}
+                           style="width: 95%; font-size: 11pt;">
+                             @if(Auth::user()->role == 0 || Auth::user()->role == 1){{$satker->kant->nama_kantor}}->@endif{{ $satker->satuan_kerja }}
                         </a>
                     @endforeach
                 </div>

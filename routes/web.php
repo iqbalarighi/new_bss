@@ -125,7 +125,7 @@ Route::controller(AbsenController::class)->middleware(['redirif:pegawai'])->grou
     Route::get('/absen', 'index')->name('absen');
     Route::get('/absen/create', 'create')->name('absen.create');
     Route::post('/absen/store', 'store');
-    Route::get('/absen/profile', 'profile');
+    Route::get('/absen/profile', 'profile')->name('absen.profile');
     Route::post('/absen/profile-image', 'profilimage');
     Route::post('/absen/update-nama', 'updateNama')->name('profile.updateNama');
     Route::get('/absen/histori', 'histori')->name('absen.histori');
@@ -136,6 +136,14 @@ Route::controller(AbsenController::class)->middleware(['redirif:pegawai'])->grou
     Route::post('/absen/update-nowa', 'updateNowa');
     Route::post('/absen/update-pass', 'updatePass');
     Route::get('/absen/laporan', 'lapor')->name('absen.lapor');
+    Route::get('/absen/laporan/detail/{id}', 'lapordetail')->name('absen.lapor.detail');
+    Route::get('/absen/buat_laporan', 'formlap')->name('absen.formlap');
+    Route::post('/absen/storelap', 'laporan')->name('absen.storelap');
+    Route::get('/absen/savepdf/{id}', 'savepdf')->name('absen.savepdf');
+    Route::get('/absen/editlap/{id}', 'editlap')->name('absen.editlap');
+    Route::put('/absen/updatelap/{id}', 'updatelap')->name('absen.updatelap');
+    Route::delete('/laporan/hapus/{id}', 'destroy')->name('absen.destroy');
+    Route::post('/laporan/hapus-foto/{ids}','hapusFoto')->name('absen.hapusFoto');
 });
 
 Route::post('/absen/logout', [AuthController::class, 'logout'])->middleware(['redirif:pegawai'])->name('absen.logout');

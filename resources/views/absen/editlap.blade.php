@@ -1,29 +1,31 @@
-@extends('layouts.side.side')
+@extends('layouts.absen.absen')
+
+@section('header')
+<div class="appHeader text-light" style="background-color: #ef3b3b;">
+    <div class="left">
+        <a href="{{route('absen.lapor.detail', $edit->id)}}" class="headerButton goBack">
+            <ion-icon name="chevron-back-outline" class="ion-icon"></ion-icon>
+        </a>
+    </div>
+    <div class="pageTitle">Edit Laporan</div>
+    <div class="right"></div>
+</div>
+@endsection
+
 @section('content')
-<div class="container mw-100">
-    <div class="row justify-content-center">
-        <div class="col mw-100">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between fw-bold">{{ __('Edit Laporan Kegiatan '.$edit->sat->satuan_kerja) }}
-                    <a href="{{ route('laporan.satker', $id) }}" class="btn btn-sm btn-danger">Kembali</a>
-                </div>
-
-                <div class="card-body d-flex justify-content-center" style="overflow: auto;">
-                    <div class="col-md-8 fw-bold">
-                        {{-- <div class="mb-1">
-                            Supervisor : {{ $edit->usr->name}}
-                        </div>
-                        <div class="mb-1">
-                            Kantor : {{ $edit->kant->nama_kantor ?? "" }}
-                        </div>
-                        <div class="mb-1">
-                            Departemen : {{ $edit->deptmn->nama_dept ?? "" }}
-                        </div>
-                        <div class="mb-3">
-                            Satuan Kerja : {{ $edit->sat->satuan_kerja ?? "" }}
-                        </div> --}}
-
-                    <tr>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+@if (Session::get('error'))
+<script type="text/javascript">
+    Swal.fire({
+  icon: "warning",
+  title: "{{Session::get('error')}}",
+  showConfirmButton: true,
+});
+</script>
+@endif
+<div class="container mb-4" style="margin-top: 3.5rem;">
+    <div class="col mx-0 px-0" style=" margin-bottom: 5rem;">
+        <tr>
                         <td>
                             <b><center>Laporan Kegiatan Admin</center></b>
                             <b><center>{{$edit->kant->nama_kantor ?? ''}}</center></b>
@@ -37,7 +39,7 @@
                     <div class="mb-1 mt-3">
                         No. Laporan  : {{$edit->no_lap}}
                     </div>
-                        <form id="laporanForm" action="/laporan/{{$id}}/update/{{$edit->id}}" method="POST" enctype="multipart/form-data">
+                        <form id="laporanForm" action="{{route('absen.updatelap', $edit->id)}}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
                             <div class="mb-3">
@@ -58,8 +60,8 @@
                                 
                                 @if ($edit->foto)
                                     <div class="mt-2">
-                                        <strong>Foto Saat Ini:</strong><br>
-                                        <div class="d-flex flex-wrap">
+                                        <strong>Foto Dokumentasi:</strong><br>
+                                        <div class="d-flex flex-wrap justify-content-center">
                                             @foreach(explode('|', $edit->foto) as $foto)
                                                 <div class="position-relative m-1">
                                                     <img src="{{ asset('storage/laporan/' . $edit->no_lap . '/' . $foto) }}" alt="Foto" width="200" class="img-thumbnail">
@@ -77,17 +79,30 @@
                                 <button type="submit" class="btn btn-primary">Update</button>
                             </div>
                         </form>
-                    </div>
-                </div>
-            </div>
-        </div>
+    </div>
+</div>
+
+<div id="loading" style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    display: none;
+">
+    <div class="spinner-border text-light" role="status">
+        <span class="visually-hidden">Loading...</span>
     </div>
 </div>
 @endsection
 
-@push('script')
+@push('myscript')
 <script>
-    $(document).ready(function() {
     $('#laporanForm').on('submit', function(e) {
         e.preventDefault();
 
@@ -131,6 +146,56 @@
         });
     });
 
+    function previewImage(event) {
+        const input = event.target;
+        const previewContainer = document.getElementById('previewContainer');
+        previewContainer.innerHTML = ''; // Clear previous previews
+
+        if (input.files && input.files.length > 0) {
+            Array.from(input.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.classList.add('img-thumbnail');
+                    img.style.maxHeight = '150px';
+                    img.style.margin = '5px';
+                    previewContainer.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    }
+
+    function validateForm() {
+	    const personil = document.getElementById('personil');
+	    const kegiatan = document.getElementById('kegiatan');
+	    const keterangan = document.getElementById('keterangan');
+	    const foto = document.getElementById('foto');
+
+	    if (personil.value === '') {
+	        Swal.fire('Error', 'Personil wajib diisi.', 'error').then(() => personil.focus());
+	        return false;
+	    }
+
+	    if (kegiatan.value === '') {
+	        Swal.fire('Error', 'Kegiatan mohon di isi.', 'error').then(() => kegiatan.focus());
+	        return false;
+	    }
+
+	    if (keterangan.value.trim() === '') {
+	        Swal.fire('Error', 'Keterangan wajib diisi.', 'error').then(() => keterangan.focus());
+	        return false;
+	    }
+
+	    if (foto.value === '') {
+	        Swal.fire('Error', 'Foto wajib diisi.', 'error').then(() => foto.focus());
+	        return false;
+	    }
+
+	    document.getElementById('loading').style.display = 'flex';
+	    return true;
+	}
 
         // Tombol hapus foto
         $(document).on('click', '.btn-delete-foto', function() {
@@ -149,7 +214,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: '/laporan/{{$id}}/hapus-foto/' + id + '',
+                        url: '/laporan/hapus-foto/' + id + '',
                         method: 'POST',
                         data: {
                             _token: '{{ csrf_token() }}',
@@ -175,7 +240,6 @@
                 }
             });
         });
-
-    });
 </script>
+
 @endpush

@@ -119,7 +119,7 @@ public function perSatker(Request $request, $id)
         // Handle upload foto
     if ($files != null) {
        // $directory = base_path('../public_html/storage/laporan/admin/' . $noLap); // Buat direktori penyimpanan live instance
-        $directory = public_path('storage/laporan/admin/' . $noLap); // Buat direktori penyimpanan
+        $directory = public_path('storage/laporan/' . $noLap); // Buat direktori penyimpanan
 
         // Buat folder jika belum ada
         if (!File::exists($directory)) {
@@ -189,18 +189,18 @@ public function perSatker(Request $request, $id)
 
     public function edit($id, $ids)
     {
-        $edit = LaporanModel::findOrFail($id);
+        $edit = LaporanModel::findOrFail($ids);
 
-        return view('laporan.admin.edit', compact('edit'));
+        return view('laporan.admin.edit', compact('edit', 'id'));
     }
 
 public function destroy($id, $ids)
 {
-    $laporan = LaporanModel::findOrFail($id);
+    $laporan = LaporanModel::findOrFail($ids);
 
     // Path folder foto
     // $folderPath = base_path('../public_html/storage/laporan/admin/' . $laporan->no_lap);
-    $folderPath = public_path('storage/laporan/admin/' . $laporan->no_lap);
+    $folderPath = public_path('storage/laporan/' . $laporan->no_lap);
 
     // Hapus semua file di dalam folder
     if (File::exists($folderPath)) {
@@ -213,9 +213,9 @@ public function destroy($id, $ids)
     return response()->json(['success' => true]);
 }
 
-    public function hapusFoto(Request $request, $id)
+    public function hapusFoto(Request $request, $id, $ids)
     {
-        $laporan = LaporanModel::findOrFail($id);
+        $laporan = LaporanModel::findOrFail($ids);
         $fotoToDelete = $request->foto;
 
         if ($laporan->foto) {
@@ -225,7 +225,7 @@ public function destroy($id, $ids)
 
                 // Hapus file fisik dari storage
                 // $filePath = base_path('../public_path/storage/laporan/admin/' . $laporan->no_lap . '/' . $fotoToDelete);
-                $filePath = public_path('storage/laporan/admin/' . $laporan->no_lap . '/' . $fotoToDelete);
+                $filePath = public_path('storage/laporan/' . $laporan->no_lap . '/' . $fotoToDelete);
                 if (file_exists($filePath)) {
                     unlink($filePath);
                 }
@@ -239,16 +239,16 @@ public function destroy($id, $ids)
         return response()->json(['success' => true]);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id, $ids)
     {
-        $laporan = LaporanModel::findOrFail($id);
+        $laporan = LaporanModel::findOrFail($ids);
         $files = $request->file('foto');
         $fotoNames = [];
 
         // Handle upload foto
     if ($files != null) {
        // $directory = base_path('../public_html/storage/laporan/admin/' . $noLap); // Buat direktori penyimpanan live instance
-        $directory = public_path('storage/laporan/admin/' . $laporan->no_lap); // Buat direktori penyimpanan
+        $directory = public_path('storage/laporan/' . $laporan->no_lap); // Buat direktori penyimpanan
 
         // Buat folder jika belum ada
         if (!File::exists($directory)) {

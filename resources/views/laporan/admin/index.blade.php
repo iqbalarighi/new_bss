@@ -9,7 +9,7 @@
     <div class="row justify-content-center">
         <div class="col mw-100">
             <div class="card">
-                <div class="card-header d-flex justify-content-between fw-bold">{{ __('Laporan Admin') }}
+                <div class="card-header d-flex justify-content-between fw-bold">{{ __('Laporan Kegiatan '.$lapor[0]->sat->satuan_kerja) }}
                     {{-- <a href="{{route('lapor.admin.input')}}" class="btn btn-sm btn-danger">Buat Laporan</a> --}}
                 </div>
                 <div class="card-body">
@@ -40,7 +40,6 @@
                             @if(Auth::user()->role == 0 )
                                 <th>Kantor</th>
                             @endif
-                                <th>Satker</th>
                                 <th>Tanggal</th>
                                 <th>Jam</th>
                                 <th>Aksi</th>
@@ -55,7 +54,6 @@
                             @if(Auth::user()->role == 0 )
                                 <td onclick="window.location='/laporan/{{$id}}/detail/{{$lap->id}}'" style="cursor:pointer;">{{$lap->usr->kantor->nama_kantor ?? ''}}</td>
                             @endif
-                                <td onclick="window.location='/laporan/{{$id}}/detail/{{$lap->id}}'" style="cursor:pointer;">{{$lap->sat->satuan_kerja ?? ''}}</td>
                                 <td onclick="window.location='/laporan/{{$id}}/detail/{{$lap->id}}'" style="cursor:pointer;">{{Carbon\Carbon::parse($lap->created_at)->format('d-m-Y')}}</td>
                                 <td onclick="window.location='/laporan/{{$id}}/detail/{{$lap->id}}'" style="cursor:pointer;">{{Carbon\Carbon::parse($lap->created_at)->format('H:i')}}</td>
                                 <td class="text-center">
@@ -186,7 +184,7 @@
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
-                window.location.href = '/laporan/admin/edit/' + id ;
+                window.location.href = '/laporan/{{$id}}/edit/' + id ;
             }
         });
     });

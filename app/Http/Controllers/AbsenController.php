@@ -2,17 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use File;
+use carbon\Carbon;
 use App\Models\AbsenModel;
-use App\Models\IzinabsenModel;
+use Jenssegers\Agent\Agent;
+use Illuminate\Support\Str;
 use App\Models\LaporanModel;
 use App\Models\PegawaiModel;
-use File;
 use Illuminate\Http\Request;
+use App\Models\IzinabsenModel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Intervention\Image\ImageManager;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use carbon\Carbon;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class AbsenController extends Controller
 {
@@ -23,8 +27,8 @@ class AbsenController extends Controller
         $harini = date('Y-m-d');
         $pegawai = PegawaiModel::with('perusa', 'kantor', 'jabat', 'sat' )->findOrFail($id);
         $absen = AbsenModel::with('pegawai')->where('tgl_absen', $harini)->where('nip', $id)->first();
-        $absens = AbsenModel::with('pegawai')->where('nip', $id)->where('tgl_absen', 'LIKE', '%'.carbon::now()->format('m').'%')->latest()->get();
-        
+        $absens = AbsenModel::with('pegawai')->where('nip', $id)->where('tgl_absen', 'LIKE', '%'.carbon::now()->format('Y-m').'%')->latest()->get();
+
         $rekap = AbsenModel::where('nip', $id)
                 ->where('tgl_absen', 'LIKE',  '%'.carbon::now()->format('Y-m').'%')
                 ->selectRaw('
@@ -503,9 +507,15 @@ $file = $request->file('profile_image');
     {
         $lapor = LaporanModel::where('user_id', Auth::guard('pegawai')->user()->id)
                 ->where('satker', Auth::guard('pegawai')->user()->satker)
+                ->latest()
                 ->get();
 
         return view('absen.laporan', compact('lapor'));
+    }
+
+    public function formlap()
+    {
+        return view('absen.formlap');
     }
 
     public function laporan(Request $request)
@@ -525,7 +535,7 @@ $file = $request->file('profile_image');
         // Handle upload foto
     if ($files != null) {
        // $directory = base_path('../public_html/storage/laporan/admin/' . $noLap); // Buat direktori penyimpanan live instance
-        $directory = public_path('storage/laporan/admin/' . $noLap); // Buat direktori penyimpanan
+        $directory = public_path('storage/laporan/' . $noLap); // Buat direktori penyimpanan
 
         // Buat folder jika belum ada
         if (!File::exists($directory)) {
@@ -550,7 +560,7 @@ $file = $request->file('profile_image');
         // Simpan data ke database
         LaporanModel::create([
             'perusahaan' => Auth::guard('pegawai')->user()->perusahaan,
-            'kantor' => Auth::guard('pegawai')->user()->kantor,
+            'kantor' => Auth::guard('pegawai')->user()->kantor->id,
             'dept' => Auth::guard('pegawai')->user()->dept,
             'satker' => Auth::guard('pegawai')->user()->satker,
             'jabatan' => Auth::guard('pegawai')->user()->jabatan,
@@ -562,10 +572,125 @@ $file = $request->file('profile_image');
             'foto' => $foto,
         ]);
 
-        // Response JSON untuk AJAX
-        return response()->json([
-            'success' => true,
-            'message' => 'Laporan berhasil disimpan!',
-        ]);
+        return redirect('absen/laporan')->with('success', 'Laporan berhasil tersimpan !');
     }
+
+    public function lapordetail($id)
+    {
+        $detail = LaporanModel::findOrFail($id);
+
+        return view('absen.laporandetail', compact('detail'));
+    }
+
+    public function editlap($id)
+    {
+        $edit = LaporanModel::findOrFail($id);
+
+        return view('absen.editlap', compact('edit'));
+    }
+
+    public function savepdf($id)
+    {
+        $detail = LaporanModel::findOrFail($id);
+        $satker = $detail->sat->satuan_kerja;
+        $agent = new Agent();
+
+        $pdf = Pdf::loadView('absen.savepdf', compact('detail', 'satker'))
+                  ->setPaper('A4', 'portrait');
+        if ($agent->isMobile()){
+            return $pdf->download('Laporan Kegiatan Admin '.$detail->no_lap.'.pdf');
+        } else {
+            return $pdf->stream('Laporan Kegiatan Admin '.$detail->no_lap.'.pdf');
+        }
+    }
+
+    public function updatelap(Request $request, $id)
+    {
+        $laporan = LaporanModel::findOrFail($id);
+        $files = $request->file('foto');
+        $fotoNames = [];
+
+        // Handle upload foto
+    if ($files != null) {
+       // $directory = base_path('../public_html/storage/laporan/admin/' . $noLap); // Buat direktori penyimpanan live instance
+        $directory = public_path('storage/laporan/' . $laporan->no_lap); // Buat direktori penyimpanan
+
+        // Buat folder jika belum ada
+        if (!File::exists($directory)) {
+            File::makeDirectory($directory, 0755, true);
+        }
+
+        $manager = new ImageManager(new Driver()); // Inisialisasi di luar loop
+
+        foreach ($files as $file) {
+            $extension = strtolower($file->getClientOriginalExtension());
+            $fotoName = Str::random(20) . '.' . $extension;
+            $image = $manager->read($file->getPathname());
+            // Resize skala
+            $image->scale(800, null); // Tanpa named parameter!
+            $image->toJpeg(75)->save($directory . '/' . $fotoName);// Simpan sebagai JPEG dengan kualitas 75%
+            $fotoNames[] = $fotoName;
+        }
+
+            if ($laporan->foto == null) {
+                $tambah = implode('|', $fotoNames);
+            } else {
+                $tambah = $laporan->foto.'|'.implode('|', $fotoNames);
+            }
+
+            $laporan->foto = $tambah;
+    }
+
+        $laporan->personil = $request->personil;
+        $laporan->kegiatan = $request->kegiatan;
+        $laporan->keterangan = $request->keterangan;
+        $laporan->save();
+
+        return response()->json(['success' => true]);
+    }
+
+    public function hapusFoto(Request $request, $id)
+    {
+        $laporan = LaporanModel::findOrFail($id);
+        $fotoToDelete = $request->foto;
+
+        if ($laporan->foto) {
+            $fotos = explode('|', $laporan->foto);
+            if (($key = array_search($fotoToDelete, $fotos)) !== false) {
+                unset($fotos[$key]);
+
+                // Hapus file fisik dari storage
+                // $filePath = base_path('../public_path/storage/laporan/admin/' . $laporan->no_lap . '/' . $fotoToDelete);
+                $filePath = public_path('storage/laporan/' . $laporan->no_lap . '/' . $fotoToDelete);
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
+
+                // Update field foto di database
+                $laporan->foto = count($fotos) > 0 ? implode('|', $fotos) : null;
+                $laporan->save();
+            }
+        }
+
+        return response()->json(['success' => true]);
+    }
+
+public function destroy($id)
+{
+    $laporan = LaporanModel::findOrFail($id);
+
+    // Path folder foto
+    // $folderPath = base_path('../public_html/storage/laporan/admin/' . $laporan->no_lap);
+    $folderPath = public_path('storage/laporan/' . $laporan->no_lap);
+
+    // Hapus semua file di dalam folder
+    if (File::exists($folderPath)) {
+        File::deleteDirectory($folderPath);
+    }
+
+    // Hapus data laporan dari database
+    $laporan->delete();
+
+    return response()->json(['success' => true]);
+}
 }

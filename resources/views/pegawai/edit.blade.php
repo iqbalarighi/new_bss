@@ -118,7 +118,7 @@
 
     <div class="mb-3">
         <label class="form-label">Shift</label>
-        <select name="shift" class="form-select" required>
+        <select name="shift" id="select-shift" class="form-select" required>
             @foreach($shift as $item)
             <option value="{{ $item->id }}" {{ $pegawai->shift == $item->id ? 'selected' : '' }}>
                 {{ $item->shift }} {{ Carbon\Carbon::parse($item->jam_masuk)->format('H:i') }}-{{ Carbon\Carbon::parse($item->jam_keluar)->format('H:i') }} WIB
@@ -216,6 +216,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const deptSelect = document.getElementById('select-dept');
     const satkerSelect = document.getElementById('select-satker');
     const jabatSelect = document.getElementById('select-jabat');
+    const shiftSelect = document.getElementById('select-shift');
 
     perusahaanSelect?.addEventListener('change', function () {
         const perusahaanId = this.value;
@@ -263,6 +264,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 jabatSelect.innerHTML = '<option value="">Pilih Jabatan</option>';
                 data.positions.forEach(item => {
                     jabatSelect.innerHTML += `<option value="${item.id}">${item.jabatan}</option>`;
+                });
+                shiftSelect.innerHTML = '<option value="">Pilih Shift</option>';
+                data.shifts.forEach(ite => {
+                    const masuk = ite.jam_masuk.slice(0,5); // ambil jam dan menit
+                    const keluar = ite.jam_keluar.slice(0,5);
+                    shiftSelect.innerHTML += `<option value="${ite.id}">${ite.shift} (${masuk}-${keluar}) WIB</option>`; 
                 });
             });
     });
