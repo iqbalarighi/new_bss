@@ -92,7 +92,6 @@
                     <label for="office" class="form-label">Penempatan Kerja</label>
                     {{-- <input type="text" class="form-control"name="usaha" placeholder="Masukkan nama kantor" required> --}}
                     <select name="kantor" id="office" class="form-select" required>
-
                     </select>
                 </div>
                 @endif
@@ -101,40 +100,43 @@
                     <label for="dept" class="form-label">Departemen</label>
                     {{-- <input type="text" class="form-control"name="usaha" placeholder="Masukkan nama kantor" required> --}}
                     <select name="dept" id="dept" class="form-select" required>
-
                     </select>
                 </div>
                 <div class="mb-3">
                     <label for="satker" class="form-label">Satuan Kerja</label>
                     {{-- <input type="text" class="form-control"name="usaha" placeholder="Masukkan nama kantor" required> --}}
                     <select name="satker" id="satker" class="form-select" required>
-
                     </select>
                 </div>
                 <div class="mb-3">
                     <label for="position" class="form-label">Jabatan</label>
                     {{-- <input type="text" class="form-control"name="usaha" placeholder="Masukkan nama kantor" required> --}}
                     <select name="jabatan" id="position" class="form-select" required>
-
                     </select>
                 </div>
                 <div class="mb-3">
                     <label for="shift" class="form-label">Shift</label>
                     <select name="shift" id="shift" class="form-select" required>
                         <option value="" selected>Pilih Shift</option>
-                        
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Status Pegawai</label>
-                    <select class="form-control" name="status" required>
+                    <label for="statpegawai" class="form-label">Status Pegawai</label>
+                    <select class="form-control" id="statpegawai" name="statpegawai" required>
+                        <option value="Tetap">Tetap</option>
+                        <option value="Kontrak">Kontrak</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-control" id="status" name="status" required>
                         <option value="Aktif">Aktif</option>
                         <option value="Tidak Aktif">Tidak Aktif</option>
                     </select>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Foto</label>
-                    <input type="file" class="form-control" name="foto"  accept=".jpg, .jpeg, .png">
+                    <input type="file" class="form-control" name="foto" accept=".jpg, .jpeg, .png">
                 </div>
                 <div class="text-center">
                     <button type="submit" class="btn btn-danger">Simpan</button>

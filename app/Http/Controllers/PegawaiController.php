@@ -16,11 +16,13 @@ use App\Models\IzinabsenModel;
 use App\Models\PerusahaanModel;
 use App\Exports\PresensiExport;
 use App\Exports\RekapAbsensiExport;
+use Intervention\Image\ImageManager;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class PegawaiController extends Controller
 {
@@ -110,8 +112,9 @@ class PegawaiController extends Controller
             'bpjs_kesehatan' => 'required|string',
             'kontak_darurat' => 'required|string|max:15',
             'satker' => 'required|string',
+            'statpegawai' => 'required|string|in:Tetap,Kontrak',
             'status' => 'required|string|in:Aktif,Tidak Aktif',
-            'foto' => 'image|mimes:jpeg,png,jpg|max:2048',
+            'foto' => 'image|mimes:jpeg,png,jpg|max:8000',
         ], [
             'nama.required' => 'Nama pegawai wajib diisi.',
             'nip.required' => 'NIP wajib diisi.',
@@ -129,10 +132,11 @@ class PegawaiController extends Controller
             'bpjs_kesehatan.required' => 'BPJS Kesehatan wajib diisi.',
             'kontak_darurat.required' => 'Kontak darurat wajib diisi.',
             'satker.required' => 'Satker wajib diisi.',
-            'status.required' => 'Status pegawai wajib diisi.',
+            'statpegawai.required' => 'Status pegawai wajib diisi.',
+            'status.required' => 'Status wajib diisi.',
             'foto.image' => 'File harus berupa gambar.',
             'foto.mimes' => 'Format gambar harus jpeg, png, atau jpg.',
-            'foto.max' => 'Ukuran gambar maksimal 2MB.',
+            'foto.max' => 'Ukuran gambar maksimal 4MB.',
         ]);
 
 
@@ -150,11 +154,25 @@ if(Auth::user()->role === 0){
         $kantor = $request->kantor;
 }
 
-$foto = $request->file('foto'); 
+$foto = $request->file('foto');
 
-if($foto != null){
-        $fotoNama = Str::random(20) . '.' . $foto->getClientOriginalExtension();
-        $fotoPath = $foto->storeAs('foto_pegawai/'.$request->nip, $fotoNama, 'public');
+if ($foto !== null) {
+    // Buat nama file acak
+    $fotoNama = Str::random(20) . '.' . $foto->getClientOriginalExtension();
+    $folder = 'foto_pegawai/' . $request->nip;
+
+    // Buat instance ImageManager
+    $manager = new ImageManager(new Driver());
+    $image = $manager->read($foto->getPathname());
+
+    // Resize opsional (misal lebar max 600px)
+    $image->scale(width: 600);
+
+    // Simpan sebagai binary string ke Laravel Storage
+    Storage::disk('public')->put(
+        $folder . '/' . $fotoNama,
+        (string) $image->encode() // encode ke format file asli
+    );
 } else {
     $fotoNama = null;
 }
@@ -175,6 +193,7 @@ if($foto != null){
             'ko_drat' => $request->kontak_darurat,
             'nama_kantor' => $kantor,
             'satker' => $request->satker,
+            'statpegawai' => $request->statpegawai,
             'status' => $request->status,
             'foto' => $fotoNama,
         ]);
@@ -200,8 +219,9 @@ public function update(Request $request, $id)
         'bpjs_kesehatan' => 'required|string',
         'kontak_darurat' => 'required|string|max:15',
         'satker' => 'required|string',
+        'statpegawai' => 'required|string|in:Tetap,Kontrak',
         'status' => 'required|string|in:Aktif,Tidak Aktif',
-        'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:8000',
     ]);
 
     $pegawai = PegawaiModel::findOrFail($id);
@@ -220,12 +240,25 @@ public function update(Request $request, $id)
 
     // Upload foto jika ada
     if ($request->hasFile('foto')) {
-        $foto = $request->file('foto');
-        $fotoNama = Str::random(20) . '.' . $foto->getClientOriginalExtension();
-        $fotoPath = $foto->storeAs('foto_pegawai/' . $request->nip, $fotoNama, 'public');
-    } else {
-        $fotoNama = $pegawai->foto; // Pakai yang lama
-    }
+    $foto = $request->file('foto');
+    $fotoNama = Str::random(20) . '.' . $foto->getClientOriginalExtension();
+    $folder = 'foto_pegawai/' . $request->nip;
+
+    // Proses gambar menggunakan Intervention Image
+    $manager = new ImageManager(new Driver());
+    $image = $manager->read($foto->getPathname());
+
+    // Resize opsional (misalnya, lebar maks. 600px)
+    $image->scale(width: 600);
+
+    // Simpan hasil encode ke Laravel Storage (storage/app/public)
+    Storage::disk('public')->put(
+        $folder . '/' . $fotoNama,
+        (string) $image->encode() // encode ke format asli
+    );
+} else {
+    $fotoNama = $pegawai->foto; // Tetap gunakan foto lama jika tidak upload
+}
 
     $pegawai->update([
         'perusahaan' => $perusahaan,
@@ -244,6 +277,7 @@ public function update(Request $request, $id)
         'ko_drat' => $request->kontak_darurat,
         'nama_kantor' => $kantor,
         'satker' => $request->satker,
+        'statpegawai' => $request->statpegawai,
         'status' => $request->status,
         'foto' => $fotoNama,
     ]);
