@@ -215,7 +215,7 @@
         const file = event.target.files[0]; // Ambil file dari input
 
         if (file) {
-            const maxSize = 2 * 1024 * 1024; // Maksimal 4MB
+            const maxSize = 8 * 1024 * 1024; // Maksimal 4MB
             const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
 
             // Validasi ukuran file

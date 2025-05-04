@@ -3,7 +3,7 @@
 @section('header')
 <div class="appHeader text-light" style="background-color: #ef3b3b;">
     <div class="left">
-        <a href="javascript:;" class="headerButton goBack">
+        <a href="{{ route('absen') }}" class="headerButton goBack">
             <ion-icon name="chevron-back-outline" class="ion-icon"></ion-icon>
         </a>
     </div>

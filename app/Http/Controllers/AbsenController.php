@@ -254,59 +254,61 @@ if ($request->confirm != null) {
     // }
     
     // versi live
-    public function profilimage(Request $request)
-    {
-        // Validasi input
-        $request->validate([
-            'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:4096', // Maksimal 4MB
-        ]);
+public function profilimage(Request $request)
+{
+    $request->validate([
+        'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:8000',
+    ]);
 
-        try {
-            // Ambil file dari request
-$file = $request->file('profile_image');
-            $user = Auth::guard('pegawai')->user();
-            
-            // Path ke folder penyimpanan di public_html
-            $destinationPath = public_path('storage/foto_pegawai/' . $user->nip . '/');
-            
-            // Hapus folder lama jika ada
-            if ($user->foto != null && File::exists($destinationPath)) {
-                File::deleteDirectory($destinationPath);
-            }
-            
-            // Buat nama file unik
-            $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
-            
-            // Buat folder jika belum ada
-            if (!File::exists($destinationPath)) {
-                File::makeDirectory($destinationPath, 0755, true);
-            }
-            
-            // Simpan file ke folder tujuan
-            $file->move($destinationPath, $fileName);
-            
-            // Simpan nama file ke database
-            $user->foto = $fileName;
-            $user->save();
-            
-            // Buat URL file (akses publik)
-            $fileUrl = asset('storage/foto_pegawai/' . $user->nip . '/' . $fileName);
-            
-            // Respon jika berhasil
-            return response()->json([
-                'success' => true,
-                'message' => 'Foto profil berhasil diunggah.',
-                'file_url' => $fileUrl,
-            ], 200);
+    try {
+        $file = $request->file('profile_image');
+        $user = Auth::guard('pegawai')->user();
 
-        } catch (\Exception $e) {
-            // Respon jika gagal
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat mengunggah: ' . $e->getMessage(),
-            ], 500);
+        $folder = 'foto_pegawai/' . $user->nip;
+        $storagePath = storage_path('app/public/' . $folder);
+
+        // Hapus folder lama jika ada
+        if ($user->foto !== null && File::exists($storagePath)) {
+            File::deleteDirectory($storagePath);
         }
+
+        // Pastikan direktori ada
+        if (!File::exists($storagePath)) {
+            File::makeDirectory($storagePath, 0755, true);
+        }
+
+        $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
+
+        // Gunakan Intervention Image v3 + GD
+        $manager = new ImageManager(new Driver());
+        $image = $manager->read($file->getPathname());
+
+        // Resize opsional
+        $image->scale(width: 600);
+
+        // Simpan ke storage/app/public/foto_pegawai/{nip}/
+        $image->save($storagePath . '/' . $fileName);
+
+        // Simpan nama file di database
+        $user->foto = $fileName;
+        $user->save();
+
+        // Buat URL publik (akses melalui symlink public/storage)
+        $fileUrl = asset('storage/' . $folder . '/' . $fileName);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Foto profil berhasil diunggah.',
+            'file_url' => $fileUrl,
+        ], 200);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Terjadi kesalahan saat mengunggah: ' . $e->getMessage(),
+        ], 500);
     }
+}
 
     public function updateNama(Request $request)
     {
@@ -524,7 +526,7 @@ $file = $request->file('profile_image');
         $request->validate([
             'personil' => 'required',
             'kegiatan' => 'required',
-            'foto.*' => 'image|mimes:jpeg,png,jpg,gif|max:4096', // Validasi file gambar
+            'foto.*' => 'image|mimes:jpeg,png,jpg,gif|max:8000', // Validasi file gambar
         ]);
 
         // Generate no_lap
