@@ -37,6 +37,7 @@ protected $guard = 'karyawan';
         'ko_drat',
         'bpjs_tk',
         'bpjs_sehat',
+        'statpegawai',
         'status',
         'foto',
     ];

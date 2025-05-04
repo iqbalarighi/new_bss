@@ -30,6 +30,7 @@ return new class extends Migration
             $table->string('ko_drat', 20)->nullable();
             $table->string('bpjs_tk', 20)->nullable();
             $table->string('bpjs_sehat', 20)->nullable();
+            $table->string('statpegawai', 20)->nullable();
             $table->string('status', 20)->nullable();
             $table->text('foto')->nullable();
             $table->timestamps();
