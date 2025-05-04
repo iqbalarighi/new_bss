@@ -24,17 +24,11 @@
 </script>
 @endif
 
-@if($cekizin == 0)
+
 <div class="fab-button bottom-right" style="margin-bottom: 70px;">
     <a href="{{route('absen.formizin')}}" class="fab"><ion-icon name="add-outline"></ion-icon></a>
 </div>
-@else
-<div class="fab-button bottom-right" style="margin-bottom: 70px;">
-    <a href="#" class="fab" style="background-color: grey; color: white;">
-        <ion-icon name="add-outline"></ion-icon>
-    </a>
-</div>
-@endif
+
 <div class="row" style="margin-top: 4rem;">
     <div class="col">
         @foreach ($izin as $d)

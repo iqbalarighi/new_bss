@@ -1,10 +1,6 @@
 @extends('layouts.absen.absen')
 @section('content')
-    <div class="section p-2" id="user-section">
-            
-            <form id="logout-form" action="{{ route('absen.logout') }}" method="POST" style="display: none;">
-                @csrf
-            </form>
+    <div class="section p-2" id="user-section" style="z-index: 1;">
             <div id="user-detail">
                 <div class="avatar">
                     <div class="rounded-circle overflow-hidden shadow-sm bg-secondary text-white d-inline-flex justify-content-center align-items-center" style="width: 60px; height: 60px;">
@@ -18,21 +14,49 @@
                 <div id="user-info" class="col mw-100 px-0">
                     <h2 id="user-name" style="width: 80%;">{{Auth::guard('pegawai')->user()->nama_lengkap}}</h2>
                     <span id="user-role">{{$pegawai->jabat->jabatan}}</span> <br>
-
-                    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                <button class="btn btn-secondary btn-sm float-right px-1" style="margin-top: -45px;">logout</button>
-            </a>
                 </div>
+
+    {{-- @if(strtolower($pegawai->jabat->jabatan) == 'supervisor' || strtolower($pegawai->jabat->jabatan) == 'danru')
+        <div style="position: relative;">
+            <button onclick="toggleDropdown()" style="background: none; border: none; font-size: 1.8rem; color: white;">
+                <ion-icon name="menu-outline"></ion-icon>
+            </button>
+            <div id="dropdownMenu" style="display: none; position: absolute; right: 0; background: white; border-radius: 5px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); z-index: 100;">
+                <a href="{{ route('absen.lapor') }}" style="display: block; padding: 8px 16px; text-decoration: none; color: black;">Laporan</a>
             </div>
         </div>
+    @endif --}}
 
-        <div class="section" id="menu-section">
+    </div>
+</div>
+
+{{-- @if(strtolower($pegawai->jabat->jabatan) == 'supervisor' || strtolower($pegawai->jabat->jabatan) == 'danru')
+    <script>
+        function toggleDropdown() {
+            const menu = document.getElementById('dropdownMenu');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // optional: hide dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('dropdownMenu');
+            const button = e.target.closest('button');
+            if (!dropdown.contains(e.target) && !button) {
+                dropdown.style.display = 'none';
+            }
+        });
+</script>
+@endif --}}
+
+
+
+        <div class="section" id="menu-section" style="z-index: 1;">
             <div class="card">
                 <div class="card-body text-center p-2">
                     <div class="list-menu">
                         <div class="item-menu text-center">
                             <div class="menu-icon">
-                                <a href="#" class="green" style="font-size: 40px;">
+                                <a href="{{ route('absen.profile') }}" class="green" style="font-size: 40px;">
                                     <ion-icon name="person-sharp"></ion-icon>
                                 </a>
                             </div>
@@ -40,20 +64,10 @@
                                 <span class="text-center">Profil</span>
                             </div>
                         </div>
-                        {{-- <div class="item-menu text-center">
-                            <div class="menu-icon">
-                                <a href="" class="danger" style="font-size: 40px;">
-                                    <ion-icon name="calendar-number"></ion-icon>
-                                </a>
-                            </div>
-                            <div class="menu-name">
-                                <span class="text-center">Cuti</span>
-                            </div>
-                        </div> --}}
                         <div class="item-menu text-center">
                             <div class="menu-icon">
-                                <a href="" class="warning" style="font-size: 40px;">
-                                    <ion-icon name="document-text"></ion-icon>
+                                <a href="{{ route('absen.histori') }}" class="danger" style="font-size: 40px;">
+                                    <ion-icon name="calendar-number"></ion-icon>
                                 </a>
                             </div>
                             <div class="menu-name">
@@ -62,14 +76,26 @@
                         </div>
                         <div class="item-menu text-center">
                             <div class="menu-icon">
-                                <a href="" class="orange" style="font-size: 40px;">
-                                    <ion-icon name="location"></ion-icon>
+                                <a href="{{ route('absen.izin') }}" class="warning" style="font-size: 40px;">
+                                    <ion-icon name="document-text"></ion-icon>
                                 </a>
                             </div>
                             <div class="menu-name">
-                                Lokasi
+                                <span class="text-center">Izin</span>
                             </div>
                         </div>
+                        @if(strtolower($pegawai->jabat->jabatan) == 'supervisor' || strtolower($pegawai->jabat->jabatan) == 'danru')
+                        <div class="item-menu text-center">
+                            <div class="menu-icon">
+                                <a href="{{ route('absen.lapor') }}" class="orange" style="font-size: 40px;">
+                                    <ion-icon name="newspaper-outline"></ion-icon>
+                                </a>
+                            </div>
+                            <div class="menu-name">
+                                Laporan
+                            </div>
+                        </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -80,20 +106,13 @@
                     <h5><ion-icon name="person"></ion-icon> Kehadiran Terakhir</h5>
         @if($absen != null)
         <div class="card p-1 mb-1">
-            <h5>{{Carbon\carbon::parse($absen->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} (@if($absen->shift == 0) Non Shift @elseif($absen->shift == 1) Shift Pagi @else Shift Siang @endif)</h5>
+            <h5>{{Carbon\carbon::parse($absen->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} ({{$absen->shifts->shift}})</h5>
 
             <div class="d-flex justify-content-around align-items-center">
                 <div class="d-flex align-items-center gap-2">
                     <img src="{{ asset('storage/absensi/'.$absen->pegawai->nip.'/'.$absen->foto_in) }}" alt="Foto Masuk" class="rounded" width="50">
-                @if($absen->shift == 0 && $absen->jam_in > '08:00')
-                <div class="text-center pl-1 text-danger">
-                @elseif($absen->shift == 1 && $absen->jam_in > '07:00')
-                <div class="text-center pl-1 text-danger">
-                @elseif($absen->shift == 2 && $absen->jam_in > '13:00')
-                <div class="text-center pl-1 text-danger">
-                @else
-                <div class="text-center pl-1">
-                @endif
+
+                    <div class="text-center pl-1 {{$absen->jam_in > $absen->shifts->jam_masuk ? 'text-danger' : ''}}">
                         <span class="d-block">Masuk</span>
                         <strong>{{$absen->jam_in}}</strong>
                     </div>
@@ -304,6 +323,13 @@
                                 <p class="mb-0 text-dark">Sakit</p>
                             </div>
                             <div class="card-presensi">
+                                @if ($rekapizin->cuti != null)
+                                <div class="badge-presensi">{{$rekapizin->cuti}}</div>
+                                @endif
+                                <ion-icon name="airplane-outline" size="large" style="color: greenyellow;"></ion-icon>
+                                <p class="mb-0 text-dark">Cuti</p>
+                            </div>
+                            <div class="card-presensi">
                                 @if ($rekap->jmltelat != null)
                                 <div class="badge-presensi">{{$rekap->jmltelat}}</div>
                                 @endif
@@ -329,74 +355,66 @@
                         </li>
                     </ul>
                 </div>
-                <div class="tab-content mt-2" style="margin-bottom:100px;">
-                    <div class="tab-pane fade show active" id="home" role="tabpanel">
-                        <ul class="listview image-listview">
-                             @foreach($absens as $item)
-                            <li>
-                               <div class="card p-1 mb-2">
-                                    <h5>{{Carbon\carbon::parse($item->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} (@if($item->shift == 0) Non Shift @elseif($item->shift == 1) Shift Pagi @else Shift Siang @endif)</h5>
-                                    <div class="d-flex justify-content-around align-items-center">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <img src="{{ asset('storage/absensi/'.$item->pegawai->nip.'/'.$item->foto_in) }}" alt="Foto Masuk" class="rounded" width="50">
-                                        @if($item->shift == 0 && $item->jam_in > '08:00')
-                                        <div class="text-center pl-1 text-danger">
-                                        @elseif($item->shift == 1 && $item->jam_in > '07:00')
-                                        <div class="text-center pl-1 text-danger">
-                                        @elseif($item->shift == 2 && $item->jam_in > '13:00')
-                                        <div class="text-center pl-1 text-danger">
-                                        @else
+            <div class="tab-content mt-2" style="margin-bottom:100px;">
+                <div class="tab-pane fade show active" id="home" role="tabpanel">
+                    <ul class="listview image-listview">
+                         @foreach($absens as $item)
+                        <li>
+                           <div class="card p-1 mb-2">
+                                <h5>{{Carbon\carbon::parse($item->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} ({{$item->shifts->shift}})</h5>
+                                <div class="d-flex justify-content-around align-items-center">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="{{ asset('storage/absensi/'.$item->pegawai->nip.'/'.$item->foto_in) }}" alt="Foto Masuk" class="rounded" width="50">
+                                        <div class="text-center pl-1 {{$item->jam_in > $item->shifts->jam_masuk ? 'text-danger' : ''}}">
+                                            <span class="d-block">Masuk</span>
+                                            <strong>{{$item->jam_in}}</strong>
+                                        </div>
+                                    </div>
+                                    @if($item->foto_out == null)
+                                    <div class="d-flex align-items-center gap-2">
+                                        
                                         <div class="text-center pl-1">
-                                        @endif
-                                                <span class="d-block">Masuk</span>
-                                                <strong>{{$item->jam_in}}</strong>
-                                            </div>
+                                            <span class="d-block">Pulang</span>
+                                            <strong>--:--</strong>
                                         </div>
-                                        @if($item->foto_out == null)
-                                        <div class="d-flex align-items-center gap-2">
-                                            
-                                            <div class="text-center pl-1">
-                                                <span class="d-block">Pulang</span>
-                                                <strong>--:--</strong>
-                                            </div>
-                                        </div>
-                                        @else
-                                        <div class="d-flex align-items-center gap-2">
-                                            <img src="{{ asset('storage/absensi/'.$item->pegawai->nip.'/'.$item->foto_out) }}" alt="Foto Masuk" class="rounded" width="50">
-                                            <div class="text-center pl-1">
-                                                <span class="d-block">Pulang</span>
-                                                <strong>{{$item->jam_out}}</strong>
-                                            </div>
-                                        </div>
-                                        @endif
                                     </div>
-                                </div>
-                            </li>
-                            @endforeach
-                        </ul>
-                    </div>
-                    <div class="tab-pane fade" id="profile" role="tabpanel">
-                        <ul class="listview image-listview">
-                            @foreach($leaderboard as $d)
-                            <li>
-                                <div class="item ">
-                                    <img src="{{ asset('storage/absensi/'.$d->pegawai->nip.'/'.$d->foto_in) }}" alt="image" class="image rounded-circle" width="30">
-                                    <div class="in">
-                                        <div>
-                                            <b>{{ $d->pegawai->nama_lengkap }}</b><br>
-                                            <small class="text-muted">{{ $d->pegawai->jabat->jabatan }}</small>
+                                    @else
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="{{ asset('storage/absensi/'.$item->pegawai->nip.'/'.$item->foto_out) }}" alt="Foto Masuk" class="rounded" width="50">
+                                        <div class="text-center pl-1">
+                                            <span class="d-block">Pulang</span>
+                                            <strong>{{$item->jam_out}}</strong>
                                         </div>
-                                    <span class="badge {{ $d->jam_in < '07:00' ? 'bg-success' : 'bg-danger' }}">
-                                        {{ $d->jam_in }}
-                                    </span>
                                     </div>
+                                    @endif
                                 </div>
-                            </li>
-                            @endforeach
-                        </ul>
-                    </div>
-
+                            </div>
+                        </li>
+                        @endforeach
+                    </ul>
                 </div>
+                <div class="tab-pane fade" id="profile" role="tabpanel">
+                    <ul class="listview image-listview">
+                        @foreach($leaderboard as $d)
+                        <li>
+                            <div class="item ">
+                                <img src="{{ asset('storage/absensi/'.$d->pegawai->nip.'/'.$d->foto_in) }}" alt="image" class="image rounded-circle" width="30">
+                                <div class="in">
+                                    <div>
+                                        <b>{{ $d->pegawai->nama_lengkap }}</b><br>
+                                        <small class="text-muted">{{ $d->pegawai->jabat->jabatan }}</small>
+                                    </div>
+                                <span class="badge {{ $d->jam_in < $d->shifts->jam_masuk ? 'bg-success' : 'bg-danger' }}">
+                                    {{ $d->jam_in }}
+                                </span>
+                                </div>
+                            </div>
+                        </li>
+                        @endforeach
+                    </ul>
+                </div>
+
+            </div>
             </div>
         </div>
 @endsection

@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('absensi', function (Blueprint $table) {
-            $table->string('shift')->default(0)->after('nip');
+            $table->integer('perusahaan')->unsigned()->after('id');
+	    $table->integer('kantor')->unsigned()->after('id');
         });
     }
 
@@ -22,7 +23,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('absensi', function (Blueprint $table) {
-            $table->dropColumn('shift');
+            $table->dropColumn('perusahaan');
+	    $table->dropColumn('kantor');
         });
     }
 };

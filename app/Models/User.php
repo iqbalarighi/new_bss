@@ -20,11 +20,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'jabatan',
-        'kantor',
-        'satker',
         'perusahaan',
+        'kantor',
         'dept',
+        'satker',
+        'jabatan',
         'role',
 
     ];
@@ -71,5 +71,9 @@ public function jabat()
 public function sat()
     {
         return $this->belongsTo(SatkerModel::class, 'satker');
+    }
+
+public function deptmn() {
+	return $this->belongsTo(DeptModel::class, 'dept');
     }
 }

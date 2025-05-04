@@ -9,8 +9,11 @@
         .modal.show .modal-dialog {
             transform: scale(1);
         }
+        .dropdown-menu select {
+        width: 100%;
+    }
 </style>
-<div class="container">
+<div class="container mw-100">
     <div class="row justify-content-center">
         <div class="col mw-100">
             <div class="card">
@@ -115,32 +118,52 @@
         </div>
     </div>
 </div>
-                <div class="card-body">
+                <div class="card-body" style="overflow-x: auto;">
                     <table class="table table-striped table-bordered table-hover">
                         <thead class="text-center table-dark">
-                            <tr>
-                                <th>No</th>
-                                @if(Auth::user()->role == 0)
-                                <th>Perusahaan</th>
-                                @endif
-                                @if(Auth::user()->role == 0 || Auth::user()->role == 1)
-                                <th>Kantor</th>
-                                @endif
-                                <th>Departemen</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Departemen</th>
+
+                            @if(Auth::user()->role == 0)
+                            <th>Perusahaan</th>
+                            @endif
+
+                            @if(Auth::user()->role == 0 || Auth::user()->role == 1)
+                            <th class="text-start position-relative">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>Kantor</span>
+                                    <div class="dropdown">
+                                        <i class="fas fa-filter ms-2 text-white" role="button" data-bs-toggle="dropdown"></i>
+                                        <ul class="dropdown-menu dropdown-menu-end p-2" style="min-width: 150px;">
+                                            <li>
+                                                <select id="filterKantor" class="form-select form-select-sm" onchange="filterKantor()">
+                                                    <option value="">Semua</option>
+                                                    @foreach($kantor as $kantor)
+                                                        <option value="{{ $kantor->nama_kantor }}">{{ $kantor->nama_kantor }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </th>
+                            @endif
+
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
                         <tbody>
                             @foreach($dept as $key => $item)
                             <tr id="row-{{$item->id}}">
                                 <td>{{ $dept->firstItem() + $key }}</td>
+                                <td>{{ $item->nama_dept }}</td>
                                 @if(Auth::user()->role == 0)
                                 <td>{{ $item->perusa->perusahaan }}</td>
                                 @endif
                                 @if(Auth::user()->role == 0 || Auth::user()->role == 1)
-                                <td>{{ $item->kantor->nama_kantor }}</td>
+                                <td>{{ $item->nama_kantor == 0 ? '-' : $item->kantor->nama_kantor}}</td>
                                 @endif
-                                <td>{{ $item->nama_dept }}</td>
                                 <td class="align-middle text-center">
                     <button class="btn btn-sm btn-primary btnEdit" 
                     data-id="{{ $item->id }}" 
@@ -229,46 +252,61 @@
 
 
         $('#editForm').submit(function(e) {
-            e.preventDefault();
-            let id = $('#edit_id').val();
-            let data = {
-                _token: '{{ csrf_token() }}',
-                _method: 'PUT',
-                perusahaan: $('#edit_perusahaan').val(),
-                kantor: $('#edit_kantor').val(),
-                nama_dept: $('#edit_nama_dept').val()
-            };
-            
-            $.ajax({
-                url: '/departemen/update/' + id,
-                type: 'POST',
-                data: data,
-                success: function(response) {
-                    if (response.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Berhasil',
-                            text: 'Departemen berhasil diperbarui',
-                            timer: 2000,
-                            showConfirmButton: false
-                        }).then(() => location.reload());
-                    } else {
+        e.preventDefault();
+        
+        Swal.fire({
+            title: "Konfirmasi Perubahan",
+            text: "Perubahan ini akan mempengaruhi beberapa data terkait di database. Apakah Anda yakin ingin melanjutkan?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Ya, Update!",
+            cancelButtonText: "Batal",
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Jika user menekan "Ya, Update!"
+                let id = $('#edit_id').val();
+                let data = {
+                    _token: '{{ csrf_token() }}',
+                    _method: 'PUT',
+                    perusahaan: $('#edit_perusahaan').val(),
+                    kantor: $('#edit_kantor').val(),
+                    nama_dept: $('#edit_nama_dept').val()
+                };
+
+                $.ajax({
+                    url: '/departemen/update/' + id,
+                    type: 'POST',
+                    data: data,
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil',
+                                text: 'Departemen berhasil diperbarui',
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => location.reload());
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal',
+                                text: 'Gagal memperbarui departemen'
+                            });
+                        }
+                    },
+                    error: function(xhr) {
                         Swal.fire({
                             icon: 'error',
-                            title: 'Gagal',
-                            text: 'Gagal memperbarui departemen'
+                            title: 'Error',
+                            text: 'Terjadi kesalahan, coba lagi nanti.'
                         });
                     }
-                },
-                error: function(xhr) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Terjadi kesalahan, coba lagi nanti.'
-                    });
-                }
-            });
+                });
+            } 
         });
+    });
+
 
 
 $('.btnHapus').click(function() {
@@ -316,5 +354,18 @@ $('.btnHapus').click(function() {
 
     });
 </script>
+<script>
+    function filterKantor() {
+        var selectedKantor = document.getElementById("filterKantor").value.toLowerCase();
+        var rows = document.querySelectorAll("table tbody tr");
 
+        rows.forEach(function(row) {
+            var kantorCell = row.querySelectorAll("td")[@if(Auth::user()->role == 0 || Auth::user()->role == 1) 2 @else 1 @endif];
+            if (!kantorCell) return;
+
+            var kantor = kantorCell.innerText.toLowerCase();
+            row.style.display = (selectedKantor === "" || kantor === selectedKantor) ? "" : "none";
+        });
+    }
+</script>
 @endpush

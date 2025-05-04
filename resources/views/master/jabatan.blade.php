@@ -1,7 +1,7 @@
 @extends('layouts.side.side')
 
 @section('content')
-<div class="container">
+<div class="container mw-100">
     <div class="row justify-content-center">
         <div class="col mw-100">
             <div class="card">
@@ -9,7 +9,7 @@
                     <button class="btn btn-sm btn-primary float-right" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="bi bi-building-add"></i></button>
                 </div>
 
-                <div class="card-body">
+                
 @if (Session::get('status'))
 <script>
     Swal.fire({
@@ -57,7 +57,8 @@
                         </select>
                     </div>
                     @endif
-
+                    
+                    @if(Auth::user()->role == 0 || Auth::user()->role == 1 )
                     <div class="mb-3">
                         <label for="kantor" class="form-label">Kantor</label>
                         <select name="kantor" id="kantor" class="form-select" required>
@@ -67,14 +68,26 @@
                             @endforeach
                         </select>
                     </div>
-
+                    @endif
+                    @if(Auth::user()->role == 3 )
                     <div class="mb-3">
                         <label for="departemen" class="form-label">Departemen</label>
                         <select name="departemen" id="departemen" class="form-select" required>
                             <option selected disabled value="">Pilih Departemen</option>
-                            
+                            @foreach($departemen as $dept)
+                            <option value="{{$dept->id}}">{{$dept->nama_dept}}</option>
+                            @endforeach
                         </select>
                     </div>
+                    @else
+                    <div class="mb-3">
+                        <label for="departemen" class="form-label">Departemen</label>
+                        <select name="departemen" id="departemen" class="form-select" required>
+                            <option selected disabled value="">Pilih Departemen</option>
+                        
+                        </select>
+                    </div>
+                    @endif
 
                     <div class="mb-3">
                         <label for="satker" class="form-label">Satuan Kerja</label>
@@ -127,8 +140,8 @@
                             </select>
                         </div>
                         @endif
-
-                        <div class="mb-3">
+                        @if(Auth::user()->role == 0 || Auth::user()->role == 1 )
+                    <div class="mb-3">
                         <label for="kantor" class="form-label">Kantor</label>
                         <select name="kantor" id="editKantor" class="form-select" required>
                             <option selected disabled value="">Pilih Kantor</option>
@@ -137,7 +150,7 @@
                             @endforeach
                         </select>
                     </div>
-
+                    @endif
                     <div class="mb-3">
                         <label for="departemen" class="form-label">Departemen</label>
                         <select name="departemen" id="editDepartemen" class="form-select" required>
@@ -166,19 +179,72 @@
         </div>
     </div>
 </div>
-
+<div class="card-body" style="overflow-x: auto;">
 <!-- Tabel Data -->
 <table class="table table-striped table-bordered table-hover">
     <thead class="text-center table-dark">
         <tr>
             <th>No</th>
+            <th>Jabatan</th>
             @if(Auth::user()->role == 0)
             <th>Perusahaan</th>
             @endif
-            <th>Kantor</th>
-            <th>Departemen</th>
-            <th>Satuan Kerja</th>
-            <th>Jabatan</th>
+            @if(Auth::user()->role == 0 || Auth::user()->role == 1 )
+            <th class="text-start position-relative">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Kantor</span>
+                    <div class="dropdown">
+                        <i class="fas fa-filter ms-2 text-white" role="button" data-bs-toggle="dropdown"></i>
+                        <ul class="dropdown-menu dropdown-menu-end p-2" style="min-width: 150px;">
+                            <li>
+                                <select id="filterKantor" class="form-select form-select-sm" onchange="filterTable('kantor', this.value)">
+                                    <option value="">Semua</option>
+                                    @foreach($kantor as $kantor)
+                                        <option value="{{ $kantor->nama_kantor }}">{{ $kantor->nama_kantor }}</option>
+                                    @endforeach
+                                </select>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </th>
+            @endif
+            <th class="text-start position-relative">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Departemen</span>
+                    <div class="dropdown">
+                        <i class="fas fa-filter ms-2 text-white" role="button" data-bs-toggle="dropdown"></i>
+                        <ul class="dropdown-menu dropdown-menu-end p-2" style="min-width: 150px;">
+                            <li>
+                                <select id="filterDepartemen" class="form-select form-select-sm" onchange="filterTable('departemen', this.value)">
+                                    <option value="">Semua</option>
+                                    @foreach($departemen->unique('nama_dept') as $d)
+                                        <option value="{{ $d->nama_dept }}">{{ $d->nama_dept }}</option>
+                                    @endforeach
+                                </select>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </th>
+            <th class="text-start position-relative">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Satuan Kerja</span>
+                    <div class="dropdown">
+                        <i class="fas fa-filter ms-2 text-white" role="button" data-bs-toggle="dropdown"></i>
+                        <ul class="dropdown-menu dropdown-menu-end p-2" style="min-width: 150px;">
+                            <li>
+                                <select id="filterSatker" class="form-select form-select-sm" onchange="filterTable('satker', this.value)">
+                                    <option value="">Semua</option>
+                                    @foreach($satker->unique('satuan_kerja') as $s)
+                                        <option value="{{ $s->satuan_kerja }}">{{ $s->satuan_kerja }}</option>
+                                    @endforeach
+                                </select>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </th>
             <th>Aksi</th>
         </tr>
     </thead>
@@ -186,17 +252,22 @@
         @foreach($jabatan as $key => $item)
         <tr id="row-{{$item->id}}">
             <td>{{ $jabatan->firstItem() + $key }}</td>
+            <td>{{ $item->jabatan }}</td>
             @if(Auth::user()->role == 0)
             <td>{{ $item->perusa->perusahaan }}</td>
             @endif
-            <td>{{ $item->kant->nama_kantor }}</td>
-            <td>{{ $item->deptmn->nama_dept }}</td>
-            <td>{{ $item->sat->satuan_kerja }}</td>
-            <td>{{ $item->jabatan }}</td>
+            @if(Auth::user()->role == 0 || Auth::user()->role == 1 )
+            <td>{{ $item->kantor_id == 0 ? '-' : $item->kant->nama_kantor }}</td>
+            @endif
+            <td>{{ $item->dept_id == 0 ? '-' : $item->deptmn->nama_dept }}</td>
+            <td>{{ $item->satker_id == 0 ? '-' : $item->sat->satuan_kerja }}</td>
             <td>
                 <button class="btn btn-sm btn-primary btnEdit" 
                 data-id="{{ $item->id }}" 
                 data-jabatan="{{ $item->jabatan }}"
+                data-satker="{{ $item->satker_id }}"
+                data-dept="{{ $item->dept_id }}"
+                data-kantor="{{ $item->kantor_id }}"
                 data-perusahaan="{{ $item->perusahaan }}"
                 >Edit</button>
                 <button class="btn btn-sm btn-danger btnHapus" data-id="{{ $item->id }}">Hapus</button>
@@ -209,84 +280,188 @@
 
 @push('script')
 <script>
-$(document).ready(function() {
-    // Edit Data
-    $('.btnEdit').click(function() {
-        let id = $(this).data('id');
-        let jabatan = $(this).data('jabatan');
-        let perusahaan = $(this).data('perusahaan');
-        let kantor = $(this).data('perusahaan');
-        let departemen = $(this).data('perusahaan');
-        let satker = $(this).data('perusahaan');
-        
-        $('#editId').val(id);
-        $('#editJabatan').val(jabatan);
-        $('#editPerusahaan').val(perusahaan);
-        $('#editKantor').val(kantor);
-        $('#editDepartemen').val(departemen);
-        $('#editSatker').val(satker);
-        $('#modalEdit').modal('show');
-    });
+    $(document).ready(function () {
+        // Saat tombol edit diklik
+        $(document).on('click', '.btnEdit', function () {
+            let id = $(this).data('id');
+            let jabatan = $(this).data('jabatan');
+            let perusahaan = $(this).data('perusahaan');
+            let kantor = $(this).data('kantor');
+            let departemen = $(this).data('dept');
+            let satker = $(this).data('satker');
 
-    $('#formEditJabatan').submit(function(e) {
-        e.preventDefault();
-        let id = $('#editId').val();
-        let jabatan = $('#editJabatan').val();
-        let perusahaan = $('#editPerusahaan').val();
-        let kantor = $('#editKantor').val();
-        let departemen = $('#editDepartemen').val();
-        let satker = $('#editSatker').val();
-        
-        $.ajax({
-            url: '/jabatan/edit/' + id,
-            method: 'PUT',
-            data: { 
-                _token: '{{ csrf_token() }}', 
-                jabatan: jabatan, 
-                perusahaan: perusahaan, 
-                kantor: kantor, 
-                departemen: departemen, 
-                satker: satker
-            },
-            success: function(response) {
-                Swal.fire({
-                  title: "Berhasil",
-                  icon: "success",
-                  text: "Berhasil perbarui Jabatan!",
-                  timer: 1500
+            $('#editId').val(id);
+            $('#editJabatan').val(jabatan);
+            $('#editPerusahaan').val(perusahaan);
+            $('#editKantor').val(kantor);
+            $('#editDepartemen').html('<option value="">Loading...</option>');
+            $('#editSatker').html('<option value="">Loading...</option>');
+            $('#nmdept').hide();
+
+            // Load departemen dan satker berdasarkan kantor
+            if (kantor) {
+                $.ajax({
+                    url: '/get-sat/' + kantor,
+                    type: 'GET',
+                    success: function (response) {
+                        let departemenOptions = '<option value="">Pilih Departemen</option>';
+                        let satkerOptions = '<option value="">Pilih Satuan Kerja</option>';
+
+                        response.departemen.forEach(function (dept) {
+                            departemenOptions += `<option value="${dept.id}" ${dept.id == departemen ? 'selected' : ''}>${dept.nama_dept}</option>`;
+                        });
+
+                        response.satker.forEach(function (s) {
+                            satkerOptions += `<option value="${s.id}" ${s.id == satker ? 'selected' : ''}>${s.satuan_kerja}</option>`;
+                        });
+
+                        $('#editDepartemen').html(departemenOptions);
+                        $('#editSatker').html(satkerOptions);
+                    },
+                    error: function (xhr) {
+                        console.log(xhr.responseText);
+                    }
                 });
-                location.reload();
+            }
+
+            $('#modalEdit').modal('show');
+        });
+
+        // Saat kantor diubah
+        $('#editKantor').change(function () {
+            let kantorId = $(this).val();
+            if (kantorId) {
+                $.ajax({
+                    url: '/get-sat/' + kantorId,
+                    type: 'GET',
+                    success: function (response) {
+                        let departemenOptions = '<option value="">Pilih Departemen</option>';
+                        let satkerOptions = '<option value="">Pilih Satuan Kerja</option>';
+
+                        response.departemen.forEach(function (dept) {
+                            departemenOptions += `<option value="${dept.id}">${dept.nama_dept}</option>`;
+                        });
+
+                        response.satker.forEach(function (satker) {
+                            satkerOptions += `<option value="${satker.id}">${satker.nama_satker}</option>`;
+                        });
+
+                        $('#editDepartemen').html(departemenOptions);
+                        $('#editSatker').html(satkerOptions);
+                    },
+                    error: function (xhr) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            } else {
+                $('#editDepartemen').html('<option value="">Pilih Departemen</option>');
+                $('#editSatker').html('<option value="">Pilih Satuan Kerja</option>');
             }
         });
-    });
 
-    // Hapus Data
-    $('.btnHapus').click(function() {
-        let id = $(this).data('id');
-        Swal.fire({
-            title: "Apakah Anda yakin?",
-            text: "Data yang dihapus tidak dapat dikembalikan!",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#d33",
-            cancelButtonColor: "#3085d6",
-            confirmButtonText: "Ya, hapus!",
-        }).then((result) => {
-                    if (result.isConfirmed) {
-                        Swal.fire({
-                            title: "Menghapus...",
-                            text: "Mohon tunggu",
-                            allowOutsideClick: false,
-                            didOpen: () => {
-                                Swal.showLoading();
-                            }
+        // Saat departemen diubah
+        $('#editDepartemen').change(function () {
+            let departemenId = $(this).val();
+            if (departemenId) {
+                $.ajax({
+                    url: '/get-satker-by-departemen/' + departemenId,
+                    type: 'GET',
+                    success: function (response) {
+                        let satkerOptions = '<option value="">Pilih Satuan Kerja</option>';
+                        response.satker.forEach(function (s) {
+                            satkerOptions += `<option value="${s.id}">${s.satuan_kerja}</option>`;
                         });
-                        fetch("/jabatan/hapus/" + id, {
-                            method: "DELETE",
-                            headers: {
-                                "X-CSRF-TOKEN": '{{ csrf_token() }}'
-                            }
-                        })
+                        $('#editSatker').html(satkerOptions);
+                    },
+                    error: function (xhr) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            } else {
+                $('#editSatker').html('<option value="">Pilih Satuan Kerja</option>');
+            }
+        });
+
+        // Submit form edit
+$('#formEditJabatan').submit(function (e) {
+    e.preventDefault();
+
+    let id = $('#editId').val();
+    let jabatan = $('#editJabatan').val();
+    let perusahaan = $('#editPerusahaan').val();
+    let kantor = $('#editKantor').val();
+    let departemen = $('#editDepartemen').val();
+    let satker = $('#editSatker').val();
+
+    Swal.fire({
+        title: 'Peringatan!',
+        text: 'Perubahan dapat berdampak pada data terkait. Lanjutkan?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, simpan perubahan',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: '/jabatan/edit/' + id,
+                method: 'PUT',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    jabatan: jabatan,
+                    perusahaan: perusahaan,
+                    kantor: kantor,
+                    departemen: departemen,
+                    satker: satker
+                },
+                success: function (response) {
+                    Swal.fire({
+                        title: "Berhasil",
+                        icon: "success",
+                        text: "Berhasil perbarui Jabatan!",
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    location.reload();
+                },
+                error: function () {
+                    Swal.fire({
+                        title: "Gagal",
+                        icon: "error",
+                        text: "Terjadi kesalahan saat memperbarui data."
+                    });
+                }
+            });
+        }
+    });
+});
+
+        // Hapus data
+        $('.btnHapus').click(function () {
+            let id = $(this).data('id');
+            Swal.fire({
+                title: "Apakah Anda yakin?",
+                text: "Data yang dihapus tidak dapat dikembalikan!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Ya, hapus!",
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: "Menghapus...",
+                        text: "Mohon tunggu",
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    fetch("/jabatan/hapus/" + id, {
+                        method: "DELETE",
+                        headers: {
+                            "X-CSRF-TOKEN": '{{ csrf_token() }}'
+                        }
+                    })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
@@ -299,10 +474,10 @@ $(document).ready(function() {
                         .catch(error => {
                             Swal.fire("Error!", "Gagal menghapus data.", "error");
                         });
-                    }
-                });
+                }
+            });
+        });
     });
-});
 </script>
 <script>
     $(document).ready(function() {
@@ -314,13 +489,13 @@ $(document).ready(function() {
                     type: 'GET',
                     success: function(response) {
                         let departemenOptions = '<option value="">Pilih Departemen</option>';
-                        let satkerOptions = '<option value="">Pilih Satker</option>';
+                        let satkerOptions = '<option value="">Pilih Satuan Kerja</option>';
 
                         response.departemen.forEach(function(dept) {
                             departemenOptions += `<option value="${dept.id}">${dept.nama_dept}</option>`;
                         });
                         response.satker.forEach(function(satker) {
-                            satkerOptions += `<option value="${satker.id}">${satker.nama_satker}</option>`;
+                            satkerOptions += `<option value="${satker.id}">${satker.satuan_kerja}</option>`;
                         });
 
                         $('#departemen').html(departemenOptions);
@@ -340,7 +515,7 @@ $(document).ready(function() {
                     url: '/get-satker-by-departemen/' + departemenId,
                     type: 'GET',
                     success: function(response) {
-                        let satkerOptions = '<option value="">Pilih Satker</option>';
+                        let satkerOptions = '<option value="">Pilih Satuan Kerja</option>';
                         response.satker.forEach(function(satker) {
                             satkerOptions += `<option value="${satker.id}">${satker.satuan_kerja}</option>`;
                         });
@@ -353,6 +528,95 @@ $(document).ready(function() {
             }
         });
     });
+</script>
+<script>
+    $(document).ready(function() {
+        $('#editKantor').change(function() {
+            let perusahaanId = $(this).val();
+            if (perusahaanId) {
+                $.ajax({
+                    url: '/get-sat/' + perusahaanId,
+                    type: 'GET',
+                    success: function(response) {
+                        let departemenOptions = '<option value="">Pilih Departemen</option>';
+                        let satkerOptions = '<option value="">Pilih Satuan Kerja</option>';
+
+                        response.departemen.forEach(function(dept) {
+                            departemenOptions += `<option value="${dept.id}">${dept.nama_dept}</option>`;
+
+                             let nm = dept.nama_dept;
+
+                $('#nmdept').empty().append('Departemen : '+nm).show();
+                        });
+                        response.satker.forEach(function(satker) {
+                            satkerOptions += `<option value="${satker.id}">${satker.nama_satker}</option>`;
+                        });
+
+                        $('#editDepartemen').html(departemenOptions);
+                        $('#editSatker').html(satkerOptions);
+                    },
+                    error: function(xhr) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            }
+        });
+
+        $('#editDepartemen').change(function() {
+            let departemenId = $(this).val();
+            if (departemenId) {
+                $.ajax({
+                    url: '/get-satker-by-departemen/' + departemenId,
+                    type: 'GET',
+                    success: function(response) {
+                        let satkerOptions = '<option value="">Pilih Satuan Kerja</option>';
+                        response.satker.forEach(function(satker) {
+                            satkerOptions += `<option value="${satker.id}">${satker.satuan_kerja}</option>`;
+                        });
+                        $('#editSatker').html(satkerOptions);
+                    },
+                    error: function(xhr) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            }
+        });
+    });
+</script>
+<script>
+    function filterTable(type, value) {
+        const selectedValue = value.toLowerCase();
+        const rows = document.querySelectorAll("table tbody tr");
+
+        // Tentukan index kolom berdasarkan role user
+        let kantorIndex = {{ Auth::user()->role == 0 || Auth::user()->role == 1 ? 2 : 1 }};
+        let departemenIndex = kantorIndex + 1;
+        let satkerIndex = departemenIndex + 1;  // Tentukan index kolom untuk satuan kerja (satker) sesuai tabelmu
+
+        rows.forEach(row => {
+            const cells = row.querySelectorAll("td");
+            if (!cells.length) return;
+
+            let isMatch = true;
+
+            if (type === 'kantor' && kantorIndex >= 0) {
+                const cellValue = cells[kantorIndex].innerText.toLowerCase();
+                if (selectedValue && cellValue !== selectedValue) isMatch = false;
+            }
+
+            if (type === 'departemen') {
+                const cellValue = cells[departemenIndex].innerText.toLowerCase();
+                if (selectedValue && cellValue !== selectedValue) isMatch = false;
+            }
+
+            if (type === 'satker') {  // Filter berdasarkan satuan kerja
+                const cellValue = cells[satkerIndex].innerText.toLowerCase();
+                if (selectedValue && cellValue !== selectedValue) isMatch = false;
+            }
+
+            row.style.display = isMatch ? '' : 'none';
+        });
+    }
 </script>
 
 @endpush

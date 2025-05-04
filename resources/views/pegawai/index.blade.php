@@ -1,11 +1,22 @@
 @extends('layouts.side.side')
 @section('content')
 
-<div class="container">
+<div class="container mw-100">
+
+@if(Session::get('success'))
+<script type="text/javascript">
+    Swal.fire({
+  icon: "success",
+  title: "{{Session::get('success')}}",
+  showConfirmButton: false,
+  timer: 2000
+});
+</script>
+@endif
     <div class="row justify-content-center">
         <div class="col mw-100">
             <div class="card">
-                <div class="card-header d-flex justify-content-between">{{ __('Daftar Pegawai') }}
+                <div class="card-header d-flex justify-content-between fw-bold">{{ __('Daftar Pegawai') }}
 
         <a href="{{ route('pegawai.input') }}" class="btn btn-danger bi bi-person-add"></a>
                 </div>
@@ -29,6 +40,7 @@
                         <th>Satker</th>
                         <th>Jabatan</th>
                         <th>Status</th>
+                        <th>Shift</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -44,13 +56,14 @@
                         @if(Auth::user()->role == 1 || Auth::user()->role == 0)
                             <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;">{{ $pegawai->kantor->nama_kantor }}</td>
                         @endif
-                            <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;">{{ $pegawai->sat->satuan_kerja }}</td>
                             <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;">{{ $pegawai->deptmn->nama_dept }}</td>
+                            <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;">{{ $pegawai->sat->satuan_kerja }}</td>
                             <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;white-space: wrap;">{{ $pegawai->jabat->jabatan }}</td>
                             <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;">{{ $pegawai->status}}</td>
+                            <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;">{{ $pegawai->shifts->shift}}</td>
                             <td class="align-middle text-center">
-                                <button class="btn btn-primary btn-sm px-1">Edit</button>
-                                <button class="btn btn-danger btn-sm px-1">Hapus</button>
+                                <button class="btn btn-primary btn-sm px-1" onclick="window.location='{{route('pegawai.edit', $pegawai->id)}}'">Edit</button>
+                                <button class="btn btn-danger btn-sm px-1 btn-hapus" data-id="{{ $pegawai->id }}" data-nama="{{ $pegawai->nama_lengkap }}">Hapus</button>
                             </td>
                         </tr>
                     @endforeach
@@ -70,3 +83,40 @@
 
 @endsection
 
+@push('script')
+<script>
+$(document).ready(function() {
+    $('.btn-hapus').click(function() {
+        const id = $(this).data('id');
+        const nama = $(this).data('nama');
+
+        Swal.fire({
+            title: `Hapus Pegawai?`,
+            text: `Data pegawai ${nama} akan dihapus!`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: `/pegawai/delete/${id}`,
+                    type: 'DELETE',
+                    data: {
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        Swal.fire('Berhasil', response.message, 'success').then(() => {
+                            location.reload();
+                        });
+                    },
+                    error: function() {
+                        Swal.fire('Gagal', 'Terjadi kesalahan saat menghapus.', 'error');
+                    }
+                });
+            }
+        });
+    });
+});
+</script>
+@endpush

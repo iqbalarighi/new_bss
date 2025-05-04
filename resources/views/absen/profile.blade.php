@@ -75,6 +75,18 @@
                         </div>
                         <ion-icon name="chevron-forward-outline" class="text-muted" style="font-size: 20px;"></ion-icon>
                     </div>
+                    <div id="nowaField" class="list-group-item border-0 px-0 d-flex align-items-center justify-content-between" style="gap: 1rem;">
+                        <div class="d-flex align-items-center" style="gap: 1rem;">
+                            <ion-icon name="time-outline" class="text-danger" style="font-size: 20px;"></ion-icon>
+                            <div>
+                                <small>{{$profile->shifts->shift}}</small>
+                                <p id="nowa" class="mb-0 fw-bold">
+                                    {{Carbon\Carbon::parse($profile->shifts->jam_masuk)->format('H:i')}} - {{Carbon\Carbon::parse($profile->shifts->jam_keluar)->format('H:i')}}
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             </div>
         </div>
@@ -92,19 +104,37 @@
             	<h6 class="fw-bold mb-2">Penempatan</h6>
                 <div class="list-group-item border-0 px-0 d-flex align-items-center justify-content-between" style="gap: 1rem;">
                     <div class="d-flex align-items-center" style="gap: 1rem;">
-                        <ion-icon name="person" class="text-black" style="font-size: 20px;"></ion-icon>
+                        <ion-icon name="business-outline" class="text-black" style="font-size: 20px;"></ion-icon>
                         <div>
-                            <small>Posisi</small>
-                            <p class="mb-0 fw-bold">{{$profile->jabat->jabatan}}</p>
+                            <small>Unit Kerja</small>
+                            <p class="mb-0 fw-bold">{{$profile->kantor->nama_kantor}}</p>
                         </div>
                     </div>
                 </div>
                 <div class="list-group-item border-0 px-0 d-flex align-items-center justify-content-between" style="gap: 1rem;">
                     <div class="d-flex align-items-center" style="gap: 1rem;">
-                        <ion-icon name="business-outline" class="text-black" style="font-size: 20px;"></ion-icon>
+                        <ion-icon name="people-outline" class="text-black" style="font-size: 20px;"></ion-icon>
                         <div>
-                            <small>Unit Kerja</small>
-                            <p class="mb-0 fw-bold">{{$profile->kantor->nama_kantor}}</p>
+                            <small>Departemen</small>
+                            <p class="mb-0 fw-bold">{{$profile->deptmn->nama_dept}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="list-group-item border-0 px-0 d-flex align-items-center justify-content-between" style="gap: 1rem;">
+                    <div class="d-flex align-items-center" style="gap: 1rem;">
+                        <ion-icon name="star-outline" class="text-black" style="font-size: 20px;"></ion-icon>
+                        <div>
+                            <small>Satuan Kerja</small>
+                            <p class="mb-0 fw-bold">{{$profile->sat->satuan_kerja}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="list-group-item border-0 px-0 d-flex align-items-center justify-content-between" style="gap: 1rem;">
+                    <div class="d-flex align-items-center" style="gap: 1rem;">
+                        <ion-icon name="person-outline" class="text-black" style="font-size: 20px;"></ion-icon>
+                        <div>
+                            <small>Posisi</small>
+                            <p class="mb-0 fw-bold">{{$profile->jabat->jabatan}}</p>
                         </div>
                     </div>
                 </div>
@@ -127,6 +157,25 @@
                 </div>
             </div>
         </div>
+
+        <div class="card shadow-sm rounded-4 mb-2 border-0">
+            <div class="card-body p-3">
+                <div class="list-group">
+                    <div id="logoutBtn" class="list-group-item border-0 px-0 d-flex align-items-center justify-content-between" style="gap: 1rem; cursor: pointer;">
+                        <div class="d-flex align-items-center" style="gap: 1rem;">
+                            <ion-icon name="exit-outline" class="text-danger fw-bold" style="font-size: 20px;"></ion-icon>
+                            <div>
+                                <p class="mb-0 fw-bold text-danger">Logout</p>
+                            </div>
+                            <form id="logoutForm" action="{{ route('absen.logout') }}" method="POST" style="display: none;">
+                                @csrf
+                            </form>
+                        </div>
+                        <ion-icon name="chevron-forward-outline" class="text-muted" style="font-size: 20px;"></ion-icon>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
 </div>
@@ -134,6 +183,29 @@
 @endsection
 
 @push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        logoutBtn.addEventListener('click', function () {
+            Swal.fire({
+                title: 'Yakin ingin logout?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, logout',
+                cancelButtonText: 'Batal',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('logoutForm').submit();
+                }
+            });
+        });
+    });
+</script>
+
 <script>
     function showUploadOptions() {
         $('#fileInput').click(); // Trigger klik input file
@@ -143,7 +215,7 @@
         const file = event.target.files[0]; // Ambil file dari input
 
         if (file) {
-            const maxSize = 2 * 1024 * 1024; // Maksimal 4MB
+            const maxSize = 8 * 1024 * 1024; // Maksimal 4MB
             const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
 
             // Validasi ukuran file
@@ -238,6 +310,7 @@
             showCancelButton: true,
             confirmButtonText: 'Simpan',
             cancelButtonText: 'Batal',
+            reverseButtons: true,
             inputValidator: (value) => {
                 if (!value) {
                     return 'Nama tidak boleh kosong!';
@@ -289,6 +362,7 @@
         showCancelButton: true,
         confirmButtonText: 'Simpan',
         cancelButtonText: 'Batal',
+        reverseButtons: true,
         inputValidator: (value) => {
             if (!value) {
                 return 'Nomor telepon tidak boleh kosong!';
@@ -339,6 +413,9 @@
             <input type="password" id="confirmPassword" class="swal2-input" placeholder="Konfirmasi Password" style="width: 95%; max-width: 100%;">
         `,
             confirmButtonText: 'Update',
+            cancelButtonText: 'Batal',
+            showCancelButton: true,
+            reverseButtons: true,
             focusConfirm: false,
             preConfirm: () => {
                 const current = $('#currentPassword').val();

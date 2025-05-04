@@ -2,16 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AbsenModel;
-use App\Models\IzinabsenModel;
-use App\Models\PegawaiModel;
 use File;
+use carbon\Carbon;
+use App\Models\AbsenModel;
+use Jenssegers\Agent\Agent;
+use Illuminate\Support\Str;
+use App\Models\LaporanModel;
+use App\Models\PegawaiModel;
 use Illuminate\Http\Request;
+use App\Models\IzinabsenModel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Intervention\Image\ImageManager;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use carbon\Carbon;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class AbsenController extends Controller
 {
@@ -22,18 +27,13 @@ class AbsenController extends Controller
         $harini = date('Y-m-d');
         $pegawai = PegawaiModel::with('perusa', 'kantor', 'jabat', 'sat' )->findOrFail($id);
         $absen = AbsenModel::with('pegawai')->where('tgl_absen', $harini)->where('nip', $id)->first();
-        $absens = AbsenModel::where('nip', $id)->where('tgl_absen', 'LIKE', '%'.carbon::now()->format('m').'%')->latest()->get();
-        
+        $absens = AbsenModel::with('pegawai')->where('nip', $id)->where('tgl_absen', 'LIKE', '%'.carbon::now()->format('Y-m').'%')->latest()->get();
+
         $rekap = AbsenModel::where('nip', $id)
                 ->where('tgl_absen', 'LIKE',  '%'.carbon::now()->format('Y-m').'%')
                 ->selectRaw('
                     COUNT(nip) as jmlhadir,
-                    SUM(CASE 
-                        WHEN shift = "0" AND jam_in > "08:00" THEN 1
-                        WHEN shift = "1" AND jam_in > "07:00" THEN 1
-                        WHEN shift = "2" AND jam_in > "13:00" THEN 1
-                        ELSE 0 
-                    END) as jmltelat
+                    SUM(CASE WHEN jam_in > "'.($pegawai->shifts->jam_masuk).'" THEN 1 ELSE 0 END) as jmltelat
                 ')
                 ->first();
 
@@ -48,7 +48,8 @@ class AbsenController extends Controller
                     ->where('tanggal', 'LIKE', '%'.Carbon::now()->format('Y-m').'%')
                     ->selectRaw("
                         SUM(CASE WHEN jenis_izin = 'i' THEN 1 ELSE 0 END) as izin, 
-                        SUM(CASE WHEN jenis_izin = 's' THEN 1 ELSE 0 END) as sakit
+                        SUM(CASE WHEN jenis_izin = 's' THEN 1 ELSE 0 END) as sakit,
+                        SUM(CASE WHEN jenis_izin = 'c' THEN 1 ELSE 0 END) as cuti
                     ")
                     ->where('status_approve', 1)
                     ->first();
@@ -62,14 +63,32 @@ class AbsenController extends Controller
         $nip_id = Auth::guard('pegawai')->user()->id;
         $cek = AbsenModel::where('tgl_absen', $harini)->where('nip', $nip_id)->count();
         $cek2 = AbsenModel::where('tgl_absen', $harini)->where('nip', $nip_id)->first();
+
+        if($cek2 == null){
+        $absenTerakhir = AbsenModel::where('nip', $nip_id)
+            ->where('tgl_absen', '<', $harini)
+            ->whereNull('jam_out')
+            ->latest()
+            ->orderByDesc('created_at')
+            ->first();
+        } else {
+            $absenTerakhir = null;
+        }
+        
+
+            // Cek apakah absen terakhir belum absen pulang
+            // if ($absenTerakhir && $absenTerakhir->jam_out === null) {
+            //     return redirect()->back()->with('error', 'Anda belum melakukan absen pulang pada tanggal ' . $absenTerakhir->tgl_absen . '. Harap selesaikan terlebih dahulu.');
+            // }
+
         $pegawai = PegawaiModel::with('perusa', 'kantor', 'jabat', 'sat' )->findOrFail($nip_id);
 
-        return view('absen.create', compact('pegawai', 'cek', 'cek2'));
+        return view('absen.create', compact('pegawai', 'cek', 'cek2', 'absenTerakhir'));
     }
 
     public function store(Request $request)
     {
-// dd(storage_path('storage/absensi/'));
+        // dd($request->confirm != null);
         $nip = Auth::guard('pegawai')->user()->nip;
         $nip_id = Auth::guard('pegawai')->user()->id;
         $shift_id = Auth::guard('pegawai')->user()->shift;
@@ -78,7 +97,7 @@ class AbsenController extends Controller
         $jam_foto = date("His");
         $lokasi = $request->lokasi;
         $image = $request->image;
-        $folderPath = ('storage/absensi/'. $nip .'/');
+        $folderPath = ('storage/absensi/' . $nip . '/');
         $id_perus = Auth::guard('pegawai')->user()->perusahaan;
         $id_kan = Auth::guard('pegawai')->user()->nama_kantor;
 
@@ -94,48 +113,83 @@ class AbsenController extends Controller
             return;
         }
 
+if ($request->confirm != null) {
+        // Ambil absen terakhir sebelum hari ini yang belum pulang
+        $absenSebelumnya = AbsenModel::where('nip', $nip_id)
+            ->where('tgl_absen', '<', $tgl_absen)
+            ->whereNull('jam_out')
+            ->latest()
+            ->orderByDesc('tgl_absen')
+            ->first();
+
+        if ($absenSebelumnya != null) {
+            // Auto-isi absen pulang dengan jam sekarang untuk absen sebelumnya
+            $fileNameOut = $absenSebelumnya->tgl_absen . "-" . $jam_foto . "-out.png";
+            $fileOutPath = $folderPath . $fileNameOut;
+
+            $abs = AbsenModel::where('id', $absenSebelumnya->id)->update([
+                'jam_out' => $jam_absen,
+                'foto_out' => $fileNameOut,
+                'lokasi_out' => $lokasi,
+            ]);
+
+            // Optional: log atau simpan informasi bahwa ini absen pulang otomatis
+
+            if ($abs) {
+            file_put_contents($fileOutPath, $image_base64);
+                echo "absplg|Terima Kasih, Absen Pulang Berhasil|out";
+                return;
+            } else {
+                echo "error|Gagal menyimpan absen pulang";
+                return;
+            }
+        }
+}
+        // Cek apakah hari ini sudah absen masuk
         $cek = AbsenModel::where('tgl_absen', $tgl_absen)->where('nip', $nip_id)->count();
         if ($cek > 0) {
-            $formatName = $tgl_absen . "-" . $jam_foto . "-out";
-            $fileName = $formatName . ".png";
-            $file= $folderPath . $fileName;
+            // Proses absen pulang
+            $fileName = $tgl_absen . "-" . $jam_foto . "-out.png";
+            $file = $folderPath . $fileName;
 
             $update = AbsenModel::where('nip', $nip_id)->where('tgl_absen', $tgl_absen)->update([
-            'jam_out' => $jam_absen,
-            'foto_out' => $fileName,
-            'lokasi_out' => $lokasi,
-        ]);
-            if($update){
+                'jam_out' => $jam_absen,
+                'foto_out' => $fileName,
+                'lokasi_out' => $lokasi,
+            ]);
+
+            if ($update) {
                 file_put_contents($file, $image_base64);
                 echo "success|Terima Kasih, Absen Pulang Berhasil|out";
             } else {
-                echo 1;       
+                echo "error|Gagal menyimpan absen pulang";
             }
-        } else {
-            $formatName = $tgl_absen . "-" . $jam_foto . "-in";
-            $fileName = $formatName . ".png";
-            $file= $folderPath . $fileName;
 
-            
+        } else {
+            // Proses absen masuk
+            $fileName = $tgl_absen . "-" . $jam_foto . "-in.png";
+            $file = $folderPath . $fileName;
 
             $simpan = AbsenModel::create([
-            'nip' => $nip_id,
-            'shift' => $shift_id,
-            'perusahaan' => $id_perus,
-            'kantor' => $id_kan,
-            'tgl_absen' => $tgl_absen,
-            'jam_in' => $jam_absen,
-            'foto_in' => $fileName,
-            'lokasi_in' => $lokasi,
-        ]);
-            if($simpan){
+                'nip' => $nip_id,
+                'shift' => $shift_id,
+                'perusahaan' => $id_perus,
+                'kantor' => $id_kan,
+                'tgl_absen' => $tgl_absen,
+                'jam_in' => $jam_absen,
+                'foto_in' => $fileName,
+                'lokasi_in' => $lokasi,
+            ]);
+
+            if ($simpan) {
                 file_put_contents($file, $image_base64);
                 echo "success|Terima Kasih, Absen Masuk Berhasil|in";
             } else {
-                echo 1;       
+                echo "error|Gagal menyimpan absen masuk";
             }
         }
     }
+
 
     public function profile()
     {
@@ -145,50 +199,116 @@ class AbsenController extends Controller
         return view('absen.profile', compact('profile'));
     }
 
+    // public function profilimage(Request $request)
+    // {
+    //     // Validasi input
+    //     $request->validate([
+    //         'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:4096', // Maksimal 4MB
+    //     ]);
 
-    public function profilimage(Request $request)
-    {
-        // Validasi input
-        $request->validate([
-            'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:4096', // Maksimal 4MB
-        ]);
+    //     try {
+    //         // Ambil file dari request
+    //         $file = $request->file('profile_image');
 
-        try {
-            // Ambil file dari request
-            $file = $request->file('profile_image');
+    //         $user = Auth::guard('pegawai')->user();
 
-            $user = Auth::guard('pegawai')->user();
+    //         if ($user->foto != null) {
+    //                 File::deleteDirectory(public_path('storage/foto_pegawai/'.$user->nip));
+    //             }
 
-            if ($user->foto != null) {
-                    File::deleteDirectory(public_path('storage/foto_pegawai/'.$user->nip));
-                }
-            // Buat nama file unik
-            $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
 
-            // Simpan file ke direktori public/profile-images
-            $filePath = $file->storeAs('public/foto_pegawai/'.$user->nip.'/', $fileName);
+    //     $directory = public_path('storage/foto_pegawai/admin/' . $user->nip); // Buat direktori penyimpanan
 
-            // URL file yang disimpan
-            $fileUrl = Storage::url($filePath);
+    //     // Buat folder jika belum ada
+    //     if (!File::exists($directory)) {
+    //         File::makeDirectory($directory, 0755, true);
+    //     }
 
-            $user->foto = $fileName;
-            $user->save();
 
-            // Respon jika berhasil
-            return response()->json([
-                'success' => true,
-                'message' => 'Foto profil berhasil diunggah.',
-                'file_url' => $fileUrl,
-            ], 200);
+    //         // Buat nama file unik
+    //         $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
 
-        } catch (\Exception $e) {
-            // Respon jika gagal
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat mengunggah: ' . $e->getMessage(),
-            ], 500);
+    //         // Simpan file ke direktori public/profile-images
+    //         $filePath = $file->storeAs('public/foto_pegawai/'.$user->nip.'/', $fileName);
+
+    //         // URL file yang disimpan
+    //         $fileUrl = Storage::url($filePath);
+
+    //         $user->foto = $fileName;
+    //         $user->save();
+
+    //         // Respon jika berhasil
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Foto profil berhasil diunggah.',
+    //             'file_url' => $fileUrl,
+    //         ], 200);
+
+    //     } catch (\Exception $e) {
+    //         // Respon jika gagal
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Terjadi kesalahan saat mengunggah: ' . $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
+    
+    // versi live
+public function profilimage(Request $request)
+{
+    $request->validate([
+        'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:8000',
+    ]);
+
+    try {
+        $file = $request->file('profile_image');
+        $user = Auth::guard('pegawai')->user();
+
+        $folder = 'foto_pegawai/' . $user->nip;
+        $storagePath = storage_path('app/public/' . $folder);
+
+        // Hapus folder lama jika ada
+        if ($user->foto !== null && File::exists($storagePath)) {
+            File::deleteDirectory($storagePath);
         }
+
+        // Pastikan direktori ada
+        if (!File::exists($storagePath)) {
+            File::makeDirectory($storagePath, 0755, true);
+        }
+
+        $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
+
+        // Gunakan Intervention Image v3 + GD
+        $manager = new ImageManager(new Driver());
+        $image = $manager->read($file->getPathname());
+
+        // Resize opsional
+        $image->scale(width: 600);
+
+        // Simpan ke storage/app/public/foto_pegawai/{nip}/
+        $image->save($storagePath . '/' . $fileName);
+
+        // Simpan nama file di database
+        $user->foto = $fileName;
+        $user->save();
+
+        // Buat URL publik (akses melalui symlink public/storage)
+        $fileUrl = asset('storage/' . $folder . '/' . $fileName);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Foto profil berhasil diunggah.',
+            'file_url' => $fileUrl,
+        ], 200);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Terjadi kesalahan saat mengunggah: ' . $e->getMessage(),
+        ], 500);
     }
+}
 
     public function updateNama(Request $request)
     {
@@ -294,9 +414,8 @@ class AbsenController extends Controller
     {
         $nip_id = Auth::guard('pegawai')->user()->id;
         $izin = IzinabsenModel::where('nip', $nip_id)->get();
-        $cekizin = IzinabsenModel::where('nip', $nip_id)->where('created_at', 'LIKE', '%'.Carbon::now()->format('Y-m-d').'%')->count();
-// dd($cekizin);
-        return view('absen.izin', compact('izin', 'cekizin'));
+
+        return view('absen.izin', compact('izin'));
     }
 
     public function formizin()
@@ -304,16 +423,59 @@ class AbsenController extends Controller
         return view('absen.formizin');
     }
 
+    // public function formizinsimpan(Request $request)
+    // {
+    //     $request->validate([
+    //         'tanggal' => 'required|date',
+    //         'jenisIzin' => 'required|in:i,s,c',
+    //         'keterangan' => 'required|string|max:255',
+    //         'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+    //     ]);
+
+    //     $user = Auth::guard('pegawai')->user();
+
+    //     $data = [
+    //         'nip' => $user->id,
+    //         'perusahaan' => $user->perusahaan,
+    //         'nama_kantor' => $user->nama_kantor,
+    //         'tanggal' => $request->tanggal,
+    //         'jenis_izin' => $request->jenisIzin,
+    //         'keterangan' => $request->keterangan,
+    //     ];
+
+    //     if ($request->hasFile('buktiFoto')) {
+    //         $filename = Str::random(40) . '.' . $request->file('buktiFoto')->getClientOriginalExtension();
+    //         $path = $request->file('buktiFoto')->storeAs("bukti_izin/$user->nip", $filename, 'public');
+    //         $data['foto'] = $filename;
+    //     }
+
+    //     // Simpan ke database (sesuai model yang digunakan, contoh: Izin)
+    //     IzinabsenModel::create($data);
+
+    //     return redirect('absen/izin')->with('success', 'Data izin berhasil disimpan.');
+    // }
+
+    // versi live
+
     public function formizinsimpan(Request $request)
     {
         $request->validate([
             'tanggal' => 'required|date',
-            'jenisIzin' => 'required|in:i,s',
+            'jenisIzin' => 'required|in:i,s,c',
             'keterangan' => 'required|string|max:255',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'buktiFoto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $user = Auth::guard('pegawai')->user();
+
+        // Cek apakah sudah ada izin dengan tanggal dan nip yang sama
+        $cekIzin = IzinabsenModel::where('nip', $user->id)
+                    ->whereDate('tanggal', $request->tanggal)
+                    ->exists();
+
+        if ($cekIzin) {
+            return redirect()->back()->with('error', 'Data izin untuk tanggal tersebut sudah ada.');
+        }
 
         $data = [
             'nip' => $user->id,
@@ -325,14 +487,212 @@ class AbsenController extends Controller
         ];
 
         if ($request->hasFile('buktiFoto')) {
-            $filename = Str::random(40) . '.' . $request->file('buktiFoto')->getClientOriginalExtension();
-            $path = $request->file('buktiFoto')->storeAs("bukti_izin/$user->nip", $filename, 'public');
+            $file = $request->file('buktiFoto');
+            $filename = Str::random(40) . '.' . $file->getClientOriginalExtension();
+
+            $destinationPath = public_path('storage/bukti_izin/' . $user->nip . '/');
+
+            if (!File::exists($destinationPath)) {
+                File::makeDirectory($destinationPath, 0755, true);
+            }
+
+            $file->move($destinationPath, $filename);
             $data['foto'] = $filename;
         }
 
-        // Simpan ke database (sesuai model yang digunakan, contoh: Izin)
         IzinabsenModel::create($data);
 
         return redirect('absen/izin')->with('success', 'Data izin berhasil disimpan.');
     }
+
+    public function lapor()
+    {
+        $lapor = LaporanModel::where('user_id', Auth::guard('pegawai')->user()->id)
+                ->where('satker', Auth::guard('pegawai')->user()->satker)
+                ->latest()
+                ->get();
+
+        return view('absen.laporan', compact('lapor'));
+    }
+
+    public function formlap()
+    {
+        return view('absen.formlap');
+    }
+
+    public function laporan(Request $request)
+    {
+        // Validasi input
+        $request->validate([
+            'personil' => 'required',
+            'kegiatan' => 'required',
+            'foto.*' => 'image|mimes:jpeg,png,jpg,gif|max:8000', // Validasi file gambar
+        ]);
+
+        // Generate no_lap
+        $noLap = LaporanModel::generateNoLap();
+        $files = $request->file('foto');
+        $fotoNames = [];
+
+        // Handle upload foto
+    if ($files != null) {
+       // $directory = base_path('../public_html/storage/laporan/admin/' . $noLap); // Buat direktori penyimpanan live instance
+        $directory = public_path('storage/laporan/' . $noLap); // Buat direktori penyimpanan
+
+        // Buat folder jika belum ada
+        if (!File::exists($directory)) {
+            File::makeDirectory($directory, 0755, true);
+        }
+
+        $manager = new ImageManager(new Driver()); // Inisialisasi di luar loop
+
+        foreach ($files as $file) {
+            $extension = strtolower($file->getClientOriginalExtension());
+            $fotoName = Str::random(20) . '.' . $extension;
+            $image = $manager->read($file->getPathname());
+            // Resize skala
+            $image->scale(800, null); // Tanpa named parameter!
+            $image->toJpeg(75)->save($directory . '/' . $fotoName);// Simpan sebagai JPEG dengan kualitas 75%
+            $fotoNames[] = $fotoName;
+        }
+
+        $foto = implode('|', $fotoNames);
+    }
+
+        // Simpan data ke database
+        LaporanModel::create([
+            'perusahaan' => Auth::guard('pegawai')->user()->perusahaan,
+            'kantor' => Auth::guard('pegawai')->user()->kantor->id,
+            'dept' => Auth::guard('pegawai')->user()->dept,
+            'satker' => Auth::guard('pegawai')->user()->satker,
+            'jabatan' => Auth::guard('pegawai')->user()->jabatan,
+            'user_id' => Auth::guard('pegawai')->user()->id,
+            'no_lap' => LaporanModel::generateNoLap(),
+            'personil' => $request->personil,
+            'kegiatan' => $request->kegiatan,
+            'keterangan' => $request->keterangan,
+            'foto' => $foto,
+        ]);
+
+        return redirect('absen/laporan')->with('success', 'Laporan berhasil tersimpan !');
+    }
+
+    public function lapordetail($id)
+    {
+        $detail = LaporanModel::findOrFail($id);
+
+        return view('absen.laporandetail', compact('detail'));
+    }
+
+    public function editlap($id)
+    {
+        $edit = LaporanModel::findOrFail($id);
+
+        return view('absen.editlap', compact('edit'));
+    }
+
+    public function savepdf($id)
+    {
+        $detail = LaporanModel::findOrFail($id);
+        $satker = $detail->sat->satuan_kerja;
+        $agent = new Agent();
+
+        $pdf = Pdf::loadView('absen.savepdf', compact('detail', 'satker'))
+                  ->setPaper('A4', 'portrait');
+        if ($agent->isMobile()){
+            return $pdf->download('Laporan Kegiatan Admin '.$detail->no_lap.'.pdf');
+        } else {
+            return $pdf->stream('Laporan Kegiatan Admin '.$detail->no_lap.'.pdf');
+        }
+    }
+
+    public function updatelap(Request $request, $id)
+    {
+        $laporan = LaporanModel::findOrFail($id);
+        $files = $request->file('foto');
+        $fotoNames = [];
+
+        // Handle upload foto
+    if ($files != null) {
+       // $directory = base_path('../public_html/storage/laporan/admin/' . $noLap); // Buat direktori penyimpanan live instance
+        $directory = public_path('storage/laporan/' . $laporan->no_lap); // Buat direktori penyimpanan
+
+        // Buat folder jika belum ada
+        if (!File::exists($directory)) {
+            File::makeDirectory($directory, 0755, true);
+        }
+
+        $manager = new ImageManager(new Driver()); // Inisialisasi di luar loop
+
+        foreach ($files as $file) {
+            $extension = strtolower($file->getClientOriginalExtension());
+            $fotoName = Str::random(20) . '.' . $extension;
+            $image = $manager->read($file->getPathname());
+            // Resize skala
+            $image->scale(800, null); // Tanpa named parameter!
+            $image->toJpeg(75)->save($directory . '/' . $fotoName);// Simpan sebagai JPEG dengan kualitas 75%
+            $fotoNames[] = $fotoName;
+        }
+
+            if ($laporan->foto == null) {
+                $tambah = implode('|', $fotoNames);
+            } else {
+                $tambah = $laporan->foto.'|'.implode('|', $fotoNames);
+            }
+
+            $laporan->foto = $tambah;
+    }
+
+        $laporan->personil = $request->personil;
+        $laporan->kegiatan = $request->kegiatan;
+        $laporan->keterangan = $request->keterangan;
+        $laporan->save();
+
+        return response()->json(['success' => true]);
+    }
+
+    public function hapusFoto(Request $request, $id)
+    {
+        $laporan = LaporanModel::findOrFail($id);
+        $fotoToDelete = $request->foto;
+
+        if ($laporan->foto) {
+            $fotos = explode('|', $laporan->foto);
+            if (($key = array_search($fotoToDelete, $fotos)) !== false) {
+                unset($fotos[$key]);
+
+                // Hapus file fisik dari storage
+                // $filePath = base_path('../public_path/storage/laporan/admin/' . $laporan->no_lap . '/' . $fotoToDelete);
+                $filePath = public_path('storage/laporan/' . $laporan->no_lap . '/' . $fotoToDelete);
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
+
+                // Update field foto di database
+                $laporan->foto = count($fotos) > 0 ? implode('|', $fotos) : null;
+                $laporan->save();
+            }
+        }
+
+        return response()->json(['success' => true]);
+    }
+
+public function destroy($id)
+{
+    $laporan = LaporanModel::findOrFail($id);
+
+    // Path folder foto
+    // $folderPath = base_path('../public_html/storage/laporan/admin/' . $laporan->no_lap);
+    $folderPath = public_path('storage/laporan/' . $laporan->no_lap);
+
+    // Hapus semua file di dalam folder
+    if (File::exists($folderPath)) {
+        File::deleteDirectory($folderPath);
+    }
+
+    // Hapus data laporan dari database
+    $laporan->delete();
+
+    return response()->json(['success' => true]);
+}
 }

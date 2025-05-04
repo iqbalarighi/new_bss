@@ -39,13 +39,41 @@
             </div>
         </a>
         @if(Request::is('absen/create'))
-            <a class="item disabled-link">
-                <div class="col">
-                    <div class="action-button large">
-                        <ion-icon name="camera-outline"></ion-icon>
-                    </div>
-                </div>
-            </a>
+                @if($cek == 1)
+                    @if($cek2->jam_out == null)
+                    <a class="item">
+                        <div class="col">
+                            <button class="action-button large bg-danger" id="capture" data-absen="belum" data-stat="pulang">
+                                <ion-icon name="camera-outline"></ion-icon>
+                            </button>
+                        </div>
+                    </a>
+                    @else
+                    <a class="item disabled-link" onclick="showAbsenAlert()" data-absen="sudah">
+                        <div class="col">
+                            <button class="action-button large">
+                                <ion-icon name="camera-outline"></ion-icon>
+                            </button>
+                        </div>
+                    </a>
+                    @endif
+                @elseif($absenTerakhir && $absenTerakhir->jam_out == null)
+                    <a class="item">
+                        <div class="col">
+                            <button class="action-button large bg-danger" id="capture" data-absen="belum" data-stat="pulang">
+                                <ion-icon name="camera-outline"></ion-icon>
+                            </button>
+                        </div>
+                    </a>
+                @else
+                    <a class="item">
+                        <div class="col">
+                            <button class="action-button large" id="capture" data-absen="belum" data-stat="masuk"> 
+                                <ion-icon name="camera-outline"></ion-icon>
+                            </button>
+                        </div>
+                    </a>
+                @endif
         @else
             <a href="{{route('absen.create')}}" class="item">
                 <div class="col">
