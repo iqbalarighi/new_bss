@@ -29,7 +29,7 @@
             @csrf
             <div class="mb-2">
                 <label for="tanggal" class="form-label mb-1">Tanggal</label>
-                <input type="date" class="form-control" id="tanggal" name="tanggal" min="{{ Carbon\Carbon::now()->subDays(7)->format('Y-m-d') }}" max="{{ Carbon\Carbon::now()->addDays(7)->format('Y-m-d') }}">
+                <input type="date" class="form-control" id="tanggal" name="tanggal" min="{{ Carbon\Carbon::now()->subDays(0)->format('Y-m-d') }}" max="{{ Carbon\Carbon::now()->addDays(60)->format('Y-m-d') }}">
             </div>
 
             <div class="mb-2">

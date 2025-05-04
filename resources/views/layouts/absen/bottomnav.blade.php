@@ -75,6 +75,15 @@
                     </a>
                 @endif
         @else
+            @if($cek == 1 && $cek2->jam_out != null)
+                <a class="item disabled-link" onclick="showAbsenAlert()" data-absen="sudah">
+                        <div class="col">
+                            <button class="action-button large">
+                                <ion-icon name="camera-outline"></ion-icon>
+                            </button>
+                        </div>
+                    </a>
+            @else
             <a href="{{route('absen.create')}}" class="item">
                 <div class="col">
                     <div class="action-button large">
@@ -82,6 +91,7 @@
                     </div>
                 </div>
             </a>
+            @endif
         @endif
         <a href="{{route('absen.izin')}}" class="item {{Request::is('absen/izin') ? 'active' : ''}}">
             <div class="col">

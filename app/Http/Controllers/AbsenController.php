@@ -26,6 +26,8 @@ class AbsenController extends Controller
         $nip = Auth::guard('pegawai')->user()->nip;
         $harini = date('Y-m-d');
         $pegawai = PegawaiModel::with('perusa', 'kantor', 'jabat', 'sat' )->findOrFail($id);
+        $cek = AbsenModel::where('tgl_absen', $harini)->where('nip', $id)->count();
+        $cek2 = AbsenModel::where('tgl_absen', $harini)->where('nip', $id)->first();
         $absen = AbsenModel::with('pegawai')->where('tgl_absen', $harini)->where('nip', $id)->first();
         $absens = AbsenModel::with('pegawai')->where('nip', $id)->where('tgl_absen', 'LIKE', '%'.carbon::now()->format('Y-m').'%')->latest()->get();
 
@@ -54,7 +56,7 @@ class AbsenController extends Controller
                     ->where('status_approve', 1)
                     ->first();
 
-        return view('absen.index', compact('pegawai', 'absen', 'absens', 'rekap', 'leaderboard', 'rekapizin'));
+        return view('absen.index', compact('pegawai', 'absen', 'absens', 'rekap', 'leaderboard', 'rekapizin', 'cek', 'cek2'));
     }
 
     public function create()
@@ -118,8 +120,7 @@ if ($request->confirm != null) {
         $absenSebelumnya = AbsenModel::where('nip', $nip_id)
             ->where('tgl_absen', '<', $tgl_absen)
             ->whereNull('jam_out')
-            ->latest()
-            ->orderByDesc('tgl_absen')
+            ->latest('tgl_absen')
             ->first();
 
         if ($absenSebelumnya != null) {
@@ -695,4 +696,133 @@ public function destroy($id)
 
     return response()->json(['success' => true]);
 }
+
+public function lembur()
+    {
+        $harini = date('Y-m-d');
+        $nip_id = Auth::guard('pegawai')->user()->id;
+        $cek = AbsenModel::where('tgl_absen', $harini)->where('nip', $nip_id)->count();
+        $cek2 = AbsenModel::where('tgl_absen', $harini)->where('nip', $nip_id)->first();
+
+        if($cek2 == null){
+        $absenTerakhir = AbsenModel::where('nip', $nip_id)
+            ->where('tgl_absen', '<', $harini)
+            ->whereNull('jam_out')
+            ->latest()
+            ->orderByDesc('created_at')
+            ->first();
+        } else {
+            $absenTerakhir = null;
+        }
+        
+
+            // Cek apakah absen terakhir belum absen pulang
+            // if ($absenTerakhir && $absenTerakhir->jam_out === null) {
+            //     return redirect()->back()->with('error', 'Anda belum melakukan absen pulang pada tanggal ' . $absenTerakhir->tgl_absen . '. Harap selesaikan terlebih dahulu.');
+            // }
+
+        $pegawai = PegawaiModel::with('perusa', 'kantor', 'jabat', 'sat' )->findOrFail($nip_id);
+
+        return view('absen.lembur', compact('pegawai', 'cek', 'cek2', 'absenTerakhir'));
+    }
+
+    public function storelembur(Request $request)
+    {
+        // dd($request->confirm != null);
+        $nip_id = Auth::guard('pegawai')->user()->id;
+        $shift_id = Auth::guard('pegawai')->user()->shift;
+        $tgl_lembur = date("Y-m-d");
+        $jam_lembur = date("H:i:s");
+        $jam_foto = date("His");
+        $lokasi = $request->lokasi;
+        $image = $request->image;
+        $folderPath = ('storage/absensi/' . $nip . '/');
+        $id_perus = Auth::guard('pegawai')->user()->perusahaan;
+        $id_kan = Auth::guard('pegawai')->user()->nama_kantor;
+
+        if (!file_exists($folderPath)) {
+            mkdir($folderPath, 0777, true);
+        }
+
+        $image_parts = explode(";base64,", $image);
+        if (count($image_parts) == 2) {
+            $image_base64 = base64_decode($image_parts[1]);
+        } else {
+            echo "error|Format base64 tidak valid";
+            return;
+        }
+
+    if ($request->confirm != null) {
+        // Ambil absen terakhir sebelum hari ini yang belum pulang
+        $lemburSebelumnya = LemburModel::where('pegwai_id', $nip_id)
+            ->where('tgl_lembur', '<', $tgl_lembur)
+            ->whereNull('jam_out')
+            ->latest()
+            ->orderByDesc('tgl_lembur')
+            ->first();
+
+        if ($lemburSebelumnya != null) {
+            // Auto-isi absen pulang dengan jam sekarang untuk absen sebelumnya
+            $fileNameOut = $lemburSebelumnya->tgl_lembur . "-" . $jam_foto . "-out.png";
+            $fileOutPath = $folderPath . $fileNameOut;
+
+            $abs = LemburModel::where('id', $lemburSebelumnya->id)->update([
+                'jam_out' => $jam_lembur,
+                'foto_out' => $fileNameOut,
+                'lokasi_out' => $lokasi,
+            ]);
+
+            // Optional: log atau simpan informasi bahwa ini absen pulang otomatis
+
+            if ($abs) {
+            file_put_contents($fileOutPath, $image_base64);
+                echo "absplg|Terima Kasih, Absen Pulang Berhasil|out";
+                return;
+            } else {
+                echo "error|Gagal menyimpan absen pulang";
+                return;
+            }
+        }
+    }
+        // Cek apakah hari ini sudah absen masuk
+        $cek = LemburModel::where('tgl_lembur', $tgl_lembur)->where('pegawai_id', $nip_id)->count();
+        if ($cek > 0) {
+            // Proses absen pulang
+            $fileName = $tgl_lembur . "-" . $jam_foto . "-out.png";
+            $file = $folderPath . $fileName;
+
+            $update = LemburModel::where('pegawai_id', $nip_id)->where('tgl_lembur', $tgl_lembur)->update([
+                'jam_out' => $jam_lembur,
+                'foto_out' => $fileName,
+                'lokasi_out' => $lokasi,
+            ]);
+
+            if ($update) {
+                file_put_contents($file, $image_base64);
+                echo "success|Terima Kasih, Absen Pulang Berhasil|out";
+            } else {
+                echo "error|Gagal menyimpan absen pulang";
+            }
+
+        } else {
+            // Proses absen masuk
+            $fileName = $tgl_lembur . "-" . $jam_foto . "-in.png";
+            $file = $folderPath . $fileName;
+
+            $simpan = LemburModel::create([
+                'pegawai_id' => $nip_id,
+                'tgl_lembur' => $tgl_lembur,
+                'jam_in' => $jam_lembur,
+                'foto_in' => $fileName,
+                'lokasi_in' => $lokasi,
+            ]);
+
+            if ($simpan) {
+                file_put_contents($file, $image_base64);
+                echo "success|Terima Kasih, Absen Masuk Berhasil|in";
+            } else {
+                echo "error|Gagal menyimpan absen masuk";
+            }
+        }
+    }
 }

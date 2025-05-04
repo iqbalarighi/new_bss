@@ -418,3 +418,22 @@
             </div>
         </div>
 @endsection
+@push('myscript')
+<script type="text/javascript">
+    function showAbsenAlert() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Oops!',
+            text: 'Anda sudah absen hari ini! Lanjut absen lembur?',
+            showCancelButton: true,
+                    confirmButtonText: 'Ya, lanjut',
+                    cancelButtonText: 'Batal',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '{{ route('absen.lembur') }}'; // lanjut absen walau di luar radius
+                    }
+                });
+    }
+</script>
+@endpush

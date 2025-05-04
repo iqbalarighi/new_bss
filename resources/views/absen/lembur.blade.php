@@ -7,7 +7,7 @@
             <ion-icon name="chevron-back-outline"></ion-icon>
         </a>
     </div>
-    <div class="pageTitle">Absensi Karyawan</div>
+    <div class="pageTitle">Absen Lembur Karyawan</div>
     <div class="right"></div>
 </div>
 <!-- * App Header -->
@@ -269,7 +269,7 @@ function ambilFotoDanAbsen() {
 
                         $.ajax({
                             type: 'POST',
-                            url: '/absen/store',
+                            url: '/absen/lembur/store',
                             data: {
                                 _token: '{{ csrf_token() }}',
                                 image: mirroredImage,
