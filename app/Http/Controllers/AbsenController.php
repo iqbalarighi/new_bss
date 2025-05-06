@@ -57,7 +57,11 @@ class AbsenController extends Controller
                     ->where('status_approve', 1)
                     ->first();
 
-        return view('absen.index', compact('pegawai', 'absen', 'absens', 'rekap', 'leaderboard', 'rekapizin', 'cek', 'cek2'));
+        $existing = LemburModel::where('nip', $id)
+                ->where('tgl_absen', $harini)
+                ->first();  
+
+        return view('absen.index', compact('pegawai', 'absen', 'absens', 'rekap', 'leaderboard', 'rekapizin', 'cek', 'cek2', 'existing'));
     }
 
     public function create()
@@ -197,8 +201,12 @@ if ($request->confirm != null) {
     {
         $nip = Auth::guard('pegawai')->user()->nip;
         $profile = PegawaiModel::where('nip', $nip)->first();
+        $harini = date('Y-m-d');
+        $id = Auth::guard('pegawai')->user()->id;
+        $cek = AbsenModel::where('tgl_absen', $harini)->where('nip', $id)->count();
+        $cek2 = AbsenModel::where('tgl_absen', $harini)->where('nip', $id)->first();
 
-        return view('absen.profile', compact('profile'));
+        return view('absen.profile', compact('profile', 'cek', 'cek2'));
     }
 
     // public function profilimage(Request $request)
@@ -396,7 +404,12 @@ public function profilimage(Request $request)
 
     public function histori()
     {
-        return view('absen.histori');
+        $id = Auth::guard('pegawai')->user()->id;
+        $harini = date('Y-m-d');
+        $cek = AbsenModel::where('tgl_absen', $harini)->where('nip', $id)->count();
+        $cek2 = AbsenModel::where('tgl_absen', $harini)->where('nip', $id)->first();
+
+        return view('absen.histori', 'cek', 'cek2');
     }
 
     public function gethistori(Request $request)
@@ -416,13 +429,23 @@ public function profilimage(Request $request)
     {
         $nip_id = Auth::guard('pegawai')->user()->id;
         $izin = IzinabsenModel::where('nip', $nip_id)->get();
+        $harini = date('Y-m-d');
+        $cek = AbsenModel::where('tgl_absen', $harini)->where('nip', $nip_id)->count();
+        $cek2 = AbsenModel::where('tgl_absen', $harini)->where('nip', $nip_id)->first();
+        $existing = LemburModel::where('nip', $nip_id)
+                ->where('tgl_absen', $harini)
+                ->first(); 
 
-        return view('absen.izin', compact('izin'));
+        return view('absen.izin', compact('izin', 'cek', 'cek2', 'existing'));
     }
 
     public function formizin()
     {
-        return view('absen.formizin');
+        $id = Auth::guard('pegawai')->user()->id;
+        $harini = date('Y-m-d');
+        $cek = AbsenModel::where('tgl_absen', $harini)->where('nip', $id)->count();
+        $cek2 = AbsenModel::where('tgl_absen', $harini)->where('nip', $id)->first();
+        return view('absen.formizin', compact('cek', 'cek2'));
     }
 
     // public function formizinsimpan(Request $request)
@@ -716,6 +739,9 @@ public function lembur()
             $absenTerakhir = null;
         }
         
+$existing = LemburModel::where('nip', $nip_id)
+        ->where('tgl_absen', $harini)
+        ->first();
 
             // Cek apakah absen terakhir belum absen pulang
             // if ($absenTerakhir && $absenTerakhir->jam_out === null) {
@@ -724,7 +750,7 @@ public function lembur()
 
         $pegawai = PegawaiModel::with('perusa', 'kantor', 'jabat', 'sat' )->findOrFail($nip_id);
 
-        return view('absen.lembur', compact('pegawai', 'cek', 'cek2', 'absenTerakhir'));
+        return view('absen.lembur', compact('pegawai', 'cek', 'cek2', 'absenTerakhir', 'existing'));
     }
 
 public function mulaiLembur(Request $request)
@@ -796,7 +822,6 @@ public function selesaiLembur(Request $request)
 
     return response()->json(['message' => 'Absen lembur berhasil diselesaikan.']);
 }
-
 
 
 private function simpanFotoBase64($base64, $prefix)

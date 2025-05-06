@@ -49,13 +49,13 @@
                         </div>
                     </a>
                     @else
-                    <a class="item disabled-link" onclick="showAbsenAlert()" data-absen="sudah">
-                        <div class="col">
-                            <button class="action-button large">
-                                <ion-icon name="camera-outline"></ion-icon>
-                            </button>
-                        </div>
-                    </a>
+                        <a class="item disabled-link" onclick="showAbsenAlert()" data-absen="sudah">
+                            <div class="col">
+                                <button class="action-button large">
+                                    <ion-icon name="camera-outline"></ion-icon>
+                                </button>
+                            </div>
+                        </a>
                     @endif
                 @elseif($absenTerakhir && $absenTerakhir->jam_out == null)
                     <a class="item">
@@ -74,23 +74,69 @@
                         </div>
                     </a>
                 @endif
+        @elseif(Request::is('absen/lembur'))
+            @if(!$existing)
+                <a class="item">
+                    <div class="col">
+                        <button class="action-button large" data-stat="lemburmasuk" onclick="mulaiLembur()"> 
+                            <ion-icon name="camera-outline"></ion-icon>
+                        </button>
+                    </div>
+                </a>
+            @elseif(!$existing->jam_out)
+                 <a class="item">
+                    <div class="col">
+                        <button class="action-button large btn-danger" data-stat="lemburmasuk" onclick="selesaiLembur()"> 
+                            <ion-icon name="camera-outline"></ion-icon>
+                        </button>
+                    </div>
+                </a>
+            @else
+                <a class="item disabled-link" onclick="showLemburAlert()" data-absen="sudah">
+                    <div class="col">
+                        <button class="action-button large">
+                            <ion-icon name="camera-outline"></ion-icon>
+                        </button>
+                    </div>
+                </a>
+            @endif
         @else
             @if($cek == 1 && $cek2->jam_out != null)
-                <a class="item disabled-link" onclick="showAbsenAlert()" data-absen="sudah">
+                @if($existing && $existing->jam_out != null)
+                        <a class="item disabled-link" onclick="showLemburAlert()" data-absen="sudah">
+                            <div class="col">
+                                <button class="action-button large">
+                                    <ion-icon name="camera-outline"></ion-icon>
+                                </button>
+                            </div>
+                        </a>
+                        @else
+                        <a class="item disabled-link" onclick="showAbsenAlert()" data-absen="sudah">
+                            <div class="col">
+                                <button class="action-button large">
+                                    <ion-icon name="camera-outline"></ion-icon>
+                                </button>
+                            </div>
+                        </a>
+                        @endif
+            @else
+                @if($cek == 1 && $cek2->jam_out == null)
+                    <a href="{{route('absen.create')}}" class="item">
                         <div class="col">
-                            <button class="action-button large">
+                            <div class="action-button large bg-danger">
                                 <ion-icon name="camera-outline"></ion-icon>
-                            </button>
+                            </div>
                         </div>
                     </a>
-            @else
-            <a href="{{route('absen.create')}}" class="item">
-                <div class="col">
-                    <div class="action-button large">
-                        <ion-icon name="camera-outline"></ion-icon>
-                    </div>
-                </div>
-            </a>
+                @else
+                    <a href="{{route('absen.create')}}" class="item">
+                        <div class="col">
+                            <div class="action-button large">
+                                <ion-icon name="camera-outline"></ion-icon>
+                            </div>
+                        </div>
+                    </a>
+                @endif
             @endif
         @endif
         <a href="{{route('absen.izin')}}" class="item {{Request::is('absen/izin') ? 'active' : ''}}">

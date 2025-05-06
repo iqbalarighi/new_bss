@@ -42,7 +42,7 @@
 
 
 <div class="section full mt-4">
-    <div class="section-title">Title</div>
+    <div class="section-title">Absensi</div>
     <div class="wide-block pt-2 pb-2">
         <div class="row">
             <div class="col" style="margin-bottom: -30px">
@@ -337,7 +337,7 @@ function outofrad() {
                     reverseButtons: true
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        ambilFotoDanAbsen(); // lanjut absen walau di luar radius
+                        window.location.href = '{{ route('absen.lembur') }}'; 
                     }
                 });
     }

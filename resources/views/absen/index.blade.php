@@ -436,4 +436,14 @@
                 });
     }
 </script>
+<script type="text/javascript">
+        function showLemburAlert() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Oops!',
+            text: 'Anda sudah absen masuk dan lembur hari ini!',
+            confirmButtonText: 'OK'
+                });
+    }
+</script>
 @endpush

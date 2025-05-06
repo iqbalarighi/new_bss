@@ -1,33 +1,66 @@
 @extends('layouts.absen.absen')
+
 @section('header')
-    <!-- App Header -->
+<!-- App Header -->
 <div class="appHeader text-light" style="background-color: #ef3b3b;">
     <div class="left">
         <a href="javascript:;" class="headerButton goBack">
             <ion-icon name="chevron-back-outline"></ion-icon>
         </a>
     </div>
-    <div class="pageTitle">Absen Lembur Karyawan</div>
+    <div class="pageTitle">Absensi Lembur</div>
     <div class="right"></div>
 </div>
 <!-- * App Header -->
 
+<style type="text/css">
+    .webcam-capture,
+    .webcam-capture video {
+        display: inline-block;
+        width: 100% !important;
+        margin: auto;
+        height: 90% !important;
+        border-radius: 15px;
+        position: relative;
+        margin-top: 1px;
+    }
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    .webcam-capture video {
+        object-fit: cover;
+        aspect-ratio: 3 / 4;
+    }
+
+    #map {
+        height: 270px;
+    }
+</style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 @endsection
 
 @section('content')
-<div class="container">
-    <h3>Absen Lembur</h3>
-
-    <div class="text-center my-4">
-        <div id="my_camera" class="mb-3" style="width: 320px; height: 240px; margin: auto;"></div>
-        <button class="btn btn-success me-2" onclick="mulaiLembur()">Mulai Lembur</button>
-        <button class="btn btn-danger" onclick="selesaiLembur()">Selesai Lembur</button>
+<div class="section full mt-4">
+    <div class="section-title">Lembur</div>
+    <div class="wide-block pt-2 pb-2">
+        <div class="row">
+            <div class="col" style="margin-bottom: -30px">
+                <input type="hidden" id="lokasi">
+                <div id="my_camera" class="webcam-capture"></div>
+            </div>
+        </div>
+        <div class="row mt-1">
+            <div class="col" style="margin-top: -50px">
+                <div id="map" style="z-index: 0;"></div>
+            </div>
+        </div>
+{{--         <div class="row mt-2">
+            <div class="col-6">
+                <button onclick="mulaiLembur()" class="btn btn-success btn-block">Mulai Lembur</button>
+            </div>
+            <div class="col-6">
+                <button onclick="selesaiLembur()" class="btn btn-danger btn-block">Selesai Lembur</button>
+            </div>
+        </div> --}}
     </div>
-
-    <h5>Lokasi Saat Ini</h5>
-    <div id="map" style="height: 300px;"></div>
 </div>
 @endsection
 
@@ -40,6 +73,36 @@
 let peta = null;
 let marker = null;
 
+let fotoPreview = null;
+let lokasiPreview = null;
+
+function ambilFoto(callback) {
+    if (!Webcam.live) {
+        Swal.fire('Webcam belum siap. Mohon tunggu beberapa detik.');
+        return;
+    }
+
+    Webcam.snap(function (data_uri) {
+        fotoPreview = data_uri;
+        callback(data_uri);
+    });
+}
+
+function ambilLokasi(callback) {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function (pos) {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            lokasiPreview = `${lat},${lng}`;
+            callback(lokasiPreview);
+        }, function () {
+            Swal.fire('Gagal ambil lokasi');
+        });
+    } else {
+        Swal.fire('Browser tidak mendukung geolocation');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     // Inisialisasi Webcam
     Webcam.set({
@@ -51,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function () {
     Webcam.attach('#my_camera');
 
     // Inisialisasi Peta
-    peta = L.map('map').setView([-6.200000, 106.816666], 15); // Default Jakarta
+    peta = L.map('map').setView([-6.200000, 106.816666], 15);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(peta);
@@ -67,99 +130,42 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-
-
-    // Inisialisasi Webcam
-    Webcam.set({
-        width: 320,
-        height: 240,
-        image_format: 'png',
-        png_quality: 90
-    });
-
-document.addEventListener('DOMContentLoaded', function () {
-    Webcam.set({
-        width: 320,
-        height: 240,
-        image_format: 'png',
-        png_quality: 90
-    });
-    Webcam.attach('#my_camera');
-});
-
-function ambilFoto(callback) {
-    if (!Webcam.live) {
-        Swal.fire('Webcam belum siap. Mohon tunggu beberapa detik.');
-        return;
-    }
-
-    Webcam.snap(function (data_uri) {
-        callback(data_uri);
+function tampilkanPreviewDanKirim(url) {
+    Swal.fire({
+        title: 'Konfirmasi Data',
+        html: `<p><strong>Lokasi:</strong> ${lokasiPreview}</p><img src="${fotoPreview}" width="200" style="border-radius:8px" />`,
+        showCancelButton: true,
+        confirmButtonText: 'Kirim',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.post(url, {
+                _token: '{{ csrf_token() }}',
+                foto: fotoPreview,
+                lokasi: lokasiPreview
+            }, function (response) {
+                Swal.fire(response.message);
+            }).fail(function (xhr) {
+                Swal.fire('Gagal', xhr.responseJSON.message, 'error');
+            });
+        }
     });
 }
 
-    function ambilLokasi(callback) {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function (pos) {
-                const lat = pos.coords.latitude;
-                const lng = pos.coords.longitude;
-                callback(`${lat},${lng}`);
-            }, function () {
-                Swal.fire('Gagal ambil lokasi');
-            });
-        } else {
-            Swal.fire('Browser tidak mendukung geolocation');
-        }
-    }
-
-    function mulaiLembur() {
-        Swal.fire({
-            title: 'Yakin mulai lembur?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Ya',
-        }).then((result) => {
-            if (result.isConfirmed) {
-                ambilFoto(function (foto) {
-                    ambilLokasi(function (lokasi) {
-                        $.post("/absen/lembur/mulai", {
-                            _token: '{{ csrf_token() }}',
-                            foto: foto,
-                            lokasi: lokasi
-                        }, function (response) {
-                            Swal.fire(response.message);
-                        }).fail(function (xhr) {
-                            Swal.fire('Gagal', xhr.responseJSON.message, 'error');
-                        });
-                    });
-                });
-            }
+function mulaiLembur() {
+    ambilFoto(function () {
+        ambilLokasi(function () {
+            tampilkanPreviewDanKirim("/absen/lembur/mulai");
         });
-    }
+    });
+}
 
-    function selesaiLembur() {
-        Swal.fire({
-            title: 'Yakin selesai lembur?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Ya',
-        }).then((result) => {
-            if (result.isConfirmed) {
-                ambilFoto(function (foto) {
-                    ambilLokasi(function (lokasi) {
-                        $.post("/absen/lembur/selesai", {
-                            _token: '{{ csrf_token() }}',
-                            foto: foto,
-                            lokasi: lokasi
-                        }, function (response) {
-                            Swal.fire(response.message);
-                        }).fail(function (xhr) {
-                            Swal.fire('Gagal', xhr.responseJSON.message, 'error');
-                        });
-                    });
-                });
-            }
+function selesaiLembur() {
+    ambilFoto(function () {
+        ambilLokasi(function () {
+            tampilkanPreviewDanKirim("/absen/lembur/selesai");
         });
-    }
+    });
+}
 </script>
 @endpush
