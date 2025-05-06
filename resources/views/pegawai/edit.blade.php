@@ -126,6 +126,13 @@
             @endforeach
         </select>
     </div>
+    <div class="mb-3">
+        <label for="statpegawai" class="form-label">Status Pegawai</label>
+        <select class="form-control" id="statpegawai" name="statpegawai" required>
+            <option value="Tetap" {{ $pegawai->statpegawai == 'Tetap' ? 'selected' : '' }}>Tetap</option>
+            <option value="Kontrak" {{ $pegawai->statpegawai == 'Kontrak' ? 'selected' : '' }}>Kontrak</option>
+        </select>
+    </div>
 
     <div class="mb-3">
         <label class="form-label">Status Pegawai</label>
