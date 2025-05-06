@@ -11,6 +11,7 @@ class LemburModel extends Model
      protected $fillable = [
         'nip',
         'perusahaan',
+        'kantor',
         'tgl_absen',
         'jam_in',
         'foto_in',

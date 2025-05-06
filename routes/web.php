@@ -125,7 +125,8 @@ Route::controller(AbsenController::class)->middleware(['redirif:pegawai'])->grou
     Route::get('/absen', 'index')->name('absen');
     Route::get('/absen/create', 'create')->name('absen.create');
     Route::get('/absen/lembur', 'lembur')->name('absen.lembur');
-    Route::post('/absen/lembur/store', 'storelembur')->name('absen.lembur.store');
+    Route::post('/absen/lembur/mulai', 'mulaiLembur')->name('absen.lembur.mulai');
+    Route::post('/absen/lembur/selesai', 'selesaiLembur')->name('absen.lembur.selesai');
     Route::post('/absen/store', 'store');
     Route::get('/absen/profile', 'profile')->name('absen.profile');
     Route::post('/absen/profile-image', 'profilimage');

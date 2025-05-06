@@ -13,8 +13,10 @@ return new class extends Migration
     {
         Schema::create('lembur', function (Blueprint $table) {
             $table->id();
-            $table->integer('pegwai_id')->unsigned();
-            $table->string('tgl_lembur');
+            $table->integer('nip')->unsigned();
+            $table->integer('perusahaan')->unsigned();
+            $table->integer('kantor')->unsigned();
+            $table->string('tgl_absen');
             $table->string('jam_in');
             $table->text('foto_in');
             $table->text('lokasi_in');

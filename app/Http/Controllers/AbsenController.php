@@ -2,21 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use File;
-use carbon\Carbon;
 use App\Models\AbsenModel;
-use Jenssegers\Agent\Agent;
-use Illuminate\Support\Str;
-use App\Models\LaporanModel;
-use App\Models\PegawaiModel;
-use Illuminate\Http\Request;
 use App\Models\IzinabsenModel;
+use App\Models\LaporanModel;
+use App\Models\LemburModel;
+use App\Models\PegawaiModel;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Intervention\Image\ImageManager;
+use File;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
+use Jenssegers\Agent\Agent;
+use carbon\Carbon;
 
 class AbsenController extends Controller
 {
@@ -726,103 +727,85 @@ public function lembur()
         return view('absen.lembur', compact('pegawai', 'cek', 'cek2', 'absenTerakhir'));
     }
 
-    public function storelembur(Request $request)
-    {
-        // dd($request->confirm != null);
-        $nip_id = Auth::guard('pegawai')->user()->id;
-        $shift_id = Auth::guard('pegawai')->user()->shift;
-        $tgl_lembur = date("Y-m-d");
-        $jam_lembur = date("H:i:s");
-        $jam_foto = date("His");
-        $lokasi = $request->lokasi;
-        $image = $request->image;
-        $folderPath = ('storage/absensi/' . $nip . '/');
-        $id_perus = Auth::guard('pegawai')->user()->perusahaan;
-        $id_kan = Auth::guard('pegawai')->user()->nama_kantor;
+public function mulaiLembur(Request $request)
+{
+    $request->validate([
+        'foto' => 'required',
+        'lokasi' => 'required',
+    ]);
 
-        if (!file_exists($folderPath)) {
-            mkdir($folderPath, 0777, true);
-        }
+    $pegawai = Auth::guard('pegawai')->user();
+    $tgl = date('Y-m-d');
 
-        $image_parts = explode(";base64,", $image);
-        if (count($image_parts) == 2) {
-            $image_base64 = base64_decode($image_parts[1]);
-        } else {
-            echo "error|Format base64 tidak valid";
-            return;
-        }
+    // Cegah duplikat absen lembur hari ini
+    $existing = LemburModel::where('nip', $pegawai->id)
+        ->where('tgl_absen', $tgl)
+        ->first();
 
-    if ($request->confirm != null) {
-        // Ambil absen terakhir sebelum hari ini yang belum pulang
-        $lemburSebelumnya = LemburModel::where('pegwai_id', $nip_id)
-            ->where('tgl_lembur', '<', $tgl_lembur)
-            ->whereNull('jam_out')
-            ->latest()
-            ->orderByDesc('tgl_lembur')
-            ->first();
-
-        if ($lemburSebelumnya != null) {
-            // Auto-isi absen pulang dengan jam sekarang untuk absen sebelumnya
-            $fileNameOut = $lemburSebelumnya->tgl_lembur . "-" . $jam_foto . "-out.png";
-            $fileOutPath = $folderPath . $fileNameOut;
-
-            $abs = LemburModel::where('id', $lemburSebelumnya->id)->update([
-                'jam_out' => $jam_lembur,
-                'foto_out' => $fileNameOut,
-                'lokasi_out' => $lokasi,
-            ]);
-
-            // Optional: log atau simpan informasi bahwa ini absen pulang otomatis
-
-            if ($abs) {
-            file_put_contents($fileOutPath, $image_base64);
-                echo "absplg|Terima Kasih, Absen Pulang Berhasil|out";
-                return;
-            } else {
-                echo "error|Gagal menyimpan absen pulang";
-                return;
-            }
-        }
+    if ($existing) {
+        return response()->json(['message' => 'Anda sudah absen lembur hari ini.'], 400);
     }
-        // Cek apakah hari ini sudah absen masuk
-        $cek = LemburModel::where('tgl_lembur', $tgl_lembur)->where('pegawai_id', $nip_id)->count();
-        if ($cek > 0) {
-            // Proses absen pulang
-            $fileName = $tgl_lembur . "-" . $jam_foto . "-out.png";
-            $file = $folderPath . $fileName;
 
-            $update = LemburModel::where('pegawai_id', $nip_id)->where('tgl_lembur', $tgl_lembur)->update([
-                'jam_out' => $jam_lembur,
-                'foto_out' => $fileName,
-                'lokasi_out' => $lokasi,
-            ]);
+    // Simpan foto
+    $fotoPath = $this->simpanFotoBase64($request->foto, 'in');
 
-            if ($update) {
-                file_put_contents($file, $image_base64);
-                echo "success|Terima Kasih, Absen Pulang Berhasil|out";
-            } else {
-                echo "error|Gagal menyimpan absen pulang";
-            }
+    // Simpan record lembur
+    LemburModel::create([
+        'nip' => $pegawai->id,
+        'perusahaan' => $pegawai->perusahaan,
+        'kantor' => $pegawai->kantor->id,
+        'tgl_absen' => $tgl,
+        'jam_in' => now()->format('H:i:s'),
+        'foto_in' => $fotoPath,
+        'lokasi_in' => $request->lokasi,
+    ]);
 
-        } else {
-            // Proses absen masuk
-            $fileName = $tgl_lembur . "-" . $jam_foto . "-in.png";
-            $file = $folderPath . $fileName;
+    return response()->json(['message' => 'Absen lembur berhasil dimulai.']);
+}
 
-            $simpan = LemburModel::create([
-                'pegawai_id' => $nip_id,
-                'tgl_lembur' => $tgl_lembur,
-                'jam_in' => $jam_lembur,
-                'foto_in' => $fileName,
-                'lokasi_in' => $lokasi,
-            ]);
 
-            if ($simpan) {
-                file_put_contents($file, $image_base64);
-                echo "success|Terima Kasih, Absen Masuk Berhasil|in";
-            } else {
-                echo "error|Gagal menyimpan absen masuk";
-            }
-        }
+public function selesaiLembur(Request $request)
+{
+    $request->validate([
+        'foto' => 'required',
+        'lokasi' => 'required',
+    ]);
+
+    $pegawai = Auth::guard('pegawai')->user();
+    $tgl = date('Y-m-d');
+
+    $lembur = LemburModel::where('nip', $pegawai->id)
+        ->where('tgl_absen', $tgl)
+        ->first();
+
+    if (!$lembur) {
+        return response()->json(['message' => 'Belum ada absen lembur hari ini.'], 404);
     }
+
+    if ($lembur->jam_out) {
+        return response()->json(['message' => 'Anda sudah mengakhiri lembur hari ini.'], 400);
+    }
+
+    $fotoPath = $this->simpanFotoBase64($request->foto, 'out');
+
+    $lembur->update([
+        'jam_out' => now()->format('H:i:s'),
+        'foto_out' => $fotoPath,
+        'lokasi_out' => $request->lokasi,
+    ]);
+
+    return response()->json(['message' => 'Absen lembur berhasil diselesaikan.']);
+}
+
+
+
+private function simpanFotoBase64($base64, $prefix)
+{
+    $image = str_replace('data:image/png;base64,', '', $base64);
+    $image = str_replace(' ', '+', $image);
+    $fileName = $prefix . '_' . Auth::guard('pegawai')->user()->nip . '_' . time() . '.png';
+    Storage::disk('public')->put("lembur/{$fileName}", base64_decode($image));
+    return "lembur/{$fileName}";
+}
+
 }

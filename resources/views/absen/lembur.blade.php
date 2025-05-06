@@ -12,334 +12,154 @@
 </div>
 <!-- * App Header -->
 
-<style type="text/css">
-    .webcam-capture,
-    .webcam-capture video {
-        display: inline-block;
-        width: 100% !important;
-        margin: auto;
-        height: 90% !important;
-        border-radius: 15px;
-        position: relative;
-        margin-top: 1px;
-       /* transform: scaleX(-1);  Membalik webcam menjadi mirror */
-    }
-
-    .webcam-capture video {
-        object-fit: cover;
-        aspect-ratio: 3 / 4;
-    }
-
-    #map { height: 270px; }
-
-</style>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 @endsection
 
 @section('content')
-{{-- {{dd($absenTerakhir)}} --}}
+<div class="container">
+    <h3>Absen Lembur</h3>
 
-
-<div class="section full mt-4">
-    <div class="section-title">Title</div>
-    <div class="wide-block pt-2 pb-2">
-        <div class="row">
-            <div class="col" style="margin-bottom: -30px">
-                <input type="hidden" id="lokasi">
-                <input type="text" id="confirm" hidden disabled>
-            <div class="webcam-capture"></div>
-            </div>
-        </div>
-        <div class="row mt-1">
-            <div class="col" style="margin-top: -50px">
-                <div id="map" style="z-index: 0;"></div>
-            </div>
-        </div>
+    <div class="text-center my-4">
+        <div id="my_camera" class="mb-3" style="width: 320px; height: 240px; margin: auto;"></div>
+        <button class="btn btn-success me-2" onclick="mulaiLembur()">Mulai Lembur</button>
+        <button class="btn btn-danger" onclick="selesaiLembur()">Selesai Lembur</button>
     </div>
-</div>
 
+    <h5>Lokasi Saat Ini</h5>
+    <div id="map" style="height: 300px;"></div>
+</div>
 @endsection
 
 @push('myscript')
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js"></script>
-@if($absenTerakhir && $absenTerakhir->jam_out == null)
-<script type="text/javascript">
-    let msg = "{{$absenTerakhir->tgl_absen}}";
 
-    Swal.fire({
-            icon: 'warning',
-            title: 'Oops!',
-            html: `
-                  Anda belum melakukan absen pulang pada tanggal ` + msg + `. Apakah Anda ingin melakukan absen pulang ?`,
-            confirmButtonText: 'OK', 
-            showCancelButton: true,
-            confirmButtonText: 'Ya, Absen',
-            reverseButtons: true,
-            cancelButtonText: 'Tidak',
-            allowOutsideClick: false,
-        }).then((result) => {
-                    if (result.isConfirmed) {
-                            $('#confirm').prop('disabled', false);
-                            $('#confirm').attr('name', 'confirm');
-                            $('#confirm').attr('value', 1);
-                    } else {
-                        $('#confirm').removeAttr('name');
-                        $('#confirm').removeAttr('value');
-                    }
-                });
-</script>
-@endif
 <script>
+let peta = null;
+let marker = null;
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Inisialisasi Webcam
     Webcam.set({
-        width: 480,
-        height: 640,
+        width: 320,
+        height: 240,
         image_format: 'png',
-        png_quality: 90,
-        constraints: {
-            video: true // Biarkan browser memilih pengaturan terbaik
-        }
+        png_quality: 90
+    });
+    Webcam.attach('#my_camera');
+
+    // Inisialisasi Peta
+    peta = L.map('map').setView([-6.200000, 106.816666], 15); // Default Jakarta
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(peta);
+
+    ambilLokasi(function(lokasi) {
+        let [lat, lng] = lokasi.split(',');
+        lat = parseFloat(lat);
+        lng = parseFloat(lng);
+
+        peta.setView([lat, lng], 17);
+        marker = L.marker([lat, lng]).addTo(peta)
+            .bindPopup("Lokasi Anda").openPopup();
+    });
+});
+
+
+
+    // Inisialisasi Webcam
+    Webcam.set({
+        width: 320,
+        height: 240,
+        image_format: 'png',
+        png_quality: 90
     });
 
-    Webcam.attach('.webcam-capture');
+document.addEventListener('DOMContentLoaded', function () {
+    Webcam.set({
+        width: 320,
+        height: 240,
+        image_format: 'png',
+        png_quality: 90
+    });
+    Webcam.attach('#my_camera');
+});
 
-    var lokasi = document.getElementById('lokasi');
-
-    var map = L.map('map').setView([-6.200000, 106.816666], 18);
-
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-    }).addTo(map);
-
-    var center = L.latLng({{ $pegawai->kantor->lokasi ?? '-6.200000, 106.816666' }});
-    var radius = {{ $pegawai->kantor->radius ?? 100 }};
-
-    var circle = L.circle(center, { 
-        color: 'blue',
-        fillColor: '#0000FF',
-        fillOpacity: 0.2,
-        radius: radius
-    }).addTo(map);
-
-    var userMarker = L.marker(center).addTo(map).bindPopup('Menunggu lokasi...');
-
-    if(navigator.geolocation){
-        navigator.geolocation.watchPosition(function (position) {
-            lokasi.value = position.coords.latitude + "," + position.coords.longitude;
-
-            var lat = position.coords.latitude;
-            var lng = position.coords.longitude;
-            var userLocation = L.latLng(lat, lng);
-
-            userMarker.setLatLng(userLocation).bindPopup('Lokasi Anda').openPopup();
-            map.setView(userLocation, 18);
-
-            var distance = userLocation.distanceTo(center);
-
-            const $btn = $('#capture');
-
-    if (distance > radius) {
-        $btn
-            .addClass('bg-secondary btnInfo out-radius')
-            .prop('disabled', false); // tetap bisa diklik
-    } else {
-        $btn
-            .removeClass('bg-secondary btnInfo out-radius')
-            .prop('disabled', false);
+function ambilFoto(callback) {
+    if (!Webcam.live) {
+        Swal.fire('Webcam belum siap. Mohon tunggu beberapa detik.');
+        return;
     }
 
-    // Tambah warna merah jika sudah absen
-    if ($btn.data('absen') == 'sudah') {
-        $btn.removeClass('bg-danger');
-    } else {
-        
-    }
+    Webcam.snap(function (data_uri) {
+        callback(data_uri);
+    });
+}
 
-        }, function(error) {
-            Swal.fire({
-                title: 'Peringatan!',
-                text: 'Gagal mendapatkan lokasi: ' + error.message + '. Aktifkan lokasi dan refresh halaman ini',
-                icon: 'warning',
-                confirmButtonText: 'OK'
+    function ambilLokasi(callback) {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function (pos) {
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+                callback(`${lat},${lng}`);
+            }, function () {
+                Swal.fire('Gagal ambil lokasi');
             });
-        }, {
-            enableHighAccuracy: true,
-            maximumAge: 1000
-        });
-    } else {
-        Swal.fire({
-            title: 'Error!',
-            text: 'Geolocation tidak didukung di browser ini.',
-            icon: 'error',
-            confirmButtonText: 'OK'
-        });
+        } else {
+            Swal.fire('Browser tidak mendukung geolocation');
+        }
     }
 
-
-
-$(document).ready(function () {
-        $('#capture').on('click', function () {
-            const isOutRadius = $(this).hasClass('out-radius');
-            const absenStatus = $(this).data('absen'); // 'sudah' / 'belum'
-            const absenStat = $(this).data('stat'); // 'sudah' / 'belum'
-            let confirm = $('#confirm').val();
-
-            if (isOutRadius) {
-                if(absenStat === 'pulang' && confirm == 1){
-                    ambilFotoDanAbsen();
-                } else if(absenStat === 'pulang') {
-                    Swal.fire({
-                    icon: 'warning',
-                    title: 'Anda di luar radius!',
-                    text: 'Apakah Anda yakin ingin tetap melakukan absen?',
-                    showCancelButton: true,
-                    confirmButtonText: 'Ya, lanjut',
-                    cancelButtonText: 'Batal',
-                    reverseButtons: true
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        ambilFotoDanAbsen(); // lanjut absen walau di luar radius
-                    }
+    function mulaiLembur() {
+        Swal.fire({
+            title: 'Yakin mulai lembur?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Ya',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                ambilFoto(function (foto) {
+                    ambilLokasi(function (lokasi) {
+                        $.post("/absen/lembur/mulai", {
+                            _token: '{{ csrf_token() }}',
+                            foto: foto,
+                            lokasi: lokasi
+                        }, function (response) {
+                            Swal.fire(response.message);
+                        }).fail(function (xhr) {
+                            Swal.fire('Gagal', xhr.responseJSON.message, 'error');
+                        });
+                    });
                 });
-                } else {
-                outofrad();
-                }
-            } else if (absenStatus === 'sudah') {
-                showAbsenAlert();
-            } else {
-                // Aksi ambil foto atau absen di sini
-                    ambilFotoDanAbsen();
             }
         });
-    });
-
-function ambilFotoDanAbsen() {
-        Webcam.snap(function (uri) {
-            let canvas = document.createElement("canvas");
-            let ctx = canvas.getContext("2d");
-            let img = new Image();
-
-            let lokasi = $('#lokasi').val();
-            let confirm = $('#confirm').val();
-
-            img.onload = function () {
-                canvas.width = img.width;
-                canvas.height = img.height;
-                ctx.translate(img.width, 0);
-                ctx.scale(-1, 1);
-                ctx.drawImage(img, 0, 0);
-
-                let mirroredImage = canvas.toDataURL('image/png');
-
-                Swal.fire({
-                    html: `
-                        Lokasi Absen <br>
-                        <ion-icon name="location" class="text-danger" style="font-size: 20px;"></ion-icon>&nbsp;
-                        ${lokasi}
-                    `,
-                    imageUrl: mirroredImage,
-                    imageWidth: 300,
-                    imageAlt: 'Preview Foto',
-                    showCancelButton: true,
-                    confirmButtonText: 'Kirim',
-                    cancelButtonText: 'Batal',
-                    reverseButtons: true,
-                    allowOutsideClick: false,
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        if (lokasi === "") {
-                            Swal.fire({
-                                title: 'Error!',
-                                text: 'Lokasi tidak terdeteksi. Aktifkan GPS atau reload halaman!',
-                                icon: 'error',
-                                confirmButtonText: 'OK'
-                            });
-                            return;
-                        }
-
-                        Swal.fire({
-                            title: 'Mengirim Data...',
-                            allowOutsideClick: false,
-                            didOpen: () => {
-                                Swal.showLoading();
-                            }
-                        });
-
-                        $.ajax({
-                            type: 'POST',
-                            url: '/absen/lembur/store',
-                            data: {
-                                _token: '{{ csrf_token() }}',
-                                image: mirroredImage,
-                                lokasi: lokasi,
-                                confirm: confirm,
-                            },
-                            cache: false,
-                            success: function (respond) {
-                                Swal.close();
-                                const status = respond.split("|");
-
-                                if (status[0] === "success") {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Berhasil!',
-                                        text: status[1],
-                                        confirmButtonText: 'OK'
-                                    }).then(() => {
-                                        window.location.href = '{{ url('/absen') }}';
-                                    });
-                                } else if (status[0] === "absplg") {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Berhasil!',
-                                        text: status[1],
-                                        confirmButtonText: 'OK'
-                                    }).then(() => {
-                                        window.location.reload();
-                                    });
-                                } else {
-                                    Swal.fire({
-                                        title: 'Error!',
-                                        text: status[1] || 'Gagal Absen, mohon hubungi Admin',
-                                        icon: 'error',
-                                        confirmButtonText: 'OK'
-                                    });
-                                }
-                            }
-                        });
-                    }
-                });
-            };
-
-            img.src = uri;
-        });
     }
 
-function outofrad() {
+    function selesaiLembur() {
         Swal.fire({
-            icon: 'info',
-            title: 'Oops!',
-            text: 'Anda berada di luar Radius',
-            confirmButtonText: 'OK'
-        });
-    }
-
-    function showAbsenAlert() {
-        Swal.fire({
-            icon: 'info',
-            title: 'Oops!',
-            text: 'Anda sudah absen hari ini! Lanjut absen lembur?',
+            title: 'Yakin selesai lembur?',
+            icon: 'question',
             showCancelButton: true,
-                    confirmButtonText: 'Ya, lanjut',
-                    cancelButtonText: 'Batal',
-                    reverseButtons: true
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        ambilFotoDanAbsen(); // lanjut absen walau di luar radius
-                    }
+            confirmButtonText: 'Ya',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                ambilFoto(function (foto) {
+                    ambilLokasi(function (lokasi) {
+                        $.post("/absen/lembur/selesai", {
+                            _token: '{{ csrf_token() }}',
+                            foto: foto,
+                            lokasi: lokasi
+                        }, function (response) {
+                            Swal.fire(response.message);
+                        }).fail(function (xhr) {
+                            Swal.fire('Gagal', xhr.responseJSON.message, 'error');
+                        });
+                    });
                 });
+            }
+        });
     }
 </script>
 @endpush
