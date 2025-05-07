@@ -78,7 +78,7 @@
             @if(!$existing)
                 <a class="item">
                     <div class="col">
-                        <button class="action-button large" style="background-color: lightskyblue;" data-stat="lemburmasuk" onclick="mulaiLembur()"> 
+                        <button class="action-button large bg-info" data-stat="lemburmasuk" onclick="mulaiLembur()"> 
                             <ion-icon name="camera-outline"></ion-icon>
                         </button>
                     </div>
@@ -116,7 +116,7 @@
                 @elseif($existing && $existing->jam_out == null)
                     <a class="item" onclick="absenLemburSelesai()">
                         <div class="col">
-                            <button class="action-button large" style="background-color: lightskyblue;">
+                            <button class="action-button large" style="background-color: orange;">
                                 <ion-icon name="camera-outline"></ion-icon>
                             </button>
                         </div>
