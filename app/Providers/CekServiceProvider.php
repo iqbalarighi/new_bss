@@ -1,0 +1,56 @@
+<?php
+
+namespace App\Providers;
+
+use App\Models\AbsenModel;
+use App\Models\LemburModel;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\View;
+
+class CekServiceProvider extends ServiceProvider
+{
+    /**
+     * Register services.
+     */
+    public function register(): void
+    {
+        //
+    }
+
+    /**
+     * Bootstrap services.
+     */
+    public function boot(): void
+    {
+       View::composer('layouts.absen.bottomnav', function ($view) {
+        $user = Auth::guard('pegawai')->user();
+
+        $absenData = [
+            'count' => 0,
+            'data' => null,
+        ];
+
+        if ($user) {
+            $id = $user->id;
+            $harini = date('Y-m-d');
+
+            $cek = AbsenModel::where('tgl_absen', $harini)
+                ->where('nip', $id)
+                ->count();
+
+            $cek2 = AbsenModel::where('tgl_absen', $harini)
+                ->where('nip', $id)
+                ->first();
+
+            $existing = LemburModel::where('nip', $id)
+            ->where('tgl_absen', $harini)
+            ->first();
+
+            }
+
+        $view->with(compact('cek', 'cek2', 'existing'));
+    });
+
+    }
+}

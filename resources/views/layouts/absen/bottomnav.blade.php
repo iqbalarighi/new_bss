@@ -78,7 +78,7 @@
             @if(!$existing)
                 <a class="item">
                     <div class="col">
-                        <button class="action-button large" data-stat="lemburmasuk" onclick="mulaiLembur()"> 
+                        <button class="action-button large" style="background-color: lightskyblue;" data-stat="lemburmasuk" onclick="mulaiLembur()"> 
                             <ion-icon name="camera-outline"></ion-icon>
                         </button>
                     </div>
@@ -86,7 +86,7 @@
             @elseif(!$existing->jam_out)
                  <a class="item">
                     <div class="col">
-                        <button class="action-button large btn-danger" data-stat="lemburmasuk" onclick="selesaiLembur()"> 
+                        <button class="action-button large" style="background-color: orange;" data-stat="lemburselesai" onclick="selesaiLembur()"> 
                             <ion-icon name="camera-outline"></ion-icon>
                         </button>
                     </div>
@@ -101,24 +101,35 @@
                 </a>
             @endif
         @else
+
+            {{-- buat logic untuk menangani shift malam yang mau lembur. --}}
+
             @if($cek == 1 && $cek2->jam_out != null)
                 @if($existing && $existing->jam_out != null)
-                        <a class="item disabled-link" onclick="showLemburAlert()" data-absen="sudah">
-                            <div class="col">
-                                <button class="action-button large">
-                                    <ion-icon name="camera-outline"></ion-icon>
-                                </button>
+                    <a class="item disabled-link" onclick="showLemburAlert()"> <!-- ini kalo udah absen masuk dan lembur -->
+                        <div class="col">
+                            <button class="action-button large">
+                                <ion-icon name="camera-outline"></ion-icon>
+                            </button>
+                        </div>
+                    </a>
+                @elseif($existing && $existing->jam_out == null)
+                    <a class="item" onclick="absenLemburSelesai()">
+                        <div class="col">
+                            <button class="action-button large" style="background-color: lightskyblue;">
+                                <ion-icon name="camera-outline"></ion-icon>
+                            </button>
+                        </div>
+                    </a>
+                @else
+                    <a class="item" onclick="showAbsenAlert()">
+                        <div class="col">
+                            <div class="action-button large bg-info">
+                                <ion-icon name="camera-outline"></ion-icon>
                             </div>
-                        </a>
-                        @else
-                        <a class="item disabled-link" onclick="showAbsenAlert()" data-absen="sudah">
-                            <div class="col">
-                                <button class="action-button large">
-                                    <ion-icon name="camera-outline"></ion-icon>
-                                </button>
-                            </div>
-                        </a>
-                        @endif
+                        </div>
+                    </a>
+                @endif
             @else
                 @if($cek == 1 && $cek2->jam_out == null)
                     <a href="{{route('absen.create')}}" class="item">
@@ -153,4 +164,56 @@
             </div>
         </a>
     </div>
+
+    @push('myscript')
+<script type="text/javascript">
+    function showAbsenAlert() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Oops!',
+            text: 'Anda sudah absen hari ini! Lanjut absen lembur?',
+            showCancelButton: true,
+                    confirmButtonText: 'Ya, lanjut',
+                    cancelButtonText: 'Batal',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '{{ route('absen.lembur') }}'; // lanjut absen walau di luar radius
+                    }
+                });
+    }
+</script>
+<script type="text/javascript">
+    function absenLemburSelesai() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Absen Lembur',
+            text: 'Ingin selesaikan absen lembur?',
+            showCancelButton: true,
+                    confirmButtonText: 'Ya, lanjut',
+                    cancelButtonText: 'Batal',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '{{ route('absen.lembur') }}'; // lanjut absen walau di luar radius
+                    }
+                });
+    }
+</script>
+<script type="text/javascript">
+        function showLemburAlert() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Oops!',
+            text: 'Anda sudah absen dan lembur hari ini!',
+            confirmButtonText: 'OK'
+                });
+    }
+</script>
+@endpush
     <!-- * App Bottom Menu -->
+
+    {{-- buat pop up di history menampilkan tombol histry absensi dan lembur --}}
+    {{-- dubawah kehadiran terakhir jika yang lembur maka akan muncul data seperti absensi --}}
+    {{-- buat monitoring lembur di halaman view admin --}}
+    {{-- buat rekap laporan lembur bulanan per user dan all user--}}

@@ -75,6 +75,7 @@ let marker = null;
 
 let fotoPreview = null;
 let lokasiPreview = null;
+let tipeAbsen = '';
 
 function ambilFoto(callback) {
     if (!Webcam.live) {
@@ -131,12 +132,14 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function tampilkanPreviewDanKirim(url) {
+    let judul = (tipeAbsen === 'mulai') ? 'Absen Lembur Masuk' : 'Absen Lembur Selesai';
     Swal.fire({
-        title: 'Konfirmasi Data',
-        html: `<p><strong>Lokasi:</strong> ${lokasiPreview}</p><img src="${fotoPreview}" width="200" style="border-radius:8px" />`,
+        title: judul,
+        html: `<p><strong><ion-icon name="location" class="text-danger" style="font-size: 20px;"></ion-icon></strong> ${lokasiPreview}</p><img src="${fotoPreview}" style="width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius:8px" />`,
         showCancelButton: true,
         confirmButtonText: 'Kirim',
-        cancelButtonText: 'Batal'
+        cancelButtonText: 'Batal',
+        reverseButtons: true
     }).then((result) => {
         if (result.isConfirmed) {
             $.post(url, {
@@ -144,7 +147,15 @@ function tampilkanPreviewDanKirim(url) {
                 foto: fotoPreview,
                 lokasi: lokasiPreview
             }, function (response) {
-                Swal.fire(response.message);
+                Swal.fire({
+                    title: 'Berhasil',
+                    text: response.message,
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    window.location.href = '{{ route('absen') }}';
+                });
             }).fail(function (xhr) {
                 Swal.fire('Gagal', xhr.responseJSON.message, 'error');
             });
@@ -153,6 +164,7 @@ function tampilkanPreviewDanKirim(url) {
 }
 
 function mulaiLembur() {
+    tipeAbsen = 'mulai';
     ambilFoto(function () {
         ambilLokasi(function () {
             tampilkanPreviewDanKirim("/absen/lembur/mulai");
@@ -161,6 +173,7 @@ function mulaiLembur() {
 }
 
 function selesaiLembur() {
+    tipeAbsen = 'selesai';
     ambilFoto(function () {
         ambilLokasi(function () {
             tampilkanPreviewDanKirim("/absen/lembur/selesai");
