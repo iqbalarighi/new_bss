@@ -75,7 +75,12 @@
                     <div class="mb-3">
                         <label for="departemen" class="form-label">Departemen</label>
                         <select name="departemen" id="departemen" class="form-select" required>
-                            <option selected disabled value="">Pilih Departemen</option>
+                            <option selected disabled value="">Pilih Departemen</option>6
+                        @if(Auth::user()->role == 3)
+                            @foreach($departemen as $dept)
+                            <option value="{{$dept->id}}">{{$dept->nama_dept}}</option>
+                            @endforeach
+                        @endif
                         </select>
                     </div>
                    
