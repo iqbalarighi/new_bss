@@ -84,7 +84,10 @@
                                 <span class="text-center">Izin</span>
                             </div>
                         </div>
-                        @if(strtolower($pegawai->jabat->jabatan) == 'supervisor' || strtolower($pegawai->jabat->jabatan) == 'danru')
+                        @php
+                            use Illuminate\Support\Str;
+                        @endphp
+                        @if(Str::contains(strtolower($pegawai->jabat->jabatan), ['supervisor', 'danru', 'kepala']) )
                         <div class="item-menu text-center">
                             <div class="menu-icon">
                                 <a href="{{ route('absen.lapor') }}" class="orange" style="font-size: 40px;">

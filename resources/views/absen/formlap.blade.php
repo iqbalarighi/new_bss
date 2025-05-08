@@ -43,7 +43,7 @@
             </div>
 
             <div class="mb-3">
-                <label for="foto" class="form-label">Upload Bukti Surat Izin/Sakit/Ket Dokter</label>
+                <label for="foto" class="form-label">Upload Dokumentasi</label>
                 <input type="file" class="form-control" id="foto" name="foto[]" accept="image/*" onchange="previewImage(event)" multiple>
                 <center>
                     <div id="previewContainer" class="mt-3 d-flex flex-wrap justify-content-center gap-2"></div>
