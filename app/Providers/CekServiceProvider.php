@@ -53,9 +53,18 @@ class CekServiceProvider extends ServiceProvider
                 ->orderByDesc('tgl_absen')
                 ->first();
 
+            if($cek2 == null){
+                $absenTerakhir = AbsenModel::where('nip', $id)
+                    ->where('tgl_absen', '<', $harini)
+                    ->orderByDesc('created_at')
+                    ->first();
+                } else {
+                    $absenTerakhir = null;
+                }
+
             }
 
-        $view->with(compact('cek', 'cek2', 'existing', 'ceklem'));
+        $view->with(compact('cek', 'cek2', 'existing', 'ceklem', 'absenTerakhir'));
     });
 
     }

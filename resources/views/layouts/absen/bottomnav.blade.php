@@ -140,6 +140,7 @@
                         </div>
                     </a>
                 @endif
+            
             @else
                 @if($cek == 1 && $cek2->jam_out == null)
                     <a href="{{route('absen.create')}}" class="item">
@@ -157,8 +158,26 @@
                             </button>
                         </div>
                     </a>
+                @elseif($absenTerakhir && $absenTerakhir->jam_in > $absenTerakhir->jam_out)
+                    @if($existing && $existing->jam_out == null)
+                    <a class="item" onclick="absenLemburSelesai()">
+                        <div class="col">
+                            <button class="action-button large" style="background-color: orange;">
+                                <ion-icon name="camera-outline"></ion-icon>
+                            </button>
+                        </div>
+                    </a>
+                    @else
+                    <a class="item" onclick="showChoiceAlert()">
+                        <div class="col">
+                            <div class="action-button large bg-info">
+                                <ion-icon name="camera-outline"></ion-icon>
+                            </div>
+                        </div>
+                    </a>
+                    @endif
                 @else
-                    <a href="{{route('absen.create')}}" class="item">
+                    <a href="{{route('absen.create')}}" class="item test">
                         <div class="col">
                             <div class="action-button large">
                                 <ion-icon name="camera-outline"></ion-icon>
@@ -201,6 +220,32 @@
                 });
     }
 </script>
+<script type="text/javascript">
+    function showChoiceAlert() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Perhatian!',
+            text: 'Ingin lanjut absen masuk atau lembur?',
+            showDenyButton: true,
+            showCancelButton: true,
+            confirmButtonText: 'Lembur',
+            denyButtonText: 'Absen',
+            cancelButtonText: 'Batal',
+            reverseButtons: true,
+            allowOutsideClick: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Jika user memilih "Lembur"
+                window.location.href = '{{ route('absen.lembur') }}';
+            } else if (result.isDenied) {
+                // Jika user memilih "Absen"
+                window.location.href = '{{ route('absen.create') }}';
+            }
+            // Jika user klik "Batal" atau tutup dialog, tidak perlu lakukan apa-apa
+        });
+    }
+</script>
+
 <script type="text/javascript">
     function absenLemburSelesai() {
         Swal.fire({

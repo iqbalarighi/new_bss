@@ -331,7 +331,7 @@ function ambilFotoDanAbsen() {
                                         text: status[1],
                                         confirmButtonText: 'OK'
                                     }).then(() => {
-                                        window.location.reload();
+                                        window.location.href = '{{ url('/absen') }}';
                                     });
                                 } else {
                                     Swal.fire({

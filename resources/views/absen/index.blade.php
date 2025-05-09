@@ -518,14 +518,15 @@
 @push('myscript')
 @if($lembur != null)
 <script>
-    const jamIn = new Date("{{ \Carbon\Carbon::parse($lembur->tgl_absen." ".$lembur->jam_in)->toIso8601String() }}");
-    const jamOut = @json($lembur->jam_out ? \Carbon\Carbon::parse($lembur->jam_out)->toIso8601String() : null);
+    const jamIn = new Date("{{ \Carbon\Carbon::parse($lembur->tgl_absen . ' ' . $lembur->jam_in)->timezone('Asia/Jakarta')->format('Y-m-d\TH:i:sP') }}");
+    const jamOutRaw = @json($lembur->jam_out ? \Carbon\Carbon::parse($lembur->tgl_absen . ' ' . $lembur->jam_out)->timezone('Asia/Jakarta')->format('Y-m-d\TH:i:sP') : null);
+    const jamOut = jamOutRaw ? new Date(jamOutRaw) : null;
 
     function updateTimer() {
         const now = new Date();
-        const end = jamOut ? new Date(jamOut) : now;
-        let diff = Math.floor((end - jamIn) / 1000);
+        const end = jamOut || now;
 
+        let diff = Math.floor((end - jamIn) / 1000);
         if (diff < 0) diff = 0;
 
         const hours = String(Math.floor(diff / 3600)).padStart(2, '0');
@@ -536,8 +537,9 @@
     }
 
     updateTimer();
+
     if (!jamOut) {
-        setInterval(updateTimer, 1000); // jalankan hanya jika belum selesai lembur
+        setInterval(updateTimer, 1000); // update tiap detik kalau jamOut belum ada
     }
 </script>
 @endif
