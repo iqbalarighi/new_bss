@@ -196,6 +196,48 @@
                     @endif
             </div>
         @endif
+
+         @if($ceklem != null)
+         <h5 class="mt-3"><ion-icon name="time"></ion-icon> Lembur</h5>
+            <div class="card p-1 mb-1">
+                <h5>{{Carbon\carbon::parse($ceklem->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} <span id="timer" class="{{ $ceklem->jam_out ? 'text-success' : 'text-primary' }}">00:00:00</span></h5>
+                
+
+                <div class="d-flex justify-content-around align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <img src="{{ asset('storage/lembur/'.$ceklem->pegawai->nip.'/'.$ceklem->foto_in) }}" alt="Foto Masuk" class="rounded" width="50">
+
+                        <div class="text-center pl-1 ">
+                            <span class="d-block">Mulai</span>
+                            <strong>{{$ceklem->jam_in}}</strong>
+                        </div>
+                    </div>
+                    @if($ceklem->jam_out == null)
+                    <div class="d-flex align-items-center gap-2">
+                        
+                        <div class="text-center pl-1">
+                            <span class="d-block">Selesai</span>
+                            <strong>--:--</strong>
+                        </div>
+                    </div>
+                    @else
+                    <div class="d-flex align-items-center gap-2">
+                        <img src="{{ asset('storage/lembur/'.$ceklem->pegawai->nip.'/'.$ceklem->foto_out) }}" alt="Foto Masuk" class="rounded" width="50">
+                        <div class="text-center pl-1">
+                            <span class="d-block">Selesai</span>
+                            <strong>{{$ceklem->jam_out}}</strong>
+                        </div>
+                    </div>
+                    @endif
+                </div>
+                    @if($ceklem->jam_out == null)
+                    <div>
+                        <span class="text-warning float-right pr-1">Berlangsung</span>
+                    </div>
+                    @endif
+            </div>
+        @endif
+
         </div>
            {{-- 
                 <div class="row">
@@ -476,7 +518,7 @@
 @push('myscript')
 @if($lembur != null)
 <script>
-    const jamIn = new Date("{{ \Carbon\Carbon::parse($lembur->jam_in)->toIso8601String() }}");
+    const jamIn = new Date("{{ \Carbon\Carbon::parse($lembur->tgl_absen." ".$lembur->jam_in)->toIso8601String() }}");
     const jamOut = @json($lembur->jam_out ? \Carbon\Carbon::parse($lembur->jam_out)->toIso8601String() : null);
 
     function updateTimer() {
@@ -496,6 +538,34 @@
     updateTimer();
     if (!jamOut) {
         setInterval(updateTimer, 1000); // jalankan hanya jika belum selesai lembur
+    }
+</script>
+@endif
+@if($ceklem != null)
+<script>
+    // Pastikan waktu menggunakan zona lokal yang benar (WIB)
+    const jamIn = new Date("{{ \Carbon\Carbon::parse($ceklem->tgl_absen . ' ' . $ceklem->jam_in)->timezone('Asia/Jakarta')->format('Y-m-d\TH:i:sP') }}");
+    const jamOutRaw = @json($ceklem->jam_out ? \Carbon\Carbon::parse($ceklem->tgl_absen . ' ' . $ceklem->jam_out)->timezone('Asia/Jakarta')->format('Y-m-d\TH:i:sP') : null);
+    const jamOut = jamOutRaw ? new Date(jamOutRaw) : null;
+
+    function updateTimer() {
+        const now = new Date();
+        const end = jamOut || now;
+
+        let diff = Math.floor((end - jamIn) / 1000);
+        if (diff < 0) diff = 0;
+
+        const hours = String(Math.floor(diff / 3600)).padStart(2, '0');
+        const minutes = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
+        const seconds = String(diff % 60).padStart(2, '0');
+
+        document.getElementById('timer').innerText = `${hours}:${minutes}:${seconds}`;
+    }
+
+    updateTimer();
+
+    if (!jamOut) {
+        setInterval(updateTimer, 1000); // update tiap detik kalau jamOut belum ada
     }
 </script>
 @endif

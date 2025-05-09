@@ -44,6 +44,7 @@
         <div class="row">
             <div class="col" style="margin-bottom: -30px">
                 <input type="hidden" id="lokasi">
+                <input type="text" id="confirm" hidden disabled>
                 <div id="my_camera" class="webcam-capture"></div>
             </div>
         </div>
@@ -68,13 +69,36 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js"></script>
+@if($ceklem && $ceklem->jam_out == null)
+<script type="text/javascript">
+    let msg = "{{$ceklem->tgl_absen}}";
 
+    Swal.fire({
+            icon: 'warning',
+            title: 'Oops!',
+            html: `
+                  Anda belum menyelesaikan jam lembur pada tanggal ` + msg + `. Selesaikan jam lembur!`,
+            confirmButtonText: 'Lanjutkan!',
+            allowOutsideClick: false,
+        }).then((result) => {
+                    if (result.isConfirmed) {
+                            $('#confirm').prop('disabled', false);
+                            $('#confirm').attr('name', 'confirm');
+                            $('#confirm').attr('value', 1);
+                    } else {
+                        $('#confirm').removeAttr('name');
+                        $('#confirm').removeAttr('value');
+                    }
+                });
+</script>
+@endif
 <script>
 let peta = null;
 let marker = null;
 
 let fotoPreview = null;
 let lokasiPreview = null;
+
 let tipeAbsen = '';
 
 function ambilFoto(callback) {
@@ -136,6 +160,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function tampilkanPreviewDanKirim(url) {
     let judul = (tipeAbsen === 'mulai') ? 'Absen Lembur Masuk' : 'Absen Lembur Selesai';
+    let confirm = $('#confirm').val();
     Swal.fire({
         title: judul,
         html: `<p><strong><ion-icon name="location" class="text-danger" style="font-size: 20px;"></ion-icon></strong> ${lokasiPreview}</p><img src="${fotoPreview}" style="width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius:8px" />`,
@@ -145,10 +170,19 @@ function tampilkanPreviewDanKirim(url) {
         reverseButtons: true
     }).then((result) => {
         if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Mengirim Data...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
             $.post(url, {
                 _token: '{{ csrf_token() }}',
                 foto: fotoPreview,
-                lokasi: lokasiPreview
+                lokasi: lokasiPreview,
+                confirm: confirm
             }, function (response) {
                 Swal.fire({
                     title: 'Berhasil',

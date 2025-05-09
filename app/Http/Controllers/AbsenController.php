@@ -61,7 +61,13 @@ class AbsenController extends Controller
                     ->where('status_approve', 1)
                     ->first();
 
-        return view('absen.index', compact('pegawai', 'absen', 'absens', 'rekap', 'leaderboard', 'rekapizin', 'cek', 'cek2', 'lembur'));
+        $ceklem = LemburModel::where('nip', $id)
+                    ->where('tgl_absen', '<', $harini)
+                    ->whereNull('jam_out')
+                    ->orderByDesc('tgl_absen')
+                    ->first();
+
+        return view('absen.index', compact('pegawai', 'absen', 'absens', 'rekap', 'leaderboard', 'rekapizin', 'cek', 'cek2', 'lembur', 'ceklem'));
     }
 
     public function create()
@@ -75,7 +81,6 @@ class AbsenController extends Controller
         $absenTerakhir = AbsenModel::where('nip', $nip_id)
             ->where('tgl_absen', '<', $harini)
             ->whereNull('jam_out')
-            ->latest()
             ->orderByDesc('created_at')
             ->first();
         } else {
@@ -727,6 +732,11 @@ public function lembur()
             $absenTerakhir = null;
         }
         
+                $ceklem = LemburModel::where('nip', $nip_id)
+                ->where('tgl_absen', '<', $harini)
+                ->whereNull('jam_out')
+                ->orderByDesc('tgl_absen')
+                ->first();
 
             // Cek apakah absen terakhir belum absen pulang
             // if ($absenTerakhir && $absenTerakhir->jam_out === null) {
@@ -735,7 +745,7 @@ public function lembur()
 
         $pegawai = PegawaiModel::with('perusa', 'kantor', 'jabat', 'sat' )->findOrFail($nip_id);
 
-        return view('absen.lembur', compact('pegawai', 'cek', 'cek2', 'absenTerakhir'));
+        return view('absen.lembur', compact('pegawai', 'cek', 'cek2', 'absenTerakhir', 'ceklem'));
     }
 
 public function mulaiLembur(Request $request)
@@ -777,6 +787,7 @@ public function mulaiLembur(Request $request)
 
 public function selesaiLembur(Request $request)
 {
+
     $request->validate([
         'foto' => 'required',
         'lokasi' => 'required',
@@ -788,6 +799,36 @@ public function selesaiLembur(Request $request)
     $lembur = LemburModel::where('nip', $pegawai->id)
         ->where('tgl_absen', $tgl)
         ->first();
+
+    if ($request->confirm != null) {
+        // Ambil absen terakhir sebelum hari ini yang belum pulang
+        $lembursebelumnya = LemburModel::where('nip', $pegawai->id)
+                    ->where('tgl_absen', '<', $tgl)
+                    ->whereNull('jam_out')
+                    ->orderByDesc('tgl_absen')
+                    ->first();
+
+        if ($lembursebelumnya != null) {
+            $fotoPath = $this->simpanFotoBase64($request->foto, 'out');
+            
+            $abs = LemburModel::where('id', $lembursebelumnya->id)->update([
+                'jam_out' => now()->format('H:i:s'),
+                'foto_out' => $fotoPath,
+                'lokasi_out' => $request->lokasi,
+            ]);
+
+            // Optional: log atau simpan informasi bahwa ini absen pulang otomatis
+
+            if ($abs) {
+                return response()->json(['message' => 'Absen lembur berhasil diselesaikan.']);
+            } else {
+                return response()->json([
+                    'message' => 'Gagal menyimpan absen pulang',
+                    'status' => 'error'
+                ], 500);
+            }
+        }
+    }
 
     if (!$lembur) {
         return response()->json(['message' => 'Belum ada absen lembur hari ini.'], 404);

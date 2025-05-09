@@ -47,9 +47,15 @@ class CekServiceProvider extends ServiceProvider
             ->where('tgl_absen', $harini)
             ->first();
 
+            $ceklem = LemburModel::where('nip', $id)
+                ->where('tgl_absen', '<', $harini)
+                ->whereNull('jam_out')
+                ->orderByDesc('tgl_absen')
+                ->first();
+
             }
 
-        $view->with(compact('cek', 'cek2', 'existing'));
+        $view->with(compact('cek', 'cek2', 'existing', 'ceklem'));
     });
 
     }

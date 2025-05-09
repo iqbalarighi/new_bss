@@ -75,16 +75,8 @@
                     </a>
                 @endif
         @elseif(Request::is('absen/lembur'))
-            @if(!$existing)
+            @if($ceklem && $ceklem->jam_out == null)
                 <a class="item">
-                    <div class="col">
-                        <button class="action-button large bg-info" data-stat="lemburmasuk" onclick="mulaiLembur()"> 
-                            <ion-icon name="camera-outline"></ion-icon>
-                        </button>
-                    </div>
-                </a>
-            @elseif(!$existing->jam_out)
-                 <a class="item">
                     <div class="col">
                         <button class="action-button large" style="background-color: orange;" data-stat="lemburselesai" onclick="selesaiLembur()"> 
                             <ion-icon name="camera-outline"></ion-icon>
@@ -92,13 +84,31 @@
                     </div>
                 </a>
             @else
-                <a class="item disabled-link" onclick="showLemburAlert()" data-absen="sudah">
-                    <div class="col">
-                        <button class="action-button large">
-                            <ion-icon name="camera-outline"></ion-icon>
-                        </button>
-                    </div>
-                </a>
+                @if(!$existing)
+                    <a class="item">
+                        <div class="col">
+                            <button class="action-button large bg-info" data-stat="lemburmasuk" onclick="mulaiLembur()"> 
+                                <ion-icon name="camera-outline"></ion-icon>
+                            </button>
+                        </div>
+                    </a>
+                @elseif(!$existing->jam_out)
+                     <a class="item">
+                        <div class="col">
+                            <button class="action-button large" style="background-color: orange;" data-stat="lemburselesai" onclick="selesaiLembur()"> 
+                                <ion-icon name="camera-outline"></ion-icon>
+                            </button>
+                        </div>
+                    </a>
+                @else
+                    <a class="item disabled-link" onclick="showLemburAlert()" data-absen="sudah">
+                        <div class="col">
+                            <button class="action-button large">
+                                <ion-icon name="camera-outline"></ion-icon>
+                            </button>
+                        </div>
+                    </a>
+                @endif
             @endif
         @else
 
@@ -137,6 +147,14 @@
                             <div class="action-button large bg-danger">
                                 <ion-icon name="camera-outline"></ion-icon>
                             </div>
+                        </div>
+                    </a>
+                @elseif($ceklem && $ceklem->jam_out == null)
+                    <a class="item" onclick="absenLemburBelumSelesai()">
+                        <div class="col">
+                            <button class="action-button large" style="background-color: orange;">
+                                <ion-icon name="camera-outline"></ion-icon>
+                            </button>
                         </div>
                     </a>
                 @else
@@ -189,6 +207,23 @@
             icon: 'info',
             title: 'Selesai Lembur',
             text: 'Ingin selesaikan absen lembur?',
+            showCancelButton: true,
+                    confirmButtonText: 'Ya, lanjut',
+                    cancelButtonText: 'Batal',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '{{ route('absen.lembur') }}'; // lanjut absen walau di luar radius
+                    }
+                });
+    }
+</script>
+<script type="text/javascript">
+    function absenLemburBelumSelesai() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Lembur kemarin belum selesai',
+            text: 'Selesaikan jam lembur?',
             showCancelButton: true,
                     confirmButtonText: 'Ya, lanjut',
                     cancelButtonText: 'Batal',
