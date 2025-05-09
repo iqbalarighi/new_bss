@@ -138,7 +138,7 @@
           @endphp
           <td>
             @if ($absen)
-              <span class="{{$absen->jam_in > $absen->pegawai->shifts->jam_masuk ? 'red' : ''}}">{{ $absen->jam_in ?? '' }}</span><br>
+              <span class="{{$absen->jam_in > $absen->shifts->jam_masuk ? 'red' : ''}}">{{ $absen->jam_in ?? '' }}</span><br>
               <span class="{{$absen->jam_out ?? 'red'}}">{{ $absen->jam_out ?? '00:00:00' }}</span>
             @elseif ($izin)
                     @if (Str::contains(strtolower($izin->jenis_izin), 's'))

@@ -31,12 +31,12 @@ class HomeController extends Controller
         $harini = Carbon::now()->format('Y-m-d');
 //buat per akun kantor pakai Auth
 
+    if(Auth::user()->role == 0) {
         $rekap = AbsenModel::whereMonth('tgl_absen', carbon::now()->format('m'))
                 ->where('tgl_absen', $harini)
                 ->selectRaw('COUNT(nip) as jmlhadir')
                 ->first();
 
-    if(Auth::user()->role == 0) {
         $rekapizin = IzinabsenModel::where('created_at', 'LIKE', '%'.$harini.'%')
                     ->selectRaw("
                         SUM(CASE WHEN jenis_izin = 'i' THEN 1 ELSE 0 END) as izin, 
@@ -47,6 +47,12 @@ class HomeController extends Controller
                     ->first();
     }
         if(Auth::user()->role == 1) {
+            $rekap = AbsenModel::whereMonth('tgl_absen', carbon::now()->format('m'))
+                ->where('perusahaan', Auth::user()->perusahaan)
+                ->where('tgl_absen', $harini)
+                ->selectRaw('COUNT(nip) as jmlhadir')
+                ->first();
+                
         $rekapizin = IzinabsenModel::where('created_at', 'LIKE', '%'.$harini.'%')
                     ->where('perusahaan', Auth::user()->perusahaan)
                     ->selectRaw("
@@ -59,6 +65,13 @@ class HomeController extends Controller
         } 
 
         if(Auth::user()->role == 3) {
+            $rekap = AbsenModel::whereMonth('tgl_absen', carbon::now()->format('m'))
+                ->where('perusahaan', Auth::user()->perusahaan)
+                ->where('kantor', Auth::user()->kantor)
+                ->where('tgl_absen', $harini)
+                ->selectRaw('COUNT(nip) as jmlhadir')
+                ->first();
+
         $rekapizin = IzinabsenModel::where('created_at', 'LIKE', '%'.$harini.'%')
                     ->where('perusahaan', Auth::user()->perusahaan)
                     ->where('nama_kantor', Auth::user()->kantor)

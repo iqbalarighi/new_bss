@@ -14,6 +14,16 @@
             vertical-align: middle !important;
         }
     </style>
+@if(Session::get('success'))
+<script type="text/javascript">
+    Swal.fire({
+  icon: "success",
+  title: "{{Session::get('success')}}",
+  showConfirmButton: false,
+  timer: 2000
+});
+</script>
+@endif
 <div class="container mw-100">
     <div class="row justify-content-center">
         <div class="col mw-100">
@@ -92,13 +102,14 @@
                                             <i class="bi bi-pencil-square"></i> Edit
                                         </button>
 
-                                        <form action="" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus shift ini?');">
+                                        <form action="{{ route('shift.destroy', $shi->id) }}" method="POST" class="d-inline form-delete-shift">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger">
+                                            <button type="button" class="btn btn-sm btn-danger btn-delete-shift">
                                                 <i class="bi bi-trash"></i> Hapus
                                             </button>
                                         </form>
+
                                     </td>
                                 </tr>
                             @empty
@@ -235,6 +246,27 @@
 @endsection
 
 @push('script')
+<script>
+    $(document).on('click', '.btn-delete-shift', function(e) {
+        e.preventDefault();
+        const form = $(this).closest('form');
+
+        Swal.fire({
+            title: 'Yakin ingin menghapus shift ini?',
+            text: "Data akan dihapus secara permanen!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    });
+</script>
 <script>
 $(document).ready(function () {
     $("#tambahShiftForm").on("submit", function (e) {

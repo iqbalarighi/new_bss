@@ -116,8 +116,8 @@
                 </div>
                 <div class="mb-3">
                     <label for="shift" class="form-label">Shift</label>
-                    <select name="shift" id="shift" class="form-select" required>
-                        <option value="" selected>Pilih Shift</option>
+                    <select name="shift" id="shift" class="form-select">
+                        <option value="" selected>Optional Shift</option>
                     </select>
                 </div>
                 <div class="mb-3">
@@ -321,7 +321,7 @@
             });
                
             $('#shift').empty();
-            $('#shift').append('<option value="">Pilih Shift</option>');
+            $('#shift').append('<option value="">Optional Shift</option>');
             
             $.each(response.shifts, function(key, shift) {
                 $('#shift').append(

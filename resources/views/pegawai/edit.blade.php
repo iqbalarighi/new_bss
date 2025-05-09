@@ -118,7 +118,8 @@
 
     <div class="mb-3">
         <label class="form-label">Shift</label>
-        <select name="shift" id="select-shift" class="form-select" required>
+        <select name="shift" id="select-shift" class="form-select">
+            <option value="">Optional Shift</option>
             @foreach($shift as $item)
             <option value="{{ $item->id }}" {{ $pegawai->shift == $item->id ? 'selected' : '' }}>
                 {{ $item->shift }} {{ Carbon\Carbon::parse($item->jam_masuk)->format('H:i') }}-{{ Carbon\Carbon::parse($item->jam_keluar)->format('H:i') }} WIB

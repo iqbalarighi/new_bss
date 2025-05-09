@@ -1,5 +1,13 @@
 @extends('layouts.absen.absen')
 @section('content')
+<style>
+    #user-role {
+  display: block;
+  white-space: normal;
+  line-height: 1.1;         /* Atur tinggi baris agar cukup ruang antar baris */
+  word-wrap: break-word;    /* Agar kata panjang bisa dipotong jika perlu */
+}
+</style>
     <div class="section p-2" id="user-section" style="z-index: 1;">
             <div id="user-detail">
                 <div class="avatar">
@@ -87,7 +95,7 @@
                         @php
                             use Illuminate\Support\Str;
                         @endphp
-                        @if(Str::contains(strtolower($pegawai->jabat->jabatan), ['supervisor', 'danru', 'kepala']) )
+                        @if(Str::contains(strtolower($pegawai->jabat->jabatan), ['supervisor', 'danru', 'kepala', 'koordinator']) )
                         <div class="item-menu text-center">
                             <div class="menu-icon">
                                 <a href="{{ route('absen.lapor') }}" class="orange" style="font-size: 40px;">

@@ -960,24 +960,27 @@ public function deluser($id)
     }
 
     public function shift()
-    { 
-        $shift = ShiftModel::paginate(10);
-        
+    {      
         if(Auth::user()->role == 0){
             $satker = SatkerModel::get();
-        $shift = ShiftModel::paginate(10);
-        $kantor = KantorModel::get();
+            $shift = ShiftModel::paginate(15);
+            $kantor = KantorModel::get();
         return view('master.shift', compact('satker', 'shift', 'kantor'));
         } elseif(Auth::user()->role == 1){
             $satker = SatkerModel::where('perusahaan', Auth::user()->perusahaan)->get();
             $kantor = KantorModel::where('perusahaan', Auth::user()->perusahaan)->get();
-        $shift = ShiftModel::paginate(10);
+            $shift = ShiftModel::where('perusahaan', Auth::user()->perusahaan)->paginate(15);
+
         return view('master.shift', compact('satker', 'shift', 'kantor'));
         } elseif(Auth::user()->role == 3) {
             $satker = SatkerModel::where('perusahaan', Auth::user()->perusahaan)
             ->where('kantor', Auth::user()->kantor)
             ->get();
-        $shift = ShiftModel::where('kantor_id', Auth::user()->kantor)->paginate(10);
+
+            $shift = ShiftModel::where('kantor_id', Auth::user()->kantor)
+                    ->where('perusahaan', Auth::user()->perusahaan)
+                    ->paginate(15);
+
         return view('master.shift', compact('satker', 'shift'));
         }
 
@@ -1021,8 +1024,9 @@ $jamKeluar = Carbon::createFromFormat('H:i', $request->jam_keluar);
 if ($jamKeluar->lessThanOrEqualTo($jamMasuk)) {
     $jamKeluar->addDay(); // Tambah 1 hari
 }
-
+$perusa = Auth::user()->perusahaan;
         ShiftModel::create([
+            'perusahaan' => $perusa,
             'shift' => $request->shift,
             'kantor_id' => $kantor, // pastikan kolomnya benar
             'satker_id' => $request->satker_id, // pastikan kolomnya benar
@@ -1081,6 +1085,13 @@ if ($jamKeluar->lessThanOrEqualTo($jamMasuk)) {
 
     return response()->json(['message' => 'Shift berhasil diperbarui.']);
     }
+    
+    public function shiftdest($id)
+    {
+        $shift = ShiftModel::findOrFail($id);
+        $shift->delete();
 
+        return redirect()->back()->with('success', 'Shift berhasil dihapus.');
+    }
     
 }

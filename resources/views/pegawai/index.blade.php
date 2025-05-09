@@ -60,7 +60,7 @@
                             <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;">{{ $pegawai->sat->satuan_kerja }}</td>
                             <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;white-space: wrap;">{{ $pegawai->jabat->jabatan }}</td>
                             <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;">{{ $pegawai->statpegawai ?? '-'}}</td>
-                            <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;">{{ $pegawai->shifts->shift}}</td>
+                            <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;">{{ $pegawai->shifts->shift ?? 'Optional'}}</td>
                             <td class="align-middle text-center">
                                 <button class="btn btn-primary btn-sm px-1" onclick="window.location='{{route('pegawai.edit', $pegawai->id)}}'">Edit</button>
                                 <button class="btn btn-danger btn-sm px-1 btn-hapus" data-id="{{ $pegawai->id }}" data-nama="{{ $pegawai->nama_lengkap }}">Hapus</button>

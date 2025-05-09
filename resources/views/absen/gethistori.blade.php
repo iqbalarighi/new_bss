@@ -3,7 +3,7 @@
 @else
 @foreach($get as $key => $item )
 	<div class="card p-1 mb-2">
-	    <h5>{{Carbon\carbon::parse($item->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} ({{$item->pegawai->shifts->shift}})</h5>
+	    <h5>{{Carbon\carbon::parse($item->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} ({{$item->shifts->shift}})</h5>
         <div class="d-flex justify-content-around align-items-center">
             <div class="d-flex align-items-center gap-2">
                 <img src="{{ asset('storage/absensi/'.$item->pegawai->nip.'/'.$item->foto_in) }}" alt="Foto Masuk" class="rounded" width="50">

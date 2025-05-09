@@ -48,6 +48,7 @@
             <div class="col" style="margin-bottom: -30px">
                 <input type="hidden" id="lokasi">
                 <input type="text" id="confirm" hidden disabled>
+                <input type="text" id="shift" hidden disabled>
             <div class="webcam-capture"></div>
             </div>
         </div>
@@ -65,6 +66,41 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js"></script>
+@if($cek == null && Auth::guard('pegawai')->user()->shift == null)
+<script type="text/javascript">
+    Swal.fire({
+        title: 'Pilih Shift',
+        html:
+            `<div style="display: flex; flex-direction: column; gap: 10px;">
+            @foreach($shift as $s)
+                <button type="button" class="swal2-confirm swal2-styled" onclick="pilihShift('{{ $s->id }}', '{{ $s->shift }}')">
+                    {{ $s->shift. " (".\Carbon\Carbon::parse($s->jam_masuk)->format('H:i')." - ".\Carbon\Carbon::parse($s->jam_keluar)->format('H:i')." WIB)"}} 
+                </button>
+            @endforeach
+            </div>`,
+        showConfirmButton: false,
+        showCancelButton: false,
+        allowOutsideClick: false
+    });
+
+// Fungsi global karena dipanggil dari dalam SweetAlert HTML
+function pilihShift(id, nama) {
+        $('#shift')
+            .attr('value', id)
+            .prop('disabled', false)
+            .attr('name', 'shift'); // pastikan ada 'name' supaya ikut ke form
+
+        Swal.close();
+        Swal.fire({
+            icon: 'success',
+            title: 'Shift dipilih',
+            text: 'Kamu memilih shift: ' + nama,
+            showConfirmButton: false,
+            timer: 1500
+        });
+    }
+</script>
+@endif
 @if($absenTerakhir && $absenTerakhir->jam_out == null)
 <script type="text/javascript">
     let msg = "{{$absenTerakhir->tgl_absen}}";
@@ -73,12 +109,8 @@
             icon: 'warning',
             title: 'Oops!',
             html: `
-                  Anda belum melakukan absen pulang pada tanggal ` + msg + `. Apakah Anda ingin melakukan absen pulang ?`,
-            confirmButtonText: 'OK', 
-            showCancelButton: true,
+                  Anda belum melakukan absen pulang pada tanggal ` + msg + `. Lanjut absen pulang!`,
             confirmButtonText: 'Ya, Absen',
-            reverseButtons: true,
-            cancelButtonText: 'Tidak',
             allowOutsideClick: false,
         }).then((result) => {
                     if (result.isConfirmed) {
@@ -223,6 +255,7 @@ function ambilFotoDanAbsen() {
 
             let lokasi = $('#lokasi').val();
             let confirm = $('#confirm').val();
+            let shift = $('#shift').val();
 
             img.onload = function () {
                 canvas.width = img.width;
@@ -275,6 +308,7 @@ function ambilFotoDanAbsen() {
                                 image: mirroredImage,
                                 lokasi: lokasi,
                                 confirm: confirm,
+                                shift: shift,
                             },
                             cache: false,
                             success: function (respond) {
