@@ -431,13 +431,15 @@ public function update(Request $request, $id)
     {
         $periode = $request->periode;
         $id = $request->pegawais;
-        $agent = new Agent();
+
         $pegawai = PegawaiModel::findOrFail($id);
 
         $absen = AbsenModel::with(['pegawai', 'shifts'])
             ->where('nip', $pegawai->id)
             ->where('tgl_absen', 'LIKE', '%' . $periode . '%')
             ->get();
+
+$agent = new Agent();
 
     $pdf = Pdf::loadView('pegawai.preview', compact('pegawai', 'absen', 'periode'))
                   ->setPaper('A4', 'portrait');
@@ -599,7 +601,6 @@ public function update(Request $request, $id)
                     'Rekap_Absensi_'.$periode.'.xlsx'
                 );
             }
-
     }
 
     public function izin()
