@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use App\Models\DeptModel;
 use App\Models\ShiftModel;
 use App\Models\AbsenModel;
+use Jenssegers\Agent\Agent;
 use App\Models\SatkerModel;
 use App\Models\KantorModel;
 use Illuminate\Support\Str;
@@ -13,6 +14,7 @@ use App\Models\JabatanModel;
 use App\Models\PegawaiModel;
 use Illuminate\Http\Request;
 use App\Models\IzinabsenModel;
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\PerusahaanModel;
 use App\Exports\PresensiExport;
 use App\Exports\RekapAbsensiExport;
@@ -429,7 +431,7 @@ public function update(Request $request, $id)
     {
         $periode = $request->periode;
         $id = $request->pegawais;
-
+        $agent = new Agent();
         $pegawai = PegawaiModel::findOrFail($id);
 
         $absen = AbsenModel::with(['pegawai', 'shifts'])
@@ -437,8 +439,15 @@ public function update(Request $request, $id)
             ->where('tgl_absen', 'LIKE', '%' . $periode . '%')
             ->get();
 
+    $pdf = Pdf::loadView('pegawai.preview', compact('pegawai', 'absen', 'periode'))
+                  ->setPaper('A4', 'portrait');
+
         if ($request->action == "cetak") {
-            return view('pegawai.preview', compact('pegawai', 'absen', 'periode'));
+            if ($agent->isMobile()){
+                return $pdf->download('Laporan Absensi Pegawai '.$pegawai->nama_lengkap.'.pdf');
+            } else {
+                return $pdf->stream('Laporan Absensi Pegawai '.$pegawai->nama_lengkap.'.pdf');
+            }
         } else {
             // Export to Excel
             return Excel::download(new PresensiExport($absen, $pegawai, $periode), 'presensi_' . $pegawai->id . '_' . $periode . '.xlsx');
@@ -572,8 +581,18 @@ public function update(Request $request, $id)
             }
             }
 
+    $agent = new Agent();
+
+    $pdf = Pdf::loadView('pegawai.excelview', compact('rekap', 'bulan', 'tahun', 'periode', 'satker', 'depar', 'sat'))
+                  ->setPaper('A4', 'landscape');
+
             if($request->action == "cetak"){
-            return view('pegawai.excelview', compact('rekap', 'bulan', 'tahun', 'periode', 'satker', 'depar', 'sat'));
+                // return view('pegawai.excelview', compact('rekap', 'bulan', 'tahun', 'periode', 'satker', 'depar', 'sat'));
+                if ($agent->isMobile()){
+                    return $pdf->download('Rekap Absensi Pegawai '.Carbon::parse($periode)->isoFormat('MMMM YYYY').'.pdf');
+                } else {
+                    return $pdf->stream('Rekap Absensi Pegawai '.Carbon::parse($periode)->isoFormat('MMMM YYYY').'.pdf');
+                }
             } else {
                 return Excel::download(
                     new RekapAbsensiExport($rekap, $bulan, $tahun, $periode, $satker, $depar, $sat, $jumlahHari),

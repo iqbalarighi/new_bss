@@ -107,7 +107,7 @@
 <body class="A4">
   <section class="sheet padding-10mm">
     <div class="header">
-      <img src="{{ asset('storage/img/logo.png') }}" alt="Logo" />
+      <img src="{{ public_path('storage/img/logo.png') }}" alt="Logo" />
       <div>
         <h3>LAPORAN PRESENSI KARYAWAN</h3>
         <strong>PERIODE <font class="text-uppercase">{{Carbon\Carbon::parse($periode)->isoFormat('MMMM YYYY')}}</font></strong><br>
@@ -118,7 +118,7 @@
 
     <div class="info-section">
       <div class="info-photo">
-        <img src="{{ asset('storage/foto_pegawai/'.$pegawai->nip.'/'.$pegawai->foto) }}" alt="Foto Pegawai" />
+        <img src="{{ public_path('storage/foto_pegawai/'.$pegawai->nip.'/'.$pegawai->foto)}}" alt="Foto Pegawai" />
       </div>
       <div class="info-details">
         <table>
@@ -150,9 +150,9 @@
           <td>{{ $loop->iteration }}</td>
           <td>{{$a->tgl_absen}}</td>
           <td class="{{$a->jam_in > $a->shifts->jam_masuk ? 'red' : ''}}">{{$a->jam_in}}</td>
-          <td><img src="{{ asset('storage/absensi/'. $a->pegawai->nip.'/'.$a->foto_in) }}" width="30"></td>
-          <td>{{$a->jam_out}}</td>
-          <td><img src="{{ asset('storage/absensi/'. $a->pegawai->nip.'/'.$a->foto_out) }}" width="30"></td>
+          <td><img src="{{ public_path('storage/absensi/'. $a->pegawai->nip.'/'.$a->foto_in) }}" width="30"></td>
+          <td>{{$a->jam_out ?? 'Belum absen Pulang'}}</td>
+          <td><img src="{{ public_path('storage/absensi/'. $a->pegawai->nip.'/'.$a->foto_out) }}" width="30"></td>
           <td>
             @php
               $jamStandar = Carbon\Carbon::parse($a->shifts->jam_masuk);

@@ -107,10 +107,13 @@ function ambilLokasi(callback) {
 document.addEventListener('DOMContentLoaded', function () {
     // Inisialisasi Webcam
     Webcam.set({
-        width: 320,
-        height: 240,
+        width: 480,
+        height: 640,
         image_format: 'png',
-        png_quality: 90
+        png_quality: 90,
+        constraints: {
+            video: true // Biarkan browser memilih pengaturan terbaik
+        }
     });
     Webcam.attach('#my_camera');
 

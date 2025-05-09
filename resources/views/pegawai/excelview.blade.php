@@ -69,7 +69,7 @@
       float: left;
       height: 60px;
       margin-right: 10px;
-      margin-bottom: 10px;
+      margin-top: -30px;
     }
 
         .text-lowercase {
@@ -87,8 +87,8 @@
 <body class="A4 landscape">
   <section class="sheet padding-10mm">
     <div class="header">
-      <img src="{{ asset('storage/img/logo.png') }}" alt="Logo" />
-      <div class="text-uppercase" style="font-size: 10pt !important;">
+      <img src="{{ public_path('storage/img/logo.png') }}" style="margin-bottom: 12px;" />
+      <div class="text-uppercase" style="font-size: 10pt !important; margin-top: -15px; margin-bottom: 15px;">
         <h4 style="text-align: center;">Rekap Absensi Bulanan</h4>
         @if ($satker == null)
         <strong>Departemen {{$depar->nama_dept}}<br></strong>

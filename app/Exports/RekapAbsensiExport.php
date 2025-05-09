@@ -110,7 +110,7 @@ class RekapAbsensiExport implements FromView, WithEvents
                         if ($absen) {
                             $jamMasuk = $absen->jam_in ?? '';
                             $jamKeluar = $absen->jam_out ?? '00:00:00';
-                            $shiftMasuk = $r['shift'];
+                            $shiftMasuk = $absen->shifts->jam_masuk;
 
                             $jamText = new RichText();
 

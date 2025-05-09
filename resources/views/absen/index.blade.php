@@ -118,43 +118,84 @@
             <div class="todaypresence">
                     <h5><ion-icon name="person"></ion-icon> Kehadiran Terakhir</h5>
         @if($absen != null)
-        <div class="card p-1 mb-1">
-            <h5>{{Carbon\carbon::parse($absen->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} ({{$absen->shifts->shift}})</h5>
+            <div class="card p-1 mb-1">
+                <h5>{{Carbon\carbon::parse($absen->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} ({{$absen->shifts->shift}})</h5>
 
-            <div class="d-flex justify-content-around align-items-center">
-                <div class="d-flex align-items-center gap-2">
-                    <img src="{{ asset('storage/absensi/'.$absen->pegawai->nip.'/'.$absen->foto_in) }}" alt="Foto Masuk" class="rounded" width="50">
+                <div class="d-flex justify-content-around align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <img src="{{ asset('storage/absensi/'.$absen->pegawai->nip.'/'.$absen->foto_in) }}" alt="Foto Masuk" class="rounded" width="50">
 
-                    <div class="text-center pl-1 {{$absen->jam_in > $absen->shifts->jam_masuk ? 'text-danger' : ''}}">
-                        <span class="d-block">Masuk</span>
-                        <strong>{{$absen->jam_in}}</strong>
+                        <div class="text-center pl-1 {{$absen->jam_in > $absen->shifts->jam_masuk ? 'text-danger' : ''}}">
+                            <span class="d-block">Masuk</span>
+                            <strong>{{$absen->jam_in}}</strong>
+                        </div>
                     </div>
-                </div>
-                @if($absen->jam_out == null)
-                <div class="d-flex align-items-center gap-2">
-                    
-                    <div class="text-center pl-1">
-                        <span class="d-block">Pulang</span>
-                        <strong>--:--</strong>
+                    @if($absen->jam_out == null)
+                    <div class="d-flex align-items-center gap-2">
+                        
+                        <div class="text-center pl-1">
+                            <span class="d-block">Pulang</span>
+                            <strong>--:--</strong>
+                        </div>
                     </div>
-                </div>
-                @else
-                <div class="d-flex align-items-center gap-2">
-                    <img src="{{ asset('storage/absensi/'.$absen->pegawai->nip.'/'.$absen->foto_out) }}" alt="Foto Masuk" class="rounded" width="50">
-                    <div class="text-center pl-1">
-                        <span class="d-block">Pulang</span>
-                        <strong>{{$absen->jam_out}}</strong>
+                    @else
+                    <div class="d-flex align-items-center gap-2">
+                        <img src="{{ asset('storage/absensi/'.$absen->pegawai->nip.'/'.$absen->foto_out) }}" alt="Foto Masuk" class="rounded" width="50">
+                        <div class="text-center pl-1">
+                            <span class="d-block">Pulang</span>
+                            <strong>{{$absen->jam_out}}</strong>
+                        </div>
                     </div>
+                    @endif
                 </div>
-                @endif
+                    @if($absen->jam_out == null)
+                    <div>
+                        <span class="text-warning float-right pr-1">Berlangsung</span>
+                    </div>
+                    @endif
             </div>
-                @if($absen->jam_out == null)
-                <div>
-                    <span class="text-warning float-right pr-1">Berlangsung</span>
+        @endif
+
+         @if($lembur != null)
+         <h5 class="mt-3"><ion-icon name="time"></ion-icon> Lembur</h5>
+            <div class="card p-1 mb-1">
+                <h5>{{Carbon\carbon::parse($lembur->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} <span id="timer" class="{{ $lembur->jam_out ? 'text-success' : 'text-primary' }}">00:00:00</span></h5>
+                
+
+                <div class="d-flex justify-content-around align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <img src="{{ asset('storage/lembur/'.$lembur->pegawai->nip.'/'.$lembur->foto_in) }}" alt="Foto Masuk" class="rounded" width="50">
+
+                        <div class="text-center pl-1 ">
+                            <span class="d-block">Mulai</span>
+                            <strong>{{$lembur->jam_in}}</strong>
+                        </div>
+                    </div>
+                    @if($lembur->jam_out == null)
+                    <div class="d-flex align-items-center gap-2">
+                        
+                        <div class="text-center pl-1">
+                            <span class="d-block">Selesai</span>
+                            <strong>--:--</strong>
+                        </div>
+                    </div>
+                    @else
+                    <div class="d-flex align-items-center gap-2">
+                        <img src="{{ asset('storage/lembur/'.$lembur->pegawai->nip.'/'.$lembur->foto_out) }}" alt="Foto Masuk" class="rounded" width="50">
+                        <div class="text-center pl-1">
+                            <span class="d-block">Selesai</span>
+                            <strong>{{$lembur->jam_out}}</strong>
+                        </div>
+                    </div>
+                    @endif
                 </div>
-                @endif
-        </div>
-            @endif
+                    @if($lembur->jam_out == null)
+                    <div>
+                        <span class="text-warning float-right pr-1">Berlangsung</span>
+                    </div>
+                    @endif
+            </div>
+        @endif
         </div>
            {{-- 
                 <div class="row">
@@ -431,3 +472,31 @@
             </div>
         </div>
 @endsection
+
+@push('myscript')
+@if($lembur != null)
+<script>
+    const jamIn = new Date("{{ \Carbon\Carbon::parse($lembur->jam_in)->toIso8601String() }}");
+    const jamOut = @json($lembur->jam_out ? \Carbon\Carbon::parse($lembur->jam_out)->toIso8601String() : null);
+
+    function updateTimer() {
+        const now = new Date();
+        const end = jamOut ? new Date(jamOut) : now;
+        let diff = Math.floor((end - jamIn) / 1000);
+
+        if (diff < 0) diff = 0;
+
+        const hours = String(Math.floor(diff / 3600)).padStart(2, '0');
+        const minutes = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
+        const seconds = String(diff % 60).padStart(2, '0');
+
+        document.getElementById('timer').innerText = `${hours}:${minutes}:${seconds}`;
+    }
+
+    updateTimer();
+    if (!jamOut) {
+        setInterval(updateTimer, 1000); // jalankan hanya jika belum selesai lembur
+    }
+</script>
+@endif
+@endpush

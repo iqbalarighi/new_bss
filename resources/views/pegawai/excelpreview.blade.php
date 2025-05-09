@@ -78,7 +78,7 @@
                 </td>
                 <td>{{ $a->jam_out ?? '-'}}</td>
                 <td align="center">
-                    @if($a->foto_out)
+                    @if($a->foto_out != null)
                         <img src="{{ public_path('storage/absensi/' . $a->pegawai->nip . '/' . $a->foto_out) }}" width="50">
                     @else
                     -

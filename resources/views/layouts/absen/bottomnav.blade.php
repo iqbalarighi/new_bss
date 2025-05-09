@@ -187,7 +187,7 @@
     function absenLemburSelesai() {
         Swal.fire({
             icon: 'info',
-            title: 'Absen Lembur',
+            title: 'Selesai Lembur',
             text: 'Ingin selesaikan absen lembur?',
             showCancelButton: true,
                     confirmButtonText: 'Ya, lanjut',

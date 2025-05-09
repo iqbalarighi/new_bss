@@ -32,6 +32,7 @@ class AbsenController extends Controller
         $cek = AbsenModel::where('tgl_absen', $harini)->where('nip', $id)->count();
         $cek2 = AbsenModel::where('tgl_absen', $harini)->where('nip', $id)->first();
         $absen = AbsenModel::with('pegawai')->where('tgl_absen', $harini)->where('nip', $id)->first();
+        $lembur = LemburModel::where('tgl_absen', $harini)->where('nip', $id)->first();
         $absens = AbsenModel::with('pegawai')->where('nip', $id)->where('tgl_absen', 'LIKE', '%'.carbon::now()->format('Y-m').'%')->latest()->get();
 
     $rekap = AbsenModel::where('nip', $id)
@@ -60,7 +61,7 @@ class AbsenController extends Controller
                     ->where('status_approve', 1)
                     ->first();
 
-        return view('absen.index', compact('pegawai', 'absen', 'absens', 'rekap', 'leaderboard', 'rekapizin', 'cek', 'cek2'));
+        return view('absen.index', compact('pegawai', 'absen', 'absens', 'rekap', 'leaderboard', 'rekapizin', 'cek', 'cek2', 'lembur'));
     }
 
     public function create()
@@ -811,8 +812,9 @@ private function simpanFotoBase64($base64, $prefix)
 {
     $image = str_replace('data:image/png;base64,', '', $base64);
     $image = str_replace(' ', '+', $image);
+    $nip = Auth::guard('pegawai')->user()->nip;
     $fileName = $prefix . '_' . Auth::guard('pegawai')->user()->nip . '_' . time() . '.png';
-    Storage::disk('public')->put("lembur/{$fileName}", base64_decode($image));
+    Storage::disk('public')->put("lembur/{$nip}/{$fileName}", base64_decode($image));
     return $fileName; // hanya nama file yang dikembalikan
 }
 
