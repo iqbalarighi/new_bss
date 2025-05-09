@@ -107,7 +107,9 @@
 <body class="A4">
   <section class="sheet padding-10mm">
     <div class="header">
-      <img src="{{ asset('storage/img/logo.png') }}" alt="Logo" />
+      @if(file_exists(public_path('storage/img/logo.png')))
+          <img src="{{ public_path('storage/img/logo.png') }}">
+      @endif
       <div>
         <h3>LAPORAN PRESENSI KARYAWAN</h3>
         <strong>PERIODE <font class="text-uppercase">{{Carbon\Carbon::parse($periode)->isoFormat('MMMM YYYY')}}</font></strong><br>
@@ -116,20 +118,26 @@
       </div>
     </div>
 
-    <div class="info-section">
-      <div class="info-photo">
-        <img src="{{ asset('storage/foto_pegawai/'.$pegawai->nip.'/'.$pegawai->foto) }}" alt="Foto Pegawai" />
-      </div>
-      <div class="info-details">
-        <table>
-          <tr><td>NIK</td><td>: {{$pegawai->nip}}</td></tr>
-          <tr><td>Nama Karyawan</td><td class="text-uppercase">: {{$pegawai->nama_lengkap}}</td></tr>
-          <tr><td>Jabatan</td><td>: {{$pegawai->jabat->jabatan}}</td></tr>
-          <tr><td>Departemen</td><td>: {{$pegawai->deptmn->nama_dept}}</td></tr>
-          <tr><td>No. HP</td><td>: {{$pegawai->no_hp}}</td></tr>
-        </table>
-      </div>
-    </div>
+<table width="100%" style="margin-bottom: 20px;">
+  <tr>
+    <td width="60" valign="top">
+      @if($pegawai->foto && file_exists(public_path('storage/foto_pegawai/'.$pegawai->nip.'/'.$pegawai->foto)))
+        <img src="{{ public_path('storage/foto_pegawai/'.$pegawai->nip.'/'.$pegawai->foto) }}" alt="Foto Pegawai" width="65">
+      @else
+        <div style="width: 75px; height: 90px; background: #ccc;"></div>
+      @endif
+    </td>
+    <td valign="top" align="left">
+      <table>
+        <tr><td><strong>NIK</strong></td><td>: {{$pegawai->nip}}</td></tr>
+        <tr><td><strong>Nama Karyawan</strong></td><td class="text-uppercase">: {{$pegawai->nama_lengkap}}</td></tr>
+        <tr><td><strong>Jabatan</strong></td><td>: {{$pegawai->jabat->jabatan}}</td></tr>
+        <tr><td><strong>Departemen</strong></td><td>: {{$pegawai->deptmn->nama_dept}}</td></tr>
+        <tr><td><strong>No. HP</strong></td><td>: {{$pegawai->no_hp}}</td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
 
     <table class="data">
       <thead>
@@ -150,9 +158,18 @@
           <td>{{ $loop->iteration }}</td>
           <td>{{$a->tgl_absen}}</td>
           <td class="{{$a->jam_in > $a->shifts->jam_masuk ? 'red' : ''}}">{{$a->jam_in}}</td>
-          <td><img src="{{ asset('storage/absensi/'. $a->pegawai->nip.'/'.$a->foto_in) }}" width="30"></td>
-          <td>{{$a->jam_out}}</td>
-          <td><img src="{{ asset('storage/absensi/'. $a->pegawai->nip.'/'.$a->foto_out) }}" width="30"></td>
+          <td>@if($a->foto_in && file_exists(public_path('storage/absensi/'.$a->pegawai->nip.'/'.$a->foto_in)))
+                <img src="{{ public_path('storage/absensi/'. $a->pegawai->nip.'/'.$a->foto_in) }}" width="30">
+              @endif
+          </td>
+          <td>{{$a->jam_out ?? '-'}}</td>
+          <td>
+              @if($a->foto_out && file_exists(public_path('storage/absensi/'.$a->pegawai->nip.'/'.$a->foto_out)))
+                <img src="{{ public_path('storage/absensi/'. $a->pegawai->nip.'/'.$a->foto_out) }}" width="30">
+              @else
+              -
+              @endif
+          </td>
           <td>
             @php
               $jamStandar = Carbon\Carbon::parse($a->shifts->jam_masuk);
