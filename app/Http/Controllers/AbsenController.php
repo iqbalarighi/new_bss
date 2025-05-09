@@ -7,10 +7,12 @@ use App\Models\IzinabsenModel;
 use App\Models\LaporanModel;
 use App\Models\LemburModel;
 use App\Models\PegawaiModel;
+use App\Models\ShiftModel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -32,13 +34,14 @@ class AbsenController extends Controller
         $absen = AbsenModel::with('pegawai')->where('tgl_absen', $harini)->where('nip', $id)->first();
         $absens = AbsenModel::with('pegawai')->where('nip', $id)->where('tgl_absen', 'LIKE', '%'.carbon::now()->format('Y-m').'%')->latest()->get();
 
-        $rekap = AbsenModel::where('nip', $id)
-                ->where('tgl_absen', 'LIKE',  '%'.carbon::now()->format('Y-m').'%')
-                ->selectRaw('
-                    COUNT(nip) as jmlhadir,
-                    SUM(CASE WHEN jam_in > "'.($pegawai->shifts->jam_masuk).'" THEN 1 ELSE 0 END) as jmltelat
-                ')
-                ->first();
+    $rekap = AbsenModel::where('nip', $id)
+            ->where('tgl_absen', 'LIKE', Carbon::now()->format('Y-m') . '%')
+            ->join('shift', 'absensi.shift', '=', 'shift.id') // pastikan nama tabel dan kolom sesuai
+            ->selectRaw('
+                COUNT(absensi.nip) as jmlhadir,
+                SUM(CASE WHEN absensi.jam_in > shift.jam_masuk THEN 1 ELSE 0 END) as jmltelat
+            ')
+            ->first();
 
         $leaderboard = AbsenModel::with('pegawai.perusa', 'pegawai.jabat')
                 ->where('tgl_absen', $harini)
@@ -78,6 +81,13 @@ class AbsenController extends Controller
             $absenTerakhir = null;
         }
         
+        if(Auth::guard('pegawai')->user()->shift == null){
+            $shift = ShiftModel::where('kantor_id', Auth::guard('pegawai')->user()->nama_kantor)
+                        ->where('satker_id', Auth::guard('pegawai')->user()->satker)
+                        ->get();
+        } else {
+            $shift = "";
+        }
 
             // Cek apakah absen terakhir belum absen pulang
             // if ($absenTerakhir && $absenTerakhir->jam_out === null) {
@@ -86,7 +96,7 @@ class AbsenController extends Controller
 
         $pegawai = PegawaiModel::with('perusa', 'kantor', 'jabat', 'sat' )->findOrFail($nip_id);
 
-        return view('absen.create', compact('pegawai', 'cek', 'cek2', 'absenTerakhir'));
+        return view('absen.create', compact('pegawai', 'cek', 'cek2', 'absenTerakhir', 'shift'));
     }
 
     public function store(Request $request)
@@ -94,7 +104,7 @@ class AbsenController extends Controller
         // dd($request->confirm != null);
         $nip = Auth::guard('pegawai')->user()->nip;
         $nip_id = Auth::guard('pegawai')->user()->id;
-        $shift_id = Auth::guard('pegawai')->user()->shift;
+        $shift_id = Auth::guard('pegawai')->user()->shift ?? $request->shift;
         $tgl_absen = date("Y-m-d");
         $jam_absen = date("H:i:s");
         $jam_foto = date("His");

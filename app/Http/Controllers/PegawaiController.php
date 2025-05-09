@@ -107,7 +107,6 @@ class PegawaiController extends Controller
             'no_telepon' => 'required|string|max:15',
             'jabatan' => 'required|string',
             'dept' => 'required|string',
-            'shift' => 'required|string',
             'bpjs_tk' => 'required|string',
             'bpjs_kesehatan' => 'required|string',
             'kontak_darurat' => 'required|string|max:15',
@@ -127,7 +126,6 @@ class PegawaiController extends Controller
             'no_telepon.required' => 'Nomor telepon wajib diisi.',
             'jabatan.required' => 'Jabatan wajib diisi.',
             'dept.required' => 'Departemen wajib diisi.',
-            'shift.required' => 'Shift wajib diisi.',
             'bpjs_tk.required' => 'BPJS TK wajib diisi.',
             'bpjs_kesehatan.required' => 'BPJS Kesehatan wajib diisi.',
             'kontak_darurat.required' => 'Kontak darurat wajib diisi.',
@@ -181,7 +179,6 @@ if ($foto !== null) {
             'nama_lengkap' => $request->nama,
             'nip' => $request->nip,
             'dept' => $request->dept,
-	        'shift' => $request->shift,
             'password' => Hash::make($request->password),
             'tgl_lahir' => $request->tgl_lahir,
             'alamat' => $request->alamat,
@@ -214,7 +211,6 @@ public function update(Request $request, $id)
         'no_telepon' => 'required|string|max:15',
         'jabatan' => 'required|string',
         'dept' => 'required|string',
-        'shift' => 'required|string',
         'bpjs_tk' => 'required|string',
         'bpjs_kesehatan' => 'required|string',
         'kontak_darurat' => 'required|string|max:15',
@@ -561,7 +557,6 @@ public function update(Request $request, $id)
         if($satker != null ){
                 $rekap[] = [
                     'nip' => $k->nip,
-                    'shift' => $k->shifts->jam_masuk,
                     'nama' => $k->nama_lengkap,
                     'absensi' => $absensi,
                     'izin' => $izin,
@@ -569,7 +564,6 @@ public function update(Request $request, $id)
             } else {
                 $rekap[] = [
                     'nip' => $k->nip,
-                    'shift' => $k->shifts->jam_masuk,
                     'nama' => $k->nama_lengkap,
                     'sat' => $k->sat->satuan_kerja,
                     'absensi' => $absensi,

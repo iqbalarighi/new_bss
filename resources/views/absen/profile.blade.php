@@ -59,7 +59,7 @@
                         <div class="d-flex align-items-center" style="gap: 1rem;">
                             <ion-icon name="card-outline" class="text-primary" style="font-size: 20px;"></ion-icon>
                             <div>
-                                <small>NIK Pegawai</small>
+                                <small>NIP Pegawai</small>
                                 <p class="mb-0 fw-bold">{{ $profile->nip }}</p>
                             </div>
                         </div>
@@ -78,12 +78,20 @@
                     <div id="nowaField" class="list-group-item border-0 px-0 d-flex align-items-center justify-content-between" style="gap: 1rem;">
                         <div class="d-flex align-items-center" style="gap: 1rem;">
                             <ion-icon name="time-outline" class="text-danger" style="font-size: 20px;"></ion-icon>
+                        @if($profile->shift == null)
+                            <div>
+                                <small>Shift</small>
+                                <p id="nowa" class="mb-0 fw-bold">Optional
+                                </p>
+                            </div>
+                        @else
                             <div>
                                 <small>{{$profile->shifts->shift}}</small>
                                 <p id="nowa" class="mb-0 fw-bold">
                                     {{Carbon\Carbon::parse($profile->shifts->jam_masuk)->format('H:i')}} - {{Carbon\Carbon::parse($profile->shifts->jam_keluar)->format('H:i')}}
                                 </p>
                             </div>
+                        @endif
                         </div>
 
                     </div>

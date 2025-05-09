@@ -19,11 +19,9 @@
                         <!-- Jika foto tersedia -->
                         @if($detail->foto != null)
                         <img id="fotoPegawai" src="{{asset('storage/foto_pegawai/'.$detail->nip.'/'.$detail->foto)}}" alt="Foto Pegawai" class="img-fluid rounded" style="max-height: 200px;">
-                        <button class="btn btn-warning mt-2">Ganti Foto</button>
+                        {{-- <button class="btn btn-warning mt-2">Ganti Foto</button> --}}
                         @else
                         <!-- Jika foto tidak tersedia -->
-                         <input type="file" class="form-control mt-2">
-                         <button class="btn btn-primary mt-2">Upload Foto</button>
                          @endif
                     </div>
                 </div>

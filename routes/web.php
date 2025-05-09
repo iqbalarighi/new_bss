@@ -99,6 +99,8 @@ Route::middleware(['auth:web'])->group(function () {
         Route::get('/shift', [MasterController::class, 'shift'])->name('shift');
         Route::post('/shift/store', [MasterController::class, 'shiftStore'])->name('master.shift.store');
         Route::put('/shift/update/{id}', [MasterController::class, 'shiftUpdate'])->name('master.shift.update');
+        Route::delete('/shift/destroy/{id}', [MasterController::class, 'shiftdest'])->name('shift.destroy');
+
 
     });
     // web.php

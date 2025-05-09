@@ -276,6 +276,14 @@
         @endforeach
     </tbody>
 </table>
+     <div class="d-flex justify-content-center">
+        {{ $jabatan->links('pagination::bootstrap-5') }}
+    </div>
+</div>
+</div>
+</div>
+</div>
+</div>
 @endsection
 
 @push('script')
