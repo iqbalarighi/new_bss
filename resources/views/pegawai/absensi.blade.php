@@ -40,17 +40,23 @@
                 </div>
                 <div class="card-body">
                 <!-- Bootstrap form-group dengan label -->
-                    <div class="form-group position-relative">
-                        <input type="" 
-                               onfocus="(this.type='date')"
-                               id="bultah" 
-                               min="2024-01" 
-                               max="{{ \Carbon\Carbon::now()->format('Y-m-d') }}" 
-                               class="form-control" 
-                               value=""
-                               placeholder=" ">
-
-                        <span class="fake-placeholder">Pilih Tanggal</span>
+                    <div class="col form-group position-relative d-flex justify-content-between ps-0">
+                        <div class="col-11 ps-0">
+                        <form method="GET" action="" id="formTanggal">
+                                <input type="text" 
+                                       onfocus="this.type='date'"
+                                       name="tanggal"
+                                       id="bultah"
+                                       min="2024-01-01"
+                                       max="{{ \Carbon\Carbon::now()->format('Y-m-d') }}" 
+                                       class="form-control" 
+                                       placeholder=" ">
+                                <span class="fake-placeholder">Pilih Tanggal</span>
+                        </form>
+                        </div> 
+                        <div class="col-1">
+                            <button type="button" class="btn btn-sm btn-secondary float-end" onclick="resetTanggal()">Reset</button>
+                        </div>
                     </div>
                     <div style="overflow: auto;">
                     <table class="table table-striped table-bordered table-hover" id="dataTable">
@@ -123,8 +129,8 @@
                         </tbody>
                     </table>
                     </div>
-                    <div>
-                        {{$absen->links('pagination::bootstrap-5')}}
+                    <div class="d-flex justify-content-center">
+                        {{$absen->links('pagination::bootstrap-4')}}
                     </div>
                 </div>
             </div>
@@ -136,39 +142,18 @@
 @push('script')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
 <script>
-    $(document).ready(function() {
-        function loadabs() {
-            const selectedDate = $('#bultah').val(); // Format: YYYY-MM
-
-            $.ajax({
-                url: '/get-abs', // Sesuaikan dengan route kamu
-                method: 'GET',
-                data: { bultah: selectedDate },
-                success: function(response) {
-                    const tbody = $('#dataTable tbody');
-                    tbody.empty(); // Kosongkan tabel
-
-                    if (response.length === 0) {
-                        tbody.append('<tr><td colspan="14" class="text-center">Data tidak ditemukan</td></tr>');
-                        return;
-                    }
-
-                    tbody.html(response);
-                    
-                },
-                error: function(xhr) {
-                    console.error(xhr);
-                    alert('Terjadi kesalahan saat mengambil data.');
-                }
-            });
-        }
-        $("#bultah").change(function() {
-            loadabs();
+    document.addEventListener('DOMContentLoaded', function () {
+        const inputTanggal = document.getElementById('bultah');
+        inputTanggal?.addEventListener('change', function () {
+            document.getElementById('formTanggal')?.submit();
         });
-// loadabs();
     });
+
+    function resetTanggal() {
+        document.getElementById('bultah').value = '';
+        document.getElementById('formTanggal').submit(); // reload tanpa filter tanggal
+    }
 </script>
 <script>
 $(document).ready(function () {

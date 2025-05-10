@@ -428,6 +428,19 @@ public function profilimage(Request $request)
        return view('absen.gethistori', compact('get'));
     }
 
+    public function gethistorilembur(Request $request)
+    {
+       $bultah = $request->bultah;
+
+       $get = LemburModel::with('pegawai')
+       ->where('nip', Auth::guard('pegawai')->user()->id)
+       ->where('tgl_absen', 'LIKE', '%'.$bultah.'%')
+       ->orderBy('tgl_absen')
+       ->get();
+
+       return view('absen.gethistorilembur', compact('get'));
+    }
+
     public function izin()
     {
         $nip_id = Auth::guard('pegawai')->user()->id;

@@ -7,7 +7,7 @@
             <ion-icon name="chevron-back-outline" class="ion-icon"></ion-icon>
         </a>
     </div>
-    <div class="pageTitle">Histori</div>
+    <div class="pageTitle" id="judulHalaman">Histori</div>
     <div class="right"></div>
 </div>
 @endsection
@@ -24,10 +24,17 @@
         </div>
         <div class="row">
             <div class="col-12">
-                <div class="form-group">
-                	<button class="btn btn-sm btn-primary btn-block btn-hover" id="getdata">
-                		<ion-icon name="search-outline"></ion-icon> Cari
-                	</button>
+                <div class="form-group d-flex justify-content-around">
+                    <div class="col-5">
+                    	<button class="btn btn-sm btn-primary btn-block btn-hover" onclick="ubahJudul('absen')" id="getabsen">
+                    		<ion-icon name="search-outline"></ion-icon> Absen
+                    	</button>
+                    </div>
+                    <div class="col-5">
+                    <button class="btn btn-sm btn-info btn-block btn-hover" onclick="ubahJudul('lembur')" id="getlembur">
+                        <ion-icon name="search-outline"></ion-icon> Lembur
+                    </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -45,7 +52,7 @@
 @push('scripts')
 <script>
     $(function() {
-        $("#getdata").click(function(e) {
+        $("#getabsen").click(function(e) {
             var bultah = $("#bultah").val();
             $.ajax({
                 type: 'POST',
@@ -61,5 +68,34 @@
             });
         });
     });
+</script>
+<script>
+    $(function() {
+        $("#getlembur").click(function(e) {
+            var bultah = $("#bultah").val();
+            $.ajax({
+                type: 'POST',
+                url: '/absen/gethistorilembur',
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    bultah: bultah
+                },
+                cache: false,
+                success: function(respond) {
+                    $("#tampilhistori").html(respond);
+                }
+            });
+        });
+    });
+</script>
+<script>
+    function ubahJudul(tipe) {
+        const judul = document.getElementById('judulHalaman');
+        if (tipe === 'absen') {
+            judul.textContent = 'Histori Absen';
+        } else if (tipe === 'lembur') {
+            judul.textContent = 'Histori Lembur';
+        }
+    }
 </script>
 @endpush

@@ -277,7 +277,7 @@
     </tbody>
 </table>
      <div class="d-flex justify-content-center">
-        {{ $jabatan->links('pagination::bootstrap-5') }}
+        {{ $jabatan->links('pagination::bootstrap-4') }}
     </div>
 </div>
 </div>

@@ -135,6 +135,7 @@ Route::controller(AbsenController::class)->middleware(['redirif:pegawai'])->grou
     Route::post('/absen/update-nama', 'updateNama')->name('profile.updateNama');
     Route::get('/absen/histori', 'histori')->name('absen.histori');
     Route::post('/absen/gethistori', 'gethistori');
+    Route::post('/absen/gethistorilembur', 'gethistorilembur');
     Route::get('/absen/izin', 'izin')->name('absen.izin');
     Route::get('/absen/formizin', 'formizin')->name('absen.formizin');
     Route::post('/absen/formizinsimpan', 'formizinsimpan')->name('absen.storeizin');

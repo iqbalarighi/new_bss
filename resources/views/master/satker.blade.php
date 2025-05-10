@@ -260,7 +260,7 @@
             </tbody>
         </table>
          <div class="d-flex justify-content-center">
-                {{ $satker->links('pagination::bootstrap-5') }}
+                {{ $satker->links('pagination::bootstrap-4') }}
             </div>
     </div>
                 </div>

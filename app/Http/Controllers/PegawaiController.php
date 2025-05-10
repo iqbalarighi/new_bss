@@ -321,35 +321,35 @@ public function update(Request $request, $id)
     }
 
 
+    // public function absensi(Request $request)
+    // {
+        
+    //     if (Auth::user()->role == 0) {
+    //         $absen = AbsenModel::latest()->paginate(10);
+    //     } elseif (Auth::user()->role == 1) {
+    //         $comp = Auth::user()->perusahaan;
+
+    //             $absen = AbsenModel::where('perusahaan', $comp)
+    //                 ->latest()
+    //                 ->paginate(10); // Sesuaikan kolomnya
+
+    //     } elseif (Auth::user()->role == 3) {
+    //         $comp = Auth::user()->perusahaan;
+    //         $kantor = Auth::user()->kantor;
+
+    //             $absen = AbsenModel::where('perusahaan', $comp)
+    //                 ->where('kantor', $kantor)
+    //                 ->latest()
+    //                 ->paginate(10); // Sesuaikan kolomnya
+
+    //     } 
+
+    //     return view('pegawai.absensi', compact('absen'));
+    // }
+
     public function absensi(Request $request)
     {
-        
-        if (Auth::user()->role == 0) {
-            $absen = AbsenModel::latest()->paginate(10);
-        } elseif (Auth::user()->role == 1) {
-            $comp = Auth::user()->perusahaan;
-
-                $absen = AbsenModel::where('perusahaan', $comp)
-                    ->latest()
-                    ->paginate(10); // Sesuaikan kolomnya
-
-        } elseif (Auth::user()->role == 3) {
-            $comp = Auth::user()->perusahaan;
-            $kantor = Auth::user()->kantor;
-
-                $absen = AbsenModel::where('perusahaan', $comp)
-                    ->where('kantor', $kantor)
-                    ->latest()
-                    ->paginate(10); // Sesuaikan kolomnya
-
-        } 
-
-        return view('pegawai.absensi', compact('absen'));
-    }
-
-    public function getAbs(Request $request)
-    {
-        $bultah = $request->bultah; // Format: YYYY-MM
+        $bultah = $request->tanggal; // Format: YYYY-MM
 
         if (Auth::user()->role == 0) {
             if($bultah == ""){
@@ -397,7 +397,7 @@ public function update(Request $request, $id)
                 }
         } 
 
-        return view('pegawai.getabsensi', compact('absen'));
+        return view('pegawai.absensi', compact('absen'));
     }
 
     public function lapor() //untuk role 1 dan 3 nya masih ngebug
