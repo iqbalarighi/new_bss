@@ -422,7 +422,7 @@ public function profilimage(Request $request)
        $get = AbsenModel::with('pegawai')
        ->where('nip', Auth::guard('pegawai')->user()->id)
        ->where('tgl_absen', 'LIKE', '%'.$bultah.'%')
-       ->orderBy('tgl_absen')
+       ->latest()
        ->get();
 
        return view('absen.gethistori', compact('get'));
@@ -435,7 +435,7 @@ public function profilimage(Request $request)
        $get = LemburModel::with('pegawai')
        ->where('nip', Auth::guard('pegawai')->user()->id)
        ->where('tgl_absen', 'LIKE', '%'.$bultah.'%')
-       ->orderBy('tgl_absen')
+       ->latest()
        ->get();
 
        return view('absen.gethistorilembur', compact('get'));

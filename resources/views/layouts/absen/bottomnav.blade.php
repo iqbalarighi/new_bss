@@ -84,7 +84,7 @@
                     </div>
                 </a>
             @else
-                @if(!$existing)
+                @if(!$lembr)
                     <a class="item">
                         <div class="col">
                             <button class="action-button large bg-info" data-stat="lemburmasuk" onclick="mulaiLembur()"> 
@@ -92,7 +92,7 @@
                             </button>
                         </div>
                     </a>
-                @elseif(!$existing->jam_out)
+                @elseif(!$lembr->jam_out)
                      <a class="item">
                         <div class="col">
                             <button class="action-button large" style="background-color: orange;" data-stat="lemburselesai" onclick="selesaiLembur()"> 
@@ -115,7 +115,7 @@
             {{-- buat logic untuk menangani shift malam yang mau lembur. --}}
 
             @if($cek == 1 && $cek2->jam_out != null)
-                @if($existing && $existing->jam_out != null)
+                @if($lembr && $lembr->jam_out != null)
                     <a class="item disabled-link" onclick="showLemburAlert()"> <!-- ini kalo udah absen masuk dan lembur -->
                         <div class="col">
                             <button class="action-button large">
@@ -123,7 +123,7 @@
                             </button>
                         </div>
                     </a>
-                @elseif($existing && $existing->jam_out == null)
+                @elseif($lembr && $lembr->jam_out == null)
                     <a class="item" onclick="absenLemburSelesai()">
                         <div class="col">
                             <button class="action-button large" style="background-color: orange;">
@@ -142,6 +142,7 @@
                 @endif
             
             @else
+
                 @if($cek == 1 && $cek2->jam_out == null)
                     <a href="{{route('absen.create')}}" class="item">
                         <div class="col">
@@ -158,23 +159,39 @@
                             </button>
                         </div>
                     </a>
-                @elseif($absenTerakhir && $absenTerakhir->jam_in > $absenTerakhir->jam_out)
-                    @if($existing && $existing->jam_out == null)
-                    <a class="item" onclick="absenLemburSelesai()">
-                        <div class="col">
-                            <button class="action-button large" style="background-color: orange;">
-                                <ion-icon name="camera-outline"></ion-icon>
-                            </button>
-                        </div>
-                    </a>
-                    @else
-                    <a class="item" onclick="showChoiceAlert()">
-                        <div class="col">
-                            <div class="action-button large bg-info">
-                                <ion-icon name="camera-outline"></ion-icon>
+                @elseif($absenTerakhir && $absenTerakhir->jam_out == null)
+                        <a href="{{route('absen.create')}}" class="item">
+                            <div class="col">
+                                <div class="action-button large bg-danger">
+                                    <ion-icon name="camera-outline"></ion-icon>
+                                </div>
                             </div>
-                        </div>
-                    </a>
+                        </a>
+                @elseif($absenTerakhir && $absenTerakhir->created_at->toDateString() != $absenTerakhir->updated_at->toDateString())
+                    @if($lembr && $lembr->jam_out == null)
+                        <a class="item" onclick="absenLemburSelesai()">
+                            <div class="col">
+                                <button class="action-button large" style="background-color: orange;">
+                                    <ion-icon name="camera-outline"></ion-icon>
+                                </button>
+                            </div>
+                        </a>
+                    @elseif($lembr && $lembr->jam_out != null)
+                        <a href="{{route('absen.create')}}" class="item test">
+                            <div class="col">
+                                <div class="action-button large">
+                                    <ion-icon name="camera-outline"></ion-icon>
+                                </div>
+                            </div>
+                        </a>
+                    @else
+                        <a class="item" onclick="showChoiceAlert()">
+                            <div class="col">
+                                <div class="action-button large bg-info">
+                                    <ion-icon name="camera-outline"></ion-icon>
+                                </div>
+                            </div>
+                        </a>
                     @endif
                 @else
                     <a href="{{route('absen.create')}}" class="item test">
@@ -185,6 +202,7 @@
                         </div>
                     </a>
                 @endif
+
             @endif
         @endif
         <a href="{{route('absen.izin')}}" class="item {{Request::is('absen/izin') ? 'active' : ''}}">

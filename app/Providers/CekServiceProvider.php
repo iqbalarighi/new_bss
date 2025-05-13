@@ -43,7 +43,7 @@ class CekServiceProvider extends ServiceProvider
                 ->where('nip', $id)
                 ->first();
 
-            $existing = LemburModel::where('nip', $id)
+            $lembr = LemburModel::where('nip', $id)
             ->where('tgl_absen', $harini)
             ->first();
 
@@ -64,7 +64,7 @@ class CekServiceProvider extends ServiceProvider
 
             }
 
-        $view->with(compact('cek', 'cek2', 'existing', 'ceklem', 'absenTerakhir'));
+        $view->with(compact('cek', 'cek2', 'lembr', 'ceklem', 'absenTerakhir'));
     });
 
     }
