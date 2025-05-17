@@ -745,11 +745,12 @@ public function lembur()
             $absenTerakhir = null;
         }
         
-                $ceklem = LemburModel::where('nip', $nip_id)
-                ->where('tgl_absen', '<', $harini)
-                ->whereNull('jam_out')
-                ->orderByDesc('tgl_absen')
-                ->first();
+        $lem = LemburModel::where('tgl_absen', $harini)->where('nip', $nip_id)->count();
+        $ceklem = LemburModel::where('nip', $nip_id)
+        ->where('tgl_absen', '<', $harini)
+        ->whereNull('jam_out')
+        ->orderByDesc('tgl_absen')
+        ->first();
 
             // Cek apakah absen terakhir belum absen pulang
             // if ($absenTerakhir && $absenTerakhir->jam_out === null) {
@@ -758,7 +759,7 @@ public function lembur()
 
         $pegawai = PegawaiModel::with('perusa', 'kantor', 'jabat', 'sat' )->findOrFail($nip_id);
 
-        return view('absen.lembur', compact('pegawai', 'cek', 'cek2', 'absenTerakhir', 'ceklem'));
+        return view('absen.lembur', compact('pegawai', 'cek', 'cek2', 'absenTerakhir', 'ceklem', 'lem'));
     }
 
 public function mulaiLembur(Request $request)
@@ -788,6 +789,9 @@ public function mulaiLembur(Request $request)
         'nip' => $pegawai->id,
         'perusahaan' => $pegawai->perusahaan,
         'kantor' => $pegawai->kantor->id,
+        'satker' => $pegawai->satker,
+        'area_kerja' => $request->area_kerja,
+        'uraian' => $request->uraian,
         'tgl_absen' => $tgl,
         'jam_in' => now()->format('H:i:s'),
         'foto_in' => $fotoPath,
@@ -872,5 +876,29 @@ private function simpanFotoBase64($base64, $prefix)
     return $fileName; // hanya nama file yang dikembalikan
 }
 
+public function lemburan()
+{
+    $tgl = date('Y-m');
+    $lembur = LemburModel::where('satker', Auth::guard('pegawai')->user()->satker)
+    ->where('tgl_absen', 'LIKE', '%'.$tgl.'%')
+    // ->whereNull('aprv_by_spv')
+    ->get();
 
+    return view('absen.lemburan', compact('lembur'));
+}
+
+    public function aprv_lmbr(Request $request, $id)
+    {
+        $request->validate([
+            'aprv_by_spv' => 'required'
+        ]);
+
+        $izin = LemburModel::findOrFail($id);
+        $izin->aprv_by_spv = $request->aprv_by_spv;
+        $izin->save();
+
+        return response()->json([
+            'message' => 'Status izin berhasil diperbarui.'
+        ]);
+    }
 }

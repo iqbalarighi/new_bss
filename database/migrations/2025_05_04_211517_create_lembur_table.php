@@ -16,6 +16,8 @@ return new class extends Migration
             $table->integer('nip')->unsigned();
             $table->integer('perusahaan')->unsigned();
             $table->integer('kantor')->unsigned();
+            $table->string('area_kerja');
+            $table->text('uraian');
             $table->string('tgl_absen');
             $table->string('jam_in');
             $table->text('foto_in');
@@ -23,6 +25,8 @@ return new class extends Migration
             $table->string('jam_out')->nullable();
             $table->text('foto_out')->nullable();
             $table->text('lokasi_out')->nullable();
+            $table->text('aprv_by_spv')->nullable();
+            $table->text('aprv_by_adm')->nullable();
             $table->timestamps();
         });
     }

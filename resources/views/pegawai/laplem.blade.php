@@ -17,11 +17,11 @@
     <div class="row justify-content-center">
         <div class="col mw-100">
             <div class="card">
-                <div class="card-header d-flex justify-content-between fw-bold">{{ __('Laporan Absensi Pegawai') }}
+                <div class="card-header d-flex justify-content-between fw-bold">{{ __('Laporan Lembur Pegawai') }}
                 </div>
                 <div class="card-body d-flex justify-content-center">
                     <div class="col-md-6 d-flex justify-content-center">
-                <form id="formAbsensi" action="{{ route('pegawai.absensi.preview') }}" method="POST" target="_blank">
+                <form id="formAbsensi" action="{{ route('pegawai.lembur.preview') }}" method="POST" target="_blank">
                     @csrf
                     <div class="row g-3 align-items-end">
                        @php

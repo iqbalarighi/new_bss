@@ -45,6 +45,8 @@
             <div class="col" style="margin-bottom: -30px">
                 <input type="hidden" id="lokasi">
                 <input type="text" id="confirm" hidden disabled>
+                <input type="text" id="area_kerja" hidden disabled>
+                <input type="text" id="uraian" hidden disabled>
                 <div id="my_camera" class="webcam-capture"></div>
             </div>
         </div>
@@ -90,6 +92,58 @@
                         $('#confirm').removeAttr('value');
                     }
                 });
+</script>
+@endif
+@if($lem == 0)
+<script type="text/javascript">
+Swal.fire({
+    title: 'Data Lembur',
+    html: `
+        <style>
+            .swal2-input, .swal2-textarea {
+                display: block;
+                margin: 10px auto;
+                width: 100% !important;
+                max-width: 100%;
+            }
+        </style>
+        <input type="text" id="swal-input-area" class="swal2-input" placeholder="Area Kerja">
+        <textarea id="swal-input-uraian" class="swal2-textarea" placeholder="Uraian"></textarea>
+    `,
+    focusConfirm: false,
+    showCancelButton: true,
+    confirmButtonText: 'Simpan',
+    allowOutsideClick: false,
+    preConfirm: () => {
+        const areaKerja = document.getElementById('swal-input-area')?.value.trim();
+        const uraian = document.getElementById('swal-input-uraian')?.value.trim();
+
+        if (!areaKerja || !uraian) {
+            Swal.showValidationMessage('Area Kerja dan Uraian wajib diisi!');
+            return false;
+        }
+
+        return { area_kerja: areaKerja, uraian: uraian };
+    }
+}).then((result) => {
+    if (result.isConfirmed) {
+        const data = result.value;
+        console.log("Data disimpan:", data.area);
+            $('#area_kerja').prop('disabled', false);
+            $('#area_kerja').attr('name', 'area_kerja');
+            $('#area_kerja').attr('value', data.area_kerja);
+
+            $('#uraian').prop('disabled', false);
+            $('#uraian').attr('name', 'uraian');
+            $('#uraian').attr('value', data.uraian);
+        } else {
+            $('#area_kerja').removeAttr('name');
+            $('#area_kerja').removeAttr('value');
+
+            $('#uraian').removeAttr('name');
+            $('#uraian').removeAttr('value');
+        }
+});
 </script>
 @endif
 <script>
@@ -161,6 +215,8 @@ document.addEventListener('DOMContentLoaded', function () {
 function tampilkanPreviewDanKirim(url) {
     let judul = (tipeAbsen === 'mulai') ? 'Absen Lembur Masuk' : 'Absen Lembur Selesai';
     let confirm = $('#confirm').val();
+    let area_kerja = $('#area_kerja').val();
+    let uraian = $('#uraian').val();
     Swal.fire({
         title: judul,
         html: `<p><strong><ion-icon name="location" class="text-danger" style="font-size: 20px;"></ion-icon></strong> ${lokasiPreview}</p><img src="${fotoPreview}" style="width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius:8px" />`,
@@ -182,7 +238,9 @@ function tampilkanPreviewDanKirim(url) {
                 _token: '{{ csrf_token() }}',
                 foto: fotoPreview,
                 lokasi: lokasiPreview,
-                confirm: confirm
+                confirm: confirm,
+                area_kerja: area_kerja,
+                uraian: uraian
             }, function (response) {
                 Swal.fire({
                     title: 'Berhasil',

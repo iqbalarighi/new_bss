@@ -75,7 +75,7 @@
                         <div class="item-menu text-center">
                             <div class="menu-icon">
                                 <a href="{{ route('absen.histori') }}" class="danger" style="font-size: 40px;">
-                                    <ion-icon name="calendar-number"></ion-icon>
+                                    <ion-icon name="calendar-outline"></ion-icon>
                                 </a>
                             </div>
                             <div class="menu-name">

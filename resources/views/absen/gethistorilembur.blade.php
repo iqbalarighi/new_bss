@@ -3,16 +3,17 @@
 @else
 @foreach($get as $key => $item )
 @php
-    $jamMasuk = \Carbon\Carbon::parse($item->tgl_absen . ' ' . $item->jam_in);
-    $jamKeluar = $item->jam_out ? \Carbon\Carbon::parse($item->tgl_absen . ' ' . $item->jam_out) : null;
-
-    if ($jamKeluar && $jamKeluar->lt($jamMasuk)) {
-        $jamKeluar->addDay();
-    }
-
     $durasiFormatted = null;
 
-    if ($jamKeluar) {
+    if ($item->jam_in && $item->jam_out) {
+        $jamMasuk = \Carbon\Carbon::parse($item->tgl_absen . ' ' . $item->jam_in);
+        $updated_at = \Carbon\Carbon::parse($item->updated_at)->format('Y-m-d');
+        $jamKeluar = \Carbon\Carbon::parse($updated_at . ' ' . $item->jam_out);
+
+        if ($jamKeluar->lt($jamMasuk)) {
+            $jamKeluar->addDay();
+        }
+
         $totalSeconds = $jamMasuk->diffInSeconds($jamKeluar);
         $hours = floor($totalSeconds / 3600);
         $minutes = floor(($totalSeconds % 3600) / 60);

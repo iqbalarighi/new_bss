@@ -2,29 +2,31 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
-use App\Models\DeptModel;
-use App\Models\ShiftModel;
-use App\Models\AbsenModel;
-use Jenssegers\Agent\Agent;
-use App\Models\SatkerModel;
-use App\Models\KantorModel;
-use Illuminate\Support\Str;
-use App\Models\JabatanModel;
-use App\Models\PegawaiModel;
-use Illuminate\Http\Request;
-use App\Models\IzinabsenModel;
-use Barryvdh\DomPDF\Facade\Pdf;
-use App\Models\PerusahaanModel;
+use App\Exports\LemburExport;
 use App\Exports\PresensiExport;
 use App\Exports\RekapAbsensiExport;
-use Intervention\Image\ImageManager;
-use Maatwebsite\Excel\Facades\Excel;
+use App\Models\AbsenModel;
+use App\Models\DeptModel;
+use App\Models\IzinabsenModel;
+use App\Models\JabatanModel;
+use App\Models\KantorModel;
+use App\Models\LemburModel;
+use App\Models\PegawaiModel;
+use App\Models\PerusahaanModel;
+use App\Models\SatkerModel;
+use App\Models\ShiftModel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
+use Jenssegers\Agent\Agent;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PegawaiController extends Controller
 {
@@ -439,7 +441,7 @@ public function update(Request $request, $id)
             ->where('tgl_absen', 'LIKE', '%' . $periode . '%')
             ->get();
 
-$agent = new Agent();
+    $agent = new Agent();
 
     $pdf = Pdf::loadView('pegawai.preview', compact('pegawai', 'absen', 'periode'))
                   ->setPaper('A4', 'portrait');
@@ -681,5 +683,90 @@ public function delete($id)
 //     }
 // }
 
+public function lembur()
+    {
+    if(Auth::user()->role == 0){
+        $lembur = LemburModel::paginate(15);
+        } else if(Auth::user()->role == 1) {
+        $lembur = LemburModel::where('perusahaan', Auth::user()->perusahaan)->paginate(15);
+        } else if(Auth::user()->role == 3){
+        $lembur = LemburModel::where('perusahaan', Auth::user()->perusahaan)->where('kantor', Auth::user()->kantor)->paginate(15);
+        }
 
+        return view('pegawai.lembur', compact('lembur'));
+    }
+
+    public function aprv_adm(Request $request, $id)
+    {
+        $request->validate([
+            'aprv_by_adm' => 'required'
+        ]);
+
+        $apprv = LemburModel::findOrFail($id);
+        $apprv->aprv_by_adm = $request->aprv_by_adm;
+        $apprv->save();
+
+        return response()->json([
+            'message' => 'Status lembur berhasil diperbarui.'
+        ]);
+    }
+
+public function laplem()
+{
+    if (Auth::user()->role == 0) {
+            $karyawans = PegawaiModel::all();
+            $kantors = KantorModel::all();
+            $tabul = PegawaiModel::get('created_at')->first();
+
+        return view('pegawai.laplem', compact('karyawans', 'kantors', 'tabul'));
+        } elseif (Auth::user()->role == 1) {
+            $comp = Auth::user()->perusahaan;
+            $karyawans = PegawaiModel::where('perusahaan', $comp)->get();
+            $kantors = KantorModel::where('perusahaan', $comp)->get();
+            $tabul = PegawaiModel::get('created_at')->first();
+
+        return view('pegawai.laplem', compact('karyawans', 'kantors', 'tabul'));
+        } elseif (Auth::user()->role == 3) {
+            $comp = Auth::user()->perusahaan;
+            $kantor = Auth::user()->kantor;
+            $tabul = PegawaiModel::get('created_at')->first();
+            $karyawans = PegawaiModel::where('perusahaan', $comp)->where('nama_kantor', $kantor)->get();
+            $depts = DeptModel::where('perusahaan', $comp)->where('nama_kantor', $kantor)->get();
+
+        return view('pegawai.laplem', compact('karyawans', 'tabul', 'depts'));
+        } 
+}
+
+    public function prelem(Request $request)
+    {
+        $periode = $request->periode;
+        $id = $request->pegawais;
+
+        $pegawai = PegawaiModel::findOrFail($id);
+
+        $lembur = LemburModel::with('pegawai')
+            ->where('nip', $pegawai->id)
+            ->where('tgl_absen', 'LIKE', '%' . $periode . '%')
+            ->whereNotNull('jam_in')
+            ->whereNotNull('jam_out')
+            ->orderBy('tgl_absen')
+            ->get();
+
+    $agent = new Agent();
+
+    $pdf = Pdf::loadView('pegawai.prevlem', compact('pegawai', 'lembur', 'periode'))
+                  ->setPaper('A4', 'portrait');
+
+        if ($request->action == "cetak") {
+            if ($agent->isMobile()){
+                return $pdf->download('Laporan Absensi Pegawai '.$pegawai->nama_lengkap.'.pdf');
+            } else {
+                return $pdf->stream('Laporan Absensi Pegawai '.$pegawai->nama_lengkap.'.pdf');
+            }
+        } else {
+            // Export to Excel
+            return Excel::download(new LemburExport($lembur, $pegawai, $periode), 'lembur_' . $pegawai->id . '_' . $periode . '.xlsx');
+
+        }
+    }
 }

@@ -212,12 +212,21 @@
                 <strong>Izin</strong>
             </div>
         </a>
-        <a href="/absen/profile" class="item {{Request::is('absen/profile') ? 'active' : ''}}">
-            <div class="col">
-                <ion-icon name="people-outline" role="img" class="md hydrated" aria-label="people outline"></ion-icon>
-                <strong>Profile</strong>
-            </div>
-        </a>
+        @if(Str::contains(strtolower(Auth::guard('pegawai')->user()->jabat->jabatan), ['supervisor', 'danru', 'kepala', 'koordinator']) )
+            <a href="/absen/lemburan" class="item {{Request::is('absen/lemburs') ? 'active' : ''}}">
+                <div class="col">
+                    <ion-icon name="calendar-number-outline" role="img" class="md hydrated" aria-label="calendar number outline"></ion-icon>
+                    <strong>Lembur</strong>
+                </div>
+            </a>
+        @else
+            <a href="/absen/profile" class="item {{Request::is('absen/profile') ? 'active' : ''}}">
+                <div class="col">
+                    <ion-icon name="people-outline" role="img" class="md hydrated" aria-label="people outline"></ion-icon>
+                    <strong>Profile</strong>
+                </div>
+            </a>
+        @endif
     </div>
 
     @push('myscript')

@@ -41,9 +41,11 @@
                 <div class="list-group list-group-flush">
                     <a href="{{ route('pegawai.index') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('pegawai') ? 'active' : '' }}" style="width: 95%;">Daftar Pegawai</a>
                     <a href="{{ route('pegawai.absensi') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('pegawai/absensi') ? 'active' : '' }}" style="width: 95%;">Absensi</a>
+                    <a href="{{ route('pegawai.lembur') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('pegawai/lembur') ? 'active' : '' }}" style="width: 95%;">Lembur</a>
                     <a href="{{ route('pegawai.absensi.izin') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('pegawai/absensi/izin') ? 'active' : '' }}" style="width: 95%;">Izin</a>
                     <a href="{{ route('pegawai.absensi.laporan') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('pegawai/absensi/laporan') ? 'active' : '' }}" style="width: 95%;">Laporan Absensi</a>
                     <a href="{{ route('pegawai.absensi.rekap') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('pegawai/absensi/rekap') ? 'active' : '' }}" style="width: 95%;">Rekap Absensi</a>
+                    <a href="{{ route('pegawai.lembur.laporan') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('pegawai/lembur/laporan') ? 'active' : '' }}" style="width: 95%;">Laporan Lembur</a>
                 </div>
             </div>
         </div>
