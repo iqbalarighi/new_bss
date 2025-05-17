@@ -34,7 +34,7 @@ class PresensiExport implements FromView, WithStyles, WithEvents, WithColumnWidt
     {
         return [
             // Judul tabel (row 12, misalnya)
-            'A13:H13' => [
+            'A12:H12' => [
                 'font' => ['bold' => true],
                 'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
             ],
@@ -63,7 +63,7 @@ public function registerEvents(): array
 
             // Hitung baris terakhir secara dinamis
             $highestRow = $sheet->getHighestDataRow();
-            $range = 'A13:H' . $highestRow;
+            $range = 'A12:H' . $highestRow;
 
             // Terapkan border dan alignment ke seluruh data mulai baris ke-15
             $sheet->getStyle($range)->applyFromArray([

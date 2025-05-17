@@ -16,6 +16,7 @@ return new class extends Migration
             $table->integer('nip')->unsigned();
             $table->integer('perusahaan')->unsigned();
             $table->integer('kantor')->unsigned();
+            $table->integer('satker')->unsigned();
             $table->string('area_kerja');
             $table->text('uraian');
             $table->string('tgl_absen');

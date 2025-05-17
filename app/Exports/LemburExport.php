@@ -2,15 +2,16 @@
 
 namespace App\Exports;
 
-use App\Models\LemburModel;
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Carbon\Carbon;
 
-class LemburExport implements FromView, WithStyles, WithEvents
+class LemburExport implements FromView, WithStyles, WithEvents, WithColumnWidths
 {
     protected $lembur;
     protected $periode;
@@ -43,6 +44,21 @@ public function styles(Worksheet $sheet)
         ];
     }
 
+    public function columnWidths(): array
+    {
+        return [
+            'A' => 6,
+            'B' => 15,
+            'C' => 15,
+            'D' => 5,
+            'E' => 15,
+            'F' => 5,
+            'G' => 30,
+            'H' => 25,
+            'I' => 25,
+        ];
+    }
+
 public function registerEvents(): array
 {
     return [
@@ -51,7 +67,7 @@ public function registerEvents(): array
 
             // Hitung baris terakhir secara dinamis
             $highestRow = $sheet->getHighestDataRow();
-            $range = 'A13:H' . $highestRow;
+            $range = 'A13:I' . $highestRow;
 
             // Terapkan border dan alignment ke seluruh data mulai baris ke-15
             $sheet->getStyle($range)->applyFromArray([

@@ -9,30 +9,31 @@
 <body>
     <table>
         <tr>
-            <td rowspan="5"><img src="{{ public_path('storage/img/logo.png') }}" height="80" /></td>
-            <td colspan="7" style="text-align:center;"><b>LAPORAN LEMBUR KARYAWAN</b></td>
+            <td height="15px;"><img src="{{ public_path('storage/img/logo.png') }}" height="80" /></td>
         </tr>
-        <tr><td colspan="7" style="text-align:center;">PERIODE {{ \Carbon\Carbon::parse($periode)->isoFormat('MMMM YYYY') }}</td></tr>
-        <tr><td colspan="7" style="text-align:center;">{{ $pegawai->perusa->perusahaan ?? '-' }}</td></tr>
-        <tr><td colspan="7" style="text-align:center;">{{ $pegawai->perusa->alamat ?? '-' }}</td></tr>
-        <tr><td colspan="7" style="text-align:center;">-</td></tr>
+        <tr>
+            <td colspan="9" style="text-align:center;"><b>LAPORAN LEMBUR KARYAWAN</b></td>
+        </tr>
+        <tr><td colspan="9" style="text-align:center;">PERIODE {{ \Carbon\Carbon::parse($periode)->isoFormat('MMMM YYYY') }}</td></tr>
+        <tr><td colspan="9" style="text-align:center;">{{ $pegawai->perusa->perusahaan ?? '-' }}</td></tr>
+        <tr><td colspan="9" style="text-align:center;">{{ $pegawai->perusa->alamat ?? '-' }}</td></tr>
     </table>
 
     <table>
     <tr>
-        <td class="info">NIK : {{ $pegawai->nip }}</td>
+        <td colspan="4" class="info">NIK : {{ $pegawai->nip }}</td>
     </tr>
     <tr>
-        <td class="info">Nama Karyawan : {{ strtoupper($pegawai->nama_lengkap) }}</td>
+        <td colspan="4" class="info">Nama Karyawan : {{ strtoupper($pegawai->nama_lengkap) }}</td>
     </tr>
     <tr>
-        <td class="info">Jabatan : {{ $pegawai->jabat->jabatan ?? '-' }}</td>
+        <td colspan="4" class="info">Jabatan : {{ $pegawai->jabat->jabatan ?? '-' }}</td>
     </tr>
     <tr>
-        <td class="info">Departemen : {{ $pegawai->deptmn->nama_dept ?? '-' }}</td>
+        <td colspan="4" class="info">Departemen : {{ $pegawai->deptmn->nama_dept ?? '-' }}</td>
     </tr>
     <tr>
-        <td class="info">No. HP : {{ $pegawai->no_hp }}</td>
+        <td colspan="4" class="info">No. HP : {{ $pegawai->no_hp }}</td>
     </tr>
 </table>
 <table border="1" cellpadding="3">
@@ -46,7 +47,7 @@
         <th>Foto</th>
         <th>Area Kerja</th>
         <th>Keterangan</th>
-        <th>Jumlah Jam Kerja</th>
+        <th>Jumlah Jam Lembur</th>
       </tr>
     </thead>
     <tbody>

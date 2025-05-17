@@ -454,7 +454,7 @@ public function update(Request $request, $id)
             }
         } else {
             // Export to Excel
-            return Excel::download(new PresensiExport($absen, $pegawai, $periode), 'presensi_' . $pegawai->id . '_' . $periode . '.xlsx');
+            return Excel::download(new PresensiExport($absen, $pegawai, $periode), 'presensi_' . $pegawai->nip . '_' . $periode . '.xlsx');
 
         }
     }
@@ -686,11 +686,11 @@ public function delete($id)
 public function lembur()
     {
     if(Auth::user()->role == 0){
-        $lembur = LemburModel::paginate(15);
+        $lembur = LemburModel::latest()->paginate(15);
         } else if(Auth::user()->role == 1) {
-        $lembur = LemburModel::where('perusahaan', Auth::user()->perusahaan)->paginate(15);
+        $lembur = LemburModel::where('perusahaan', Auth::user()->perusahaan)->latest()->paginate(15);
         } else if(Auth::user()->role == 3){
-        $lembur = LemburModel::where('perusahaan', Auth::user()->perusahaan)->where('kantor', Auth::user()->kantor)->paginate(15);
+        $lembur = LemburModel::where('perusahaan', Auth::user()->perusahaan)->where('kantor', Auth::user()->kantor)->latest()->paginate(15);
         }
 
         return view('pegawai.lembur', compact('lembur'));
@@ -765,7 +765,7 @@ public function laplem()
             }
         } else {
             // Export to Excel
-            return Excel::download(new LemburExport($lembur, $pegawai, $periode), 'lembur_' . $pegawai->id . '_' . $periode . '.xlsx');
+            return Excel::download(new LemburExport($lembur, $pegawai, $periode), 'lembur_' . $pegawai->nip . '_' . $periode . '.xlsx');
 
         }
     }

@@ -882,6 +882,7 @@ public function lemburan()
     $lembur = LemburModel::where('satker', Auth::guard('pegawai')->user()->satker)
     ->where('tgl_absen', 'LIKE', '%'.$tgl.'%')
     // ->whereNull('aprv_by_spv')
+    ->latest()
     ->get();
 
     return view('absen.lemburan', compact('lembur'));
@@ -898,7 +899,7 @@ public function lemburan()
         $izin->save();
 
         return response()->json([
-            'message' => 'Status izin berhasil diperbarui.'
+            'message' => 'Pengajuan Lembur Berhasil'
         ]);
     }
 }

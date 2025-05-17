@@ -27,9 +27,7 @@
                 <th>Alasan Lembur</th>
                 <th>Diajukan Oleh</th>
                 {{-- <th>Foto</th> --}}
-                @if(Auth::user()->role == 3)
                 <th>Disetujui oleh</th>
-                @endif
             </tr>
         </thead>
         <tbody>
@@ -75,7 +73,13 @@
                 <td>{{ $l->area_kerja }}</td>
                 <td>{{ $l->uraian }}</td>
                 <td>
-                    {{ $l->spv->nama_lengkap ?? 'Ditolak' }} perbaiaki logic nya disisni
+                    @if($l->aprv_by_spv == null )
+                        <span class="badge bg-warning" style="cursor: not-allowed;">Menunggu</span> 
+                    @elseif($l->aprv_by_spv == 0 )
+                        <span class="badge bg-danger">Ditolak</span> 
+                    @else
+                     <span class="text-success">{{ $l->spv->nama_lengkap ?? ''}}</span> 
+                    @endif
                 </td>
                 {{-- <td>
                     @if($l->foto)
@@ -86,21 +90,23 @@
                         -
                     @endif
                 </td> --}}
-                @if(Auth::user()->role == 3)
+
                 <td>
                     @if($l->aprv_by_adm == Auth::user()->id)
                     <span class="badge bg-success approve-popup" data-id="{{ $l->id }}"  style="padding-left: 10px; padding-right: 10px; cursor: pointer;">Disetujui</span>
-                    @elseif($l->aprv_by_adm === 0)
+                    @elseif($l->aprv_by_adm == '0')
                        <span class="badge bg-danger approve-popup" data-id="{{ $l->id }}"  style="padding-left: 10px; padding-right: 10px; cursor: pointer;">Ditolak</span>
                     @else
-                        @if($l->aprv_by_spv === 0)
+                        @if($l->aprv_by_spv == '0')
                         <span class="badge bg-danger" onclick="decline()" style="padding-left: 10px; padding-right: 10px; cursor: not-allowed;">Ditolak</span>
+                        @elseif($l->aprv_by_spv == null)
+                        <span class="badge bg-warning" onclick="onnull()" style="padding-left: 10px; padding-right: 10px; cursor: not-allowed;">Menunggu</span>
                         @else
                         <span class="badge bg-warning text-dark approve-popup" data-id="{{ $l->id }}"  style="padding-left: 10px; padding-right: 10px; cursor: pointer;">Validasi</span>
                         @endif
                     @endif
                 </td>
-                @endif
+
             </tr>
             @endforeach
         </tbody>
@@ -166,6 +172,16 @@
               icon: "error",
               title: "Oops...",
               text: "Lemburan Ditolak Supervisor",
+            });
+        }
+    </script>
+
+    <script type="text/javascript">
+        function onnull() {
+            Swal.fire({
+              icon: "error",
+              title: "Oops...",
+              text: "Menunggu Validasi Supervisor",
             });
         }
     </script>

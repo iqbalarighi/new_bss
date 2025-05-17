@@ -64,19 +64,27 @@
     }
 @endphp
         <ul class="listview image-listview">
-            <li>
-                <div class="item {{$d->aprv_by_adm === null ? 'bg-null' : ($d->aprv_by_adm === 0 ? 'bg-decline' : 'bg-apprv')}}">
+            <li {!! $d->jam_out == null ? 'onclick="beloman();"' : '' !!}>
+                <div class="item {{$d->aprv_by_adm == null ? 'bg-null' : ($d->aprv_by_adm == 0 ? 'bg-decline decline' : 'bg-apprv')}}">
                     <div class="in">
                         <div style="width: 250px;">
                             <b>{{$d->pegawai->nama_lengkap}}</b><br>
-                            Total Waktu :<small class="text-muted"> {{ $durasiFormatted }}</small> <br>
-                            Area Kerja :<small class="text-muted"> {{ $d->area_kerja }}</small> <br>
-                            Alasan Lembur :<small class="text-muted"> {{ $d->uraian }}</small>
+                            <small class="text-muted">Tanggal : {{ \Carbon\Carbon::parse($d->tgl_absen)->translatedFormat('d F Y') }}</small> <br>
+                            <small class="text-muted">Total Waktu : {{ $durasiFormatted ?? 'Berlangsung'}}</small> <br>
+                            <small class="text-muted">Area Kerja : {{ $d->area_kerja }}</small> <br>
+                            <small class="text-muted">Alasan Lembur : {{ $d->uraian }}</small>
                         </div>
-                        @if($d->aprv_by_spv === Auth::guard('pegawai')->user()->id)
-                        <span class="badge bg-success {{$d->aprv_by_adm == null ? 'approve-popup' : ''}}" data-id="{{ $d->id }}"  style="padding-left: 10px; padding-right: 10px;">Disetujui</span>
-                        @elseif($d->aprv_by_spv === 0)
-                           <span class="badge bg-danger {{$d->aprv_by_adm == null ? 'approve-popup' : ''}}" data-id="{{ $d->id }}"  style="padding-left: 10px; padding-right: 10px;">Ditolak</span>
+                        
+                        @if($d->aprv_by_spv != 0)
+                            @if($d->aprv_by_adm > 1)
+                                <span class="badge bg-success {{$d->aprv_by_adm == null ? 'approve-popup' : ''}}" data-id="{{ $d->id }}"  style="padding-left: 10px; padding-right: 10px;">Disetujui</span>
+                            @elseif($d->aprv_by_adm === '0')
+                                <span class="badge bg-danger {{$d->aprv_by_adm == null ? 'approve-popup' : ''}}" data-id="{{ $d->id }}"  style="padding-left: 10px; padding-right: 10px;">Ditolak</span>
+                            @else
+                                <span class="badge bg-warning {{$d->aprv_by_adm == null ? 'approve-popup' : ''}}" data-id="{{ $d->id }}"  style="padding-left: 10px; padding-right: 10px;">Menunggu</span>
+                            @endif
+                        @elseif($d->aprv_by_spv === '0')
+                                <span class="badge bg-danger {{$d->aprv_by_adm == null ? 'approve-popup' : ''}}" data-id="{{ $d->id }}"  style="padding-left: 10px; padding-right: 10px;">Ditolak</span>
                         @else
                             <span class="badge bg-warning text-dark approve-popup" data-id="{{ $d->id }}"  style="padding-left: 10px; padding-right: 10px;">Validasi</span>
                         @endif
@@ -136,5 +144,23 @@
             }
         });
     });
+    </script>
+    <script type="text/javascript">
+        function beloman() {
+            Swal.fire({
+              icon: "error",
+              title: "Oops...",
+              text: "Lemburan masih berlangsung!"
+            });
+        }
+    </script>
+    <script type="text/javascript">
+        $('.decline').on('click', function(e) {
+            Swal.fire({
+              icon: "error",
+              title: "Oops...",
+              text: "Ditolak Oleh Admin"
+            });
+        });
     </script>
 @endpush 
