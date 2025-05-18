@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\LemburBulananExport;
 use App\Exports\LemburExport;
 use App\Exports\PresensiExport;
 use App\Exports\RekapAbsensiExport;
@@ -567,6 +568,7 @@ public function update(Request $request, $id)
                     ->whereBetween('tanggal', [$start, $end])
                     ->where('status_approve', 1)
                     ->get();
+
         if($satker != null ){
                 $rekap[] = [
                     'nip' => $k->nip,
@@ -768,5 +770,145 @@ public function laplem()
             return Excel::download(new LemburExport($lembur, $pegawai, $periode), 'lembur_' . $pegawai->nip . '_' . $periode . '.xlsx');
 
         }
+    }
+
+    public function rekaplembur()
+    {
+        $tabul = PegawaiModel::get('created_at')->first();
+
+        if (Auth::user()->role == 0) {
+            $kantors = KantorModel::all();
+        } else if (Auth::user()->role == 1) {
+            $comp = Auth::user()->perusahaan;
+            $kantors = KantorModel::where('perusahaan', $comp)->get();
+        } else if (Auth::user()->role == 3) {
+            $comp = Auth::user()->perusahaan;
+            $kantor = Auth::user()->kantor;
+            $kantors = KantorModel::where('perusahaan', $comp)->where('nama_kantor', $kantor)->get();
+            $depts = DeptModel::where('perusahaan', $comp)->where('nama_kantor', $kantor)->get();
+        return view('pegawai.rekaplembur', compact('kantors', 'tabul', 'depts'));
+        } 
+        return view('pegawai.rekaplembur', compact('kantors', 'tabul'));
+    }
+
+    public function reklem(Request $request)
+    {
+        $periode = $request->periode;
+
+    if (Auth::user()->role == 0) {
+            $comp = $request->tenant;
+            $kantor = $request->kantor;
+            $dept = $request->departemen;
+            $satker = $request->satker;
+        if($satker == null){
+             $sat = null;
+            $pegawaiList = PegawaiModel::where('perusahaan', $comp)
+                ->where('nama_kantor', $kantor)
+                ->where('dept', $dept)
+                ->get();
+
+            } else {
+                 $sat = SatkerModel::findOrFail($satker);
+            $pegawaiList = PegawaiModel::where('perusahaan', $comp)
+                ->where('nama_kantor', $kantor)
+                ->where('dept', $dept)
+                ->where('satker', $satker)
+                ->get();
+            }
+    } elseif (Auth::user()->role == 1) {
+            $comp = Auth::user()->perusahaan;
+            $kantor = $request->kantor;
+            $dept = $request->departemen;
+            $satker = $request->satker;
+            if($satker == null){
+                 $sat = null;
+                $pegawaiList = PegawaiModel::where('perusahaan', $comp)
+                    ->where('nama_kantor', $kantor)
+                    ->where('dept', $dept)
+                    ->get();
+
+                } else {
+                     $sat = SatkerModel::findOrFail($satker);
+                $pegawaiList = PegawaiModel::where('perusahaan', $comp)
+                    ->where('nama_kantor', $kantor)
+                    ->where('dept', $dept)
+                    ->where('satker', $satker)
+                    ->get();
+                }
+
+    } elseif (Auth::user()->role == 3) {
+            $comp = Auth::user()->perusahaan;
+            $kantor = Auth::user()->kantor;
+            $dept = $request->departemen;
+            $satker = $request->satker;
+            if($satker == null){
+                 $sat = null;
+                $pegawaiList = PegawaiModel::where('perusahaan', $comp)
+                    ->where('nama_kantor', $kantor)
+                    ->where('dept', $dept)
+                    ->get();
+
+                } else {
+                     $sat = SatkerModel::findOrFail($satker);
+                $pegawaiList = PegawaiModel::where('perusahaan', $comp)
+                    ->where('nama_kantor', $kantor)
+                    ->where('dept', $dept)
+                    ->where('satker', $satker)
+                    ->get();
+            }
+    }
+
+            $inputBulan = $request->periode ?? now()->format('Y-m');
+            [$tahun, $bulan] = explode('-', $inputBulan); // parsing "2025-04"
+
+            $start = Carbon::createFromDate($tahun, $bulan, 1)->startOfMonth();
+            $end = $start->copy()->endOfMonth();
+            $jumlahHari = Carbon::createFromDate($tahun, $bulan, 1)->daysInMonth();
+
+        $rekap = [];
+        $depar = DeptModel::where('id', $dept)->first();
+
+        foreach ($pegawaiList as $pegawai) {
+            $lembur = LemburModel::where('nip', $pegawai->id)
+                ->whereMonth('tgl_absen', $bulan)
+                ->whereYear('tgl_absen', $tahun)
+                ->orderBy('satker', 'asc')
+                ->get();
+
+            $rekap[] = [
+                'nip' => $pegawai->nip,
+                'nama' => $pegawai->nama_lengkap,
+                'sat' => $pegawai->sat->satuan_kerja ?? '-', // pastikan relasi satker ada
+                'lembur' => $lembur,
+            ];
+        }
+
+        // return view('pegawai.reklem', [
+        //     'rekap' => $rekap,
+        //     'bulan' => $bulan,
+        //     'tahun' => $tahun,
+        //     'satker' => null // atau isi sesuai filter user
+        // ]);
+
+
+
+            $agent = new Agent();
+
+    $pdf = Pdf::loadView('pegawai.reklem', compact('rekap', 'bulan', 'tahun', 'periode', 'satker', 'depar', 'sat'))
+                  ->setPaper('A4', 'landscape');
+
+            if($request->action == "cetak"){
+                // return view('pegawai.excelview', compact('rekap', 'bulan', 'tahun', 'periode', 'satker', 'depar', 'sat'));
+                if ($agent->isMobile()){
+                    return $pdf->download('Rekap_Lembur_'.Carbon::parse($periode)->isoFormat('MMMM_YYYY').'.pdf');
+                } else {
+                    return $pdf->stream('Rekap_Lembur_'.Carbon::parse($periode)->isoFormat('MMMM_YYYY').'.pdf');
+                }
+            } else {
+                return Excel::download(
+                    new LemburBulananExport($rekap, $bulan, $tahun, $periode, $satker, $depar, $sat, $jumlahHari),
+                    'Rekap_Lembur_'.Carbon::parse($periode)->isoFormat('MMMM_YYYY').'.xlsx'
+                );
+            }
     }
 }

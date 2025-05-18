@@ -12,6 +12,7 @@ class LemburModel extends Model
         'nip',
         'perusahaan',
         'kantor',
+        'dept',
         'satker',
         'area_kerja',
         'uraian',
@@ -54,5 +55,10 @@ class LemburModel extends Model
     public function perusa()
     {
         return $this->belongsTo(PerusahaanModel::class, 'perusahaan');
+    }
+
+    public function deptmn()
+    {
+        return $this->belongsTo(DeptModel::class, 'dept');
     }
 }

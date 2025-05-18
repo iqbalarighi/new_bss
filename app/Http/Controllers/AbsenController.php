@@ -789,6 +789,7 @@ public function mulaiLembur(Request $request)
         'nip' => $pegawai->id,
         'perusahaan' => $pegawai->perusahaan,
         'kantor' => $pegawai->kantor->id,
+        'dept' => $pegawai->dept,
         'satker' => $pegawai->satker,
         'area_kerja' => $request->area_kerja,
         'uraian' => $request->uraian,

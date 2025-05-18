@@ -46,6 +46,7 @@
                     <a href="{{ route('pegawai.absensi.laporan') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('pegawai/absensi/laporan') ? 'active' : '' }}" style="width: 95%;">Laporan Absensi</a>
                     <a href="{{ route('pegawai.absensi.rekap') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('pegawai/absensi/rekap') ? 'active' : '' }}" style="width: 95%;">Rekap Absensi</a>
                     <a href="{{ route('pegawai.lembur.laporan') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('pegawai/lembur/laporan') ? 'active' : '' }}" style="width: 95%;">Laporan Lembur</a>
+                    <a href="{{ route('pegawai.lembur.rekap') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('pegawai/lembur/rekap') ? 'active' : '' }}" style="width: 95%;">Rekap Lembur</a>
                 </div>
             </div>
         </div>

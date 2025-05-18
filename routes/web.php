@@ -98,6 +98,8 @@ Route::middleware(['auth:web'])->group(function () {
         Route::post('/pegawai/absensi/preview', 'preview')->name('pegawai.absensi.preview');
         Route::get('/pegawai/lembur/laporan', 'laplem')->name('pegawai.lembur.laporan');
         Route::post('/pegawai/lembur/preview', 'prelem')->name('pegawai.lembur.preview');
+        Route::get('/pegawai/lembur/rekap', 'rekaplembur')->name('pegawai.lembur.rekap');
+        Route::post('/pegawai/lembur/reklem', 'reklem')->name('pegawai.lembur.reklem');
         Route::get('/get-abs', 'getAbs')->name('get.abs');
         Route::get('/pegawai/absensi/izin', 'izin')->name('pegawai.absensi.izin');
         Route::get('/pegawai/lembur', 'lembur')->name('pegawai.lembur');

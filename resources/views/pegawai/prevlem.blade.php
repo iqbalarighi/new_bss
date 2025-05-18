@@ -150,7 +150,7 @@
         <th>Foto</th>
         <th>Area Kerja</th>
         <th>Keterangan</th>
-        <th>Jumlah Jam Kerja</th>
+        <th>Jumlah Jam Lembur</th>
       </tr>
     </thead>
     <tbody>
@@ -203,9 +203,9 @@
               }
 
               $durasi = $jamPulang->diff($jamMasuk);
-              echo ($durasi->h ? $durasi->h . ' jam ' : '') .
-                   ($durasi->i ? $durasi->i . ' menit ' : '') .
-                   ($durasi->s ? $durasi->s . ' detik' : '');
+              echo ($durasi->h ? $durasi->h . ' j ' : '') .
+                   ($durasi->i ? $durasi->i . ' m ' : '') .
+                   ($durasi->s ? $durasi->s . ' d' : '');
             } else {
               echo "Berlangsung";
             }
