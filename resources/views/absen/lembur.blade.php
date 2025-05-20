@@ -93,8 +93,7 @@
                     }
                 });
 </script>
-@endif
-@if($lem == 0)
+@elseif($lem == 0)
 <script type="text/javascript">
 Swal.fire({
     title: 'Data Lembur',
@@ -111,7 +110,7 @@ Swal.fire({
         <textarea id="swal-input-uraian" class="swal2-textarea" placeholder="Uraian"></textarea>
     `,
     focusConfirm: false,
-    showCancelButton: true,
+    showCancelButton: false,
     confirmButtonText: 'Simpan',
     allowOutsideClick: false,
     preConfirm: () => {
@@ -136,6 +135,14 @@ Swal.fire({
             $('#uraian').prop('disabled', false);
             $('#uraian').attr('name', 'uraian');
             $('#uraian').attr('value', data.uraian);
+
+            Swal.fire({
+              icon: "success",
+              title: "Oke",
+              text: "Klik tombol kamera dibawah untuk memulai lembur",
+              showConfirmButton: false,
+              timer: 4000
+            });
         } else {
             $('#area_kerja').removeAttr('name');
             $('#area_kerja').removeAttr('value');

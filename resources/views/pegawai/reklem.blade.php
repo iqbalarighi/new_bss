@@ -157,14 +157,21 @@
         $lembur = $r['lembur']->firstWhere('tgl_absen', $tgl);
     @endphp
     <td>
-      @if ($lembur && $lembur->jam_in && $lembur->jam_out)
-        <span>{{ $lembur->jam_in }}</span><br>
-        <span>{{ $lembur->jam_out }}</span>
+      @if ($lembur && $lembur->jam_in)
+        <span>{{ Carbon::parse($lembur->jam_in)->format('H:i:s')}}</span><br>
+        @if($lembur->jam_out == null)
+        Berlangsung
+        @else
+        <span>{{ Carbon::parse($lembur->jam_out)->format('H:i:s')}}</span>
+        @endif
 
         @php
           try {
-              $jamIn = Carbon::createFromFormat('H:i:s', $lembur->jam_in);
-              $jamOut = Carbon::createFromFormat('H:i:s', $lembur->jam_out);
+            $in = Carbon::parse($lembur->jam_in)->format('H:i:s');
+            $out = Carbon::parse($lembur->jam_out)->format('H:i:s');
+              
+              $jamIn = Carbon::createFromFormat('H:i:s', $in);
+              $jamOut = Carbon::createFromFormat('H:i:s', $out);
 
               if ($jamOut->lt($jamIn)) {
                   $jamOut->addDay();

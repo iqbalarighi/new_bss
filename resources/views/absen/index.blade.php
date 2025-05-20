@@ -116,8 +116,8 @@
         
         <div class="section mt-2" id="presence-section">
             <div class="todaypresence">
-                    <h5><ion-icon name="person"></ion-icon> Kehadiran Terakhir</h5>
         @if($absen != null)
+                    <h5><ion-icon name="person"></ion-icon> Kehadiran Terakhir</h5>
             <div class="card p-1 mb-1">
                 <h5>{{Carbon\carbon::parse($absen->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} ({{$absen->shifts->shift}})</h5>
 
@@ -156,6 +156,35 @@
             </div>
         @endif
 
+        @if($absenTerakhir)
+                    <h5><ion-icon name="person"></ion-icon> Kehadiran Terakhir</h5>
+            <div class="card p-1 mb-1">
+                <h5>{{Carbon\carbon::parse($absenTerakhir->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} ({{$absenTerakhir->shifts->shift}})</h5>
+
+                <div class="d-flex justify-content-around align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <img src="{{ asset('storage/absensi/'.$absenTerakhir->pegawai->nip.'/'.$absenTerakhir->foto_in) }}" alt="Foto Masuk" class="rounded" width="50">
+
+                        <div class="text-center pl-1 {{$absenTerakhir->jam_in > $absenTerakhir->shifts->jam_masuk ? 'text-danger' : ''}}">
+                            <span class="d-block">Masuk</span>
+                            <strong>{{$absenTerakhir->jam_in}}</strong>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        
+                        <div class="text-center pl-1">
+                            <span class="d-block">Pulang</span>
+                            <strong>--:--</strong>
+                        </div>
+                    </div>
+                </div>
+                    <div>
+                        <span class="text-warning float-right pr-1">Berlangsung</span>
+                    </div>
+
+            </div>
+        @endif
+
          @if($lembur != null)
          <h5 class="mt-3"><ion-icon name="time"></ion-icon> Lembur</h5>
             <div class="card p-1 mb-1">
@@ -168,7 +197,7 @@
 
                         <div class="text-center pl-1 ">
                             <span class="d-block">Mulai</span>
-                            <strong>{{$lembur->jam_in}}</strong>
+                            <strong>{{ Carbon\Carbon::parse($lembur->jam_in)->format('H:i:s') }}</strong>
                         </div>
                     </div>
                     @if($lembur->jam_out == null)
@@ -209,7 +238,7 @@
 
                         <div class="text-center pl-1 ">
                             <span class="d-block">Mulai</span>
-                            <strong>{{$ceklem->jam_in}}</strong>
+                            <strong>{{ Carbon\Carbon::parse($ceklem->jam_in)->format('H:i:s') }}</strong>
                         </div>
                     </div>
                     @if($ceklem->jam_out == null)
@@ -225,7 +254,7 @@
                         <img src="{{ asset('storage/lembur/'.$ceklem->pegawai->nip.'/'.$ceklem->foto_out) }}" alt="Foto Masuk" class="rounded" width="50">
                         <div class="text-center pl-1">
                             <span class="d-block">Selesai</span>
-                            <strong>{{$ceklem->jam_out}}</strong>
+                            <strong>{{ Carbon\Carbon::parse($ceklem->jam_out)->format('H:i:s') }}</strong>
                         </div>
                     </div>
                     @endif
@@ -518,8 +547,8 @@
 @push('myscript')
 @if($lembur != null)
 <script>
-    const jamIn = new Date("{{ \Carbon\Carbon::parse($lembur->tgl_absen . ' ' . $lembur->jam_in)->timezone('Asia/Jakarta')->format('Y-m-d\TH:i:sP') }}");
-    const jamOutRaw = @json($lembur->jam_out ? \Carbon\Carbon::parse($lembur->tgl_absen . ' ' . $lembur->jam_out)->timezone('Asia/Jakarta')->format('Y-m-d\TH:i:sP') : null);
+    const jamIn = new Date("{{ \Carbon\Carbon::parse($lembur->jam_in)->timezone('Asia/Jakarta')->format('Y-m-d\TH:i:sP') }}");
+    const jamOutRaw = @json($lembur->jam_out ? \Carbon\Carbon::parse($lembur->jam_out)->timezone('Asia/Jakarta')->format('Y-m-d\TH:i:sP') : null);
     const jamOut = jamOutRaw ? new Date(jamOutRaw) : null;
 
     function updateTimer() {
@@ -546,8 +575,8 @@
 @if($ceklem != null)
 <script>
     // Pastikan waktu menggunakan zona lokal yang benar (WIB)
-    const jamIn = new Date("{{ \Carbon\Carbon::parse($ceklem->tgl_absen . ' ' . $ceklem->jam_in)->timezone('Asia/Jakarta')->format('Y-m-d\TH:i:sP') }}");
-    const jamOutRaw = @json($ceklem->jam_out ? \Carbon\Carbon::parse($ceklem->tgl_absen . ' ' . $ceklem->jam_out)->timezone('Asia/Jakarta')->format('Y-m-d\TH:i:sP') : null);
+    const jamIn = new Date("{{ \Carbon\Carbon::parse($ceklem->jam_in)->timezone('Asia/Jakarta')->format('Y-m-d\TH:i:sP') }}");
+    const jamOutRaw = @json($ceklem->jam_out ? \Carbon\Carbon::parse($ceklem->jam_out)->timezone('Asia/Jakarta')->format('Y-m-d\TH:i:sP') : null);
     const jamOut = jamOutRaw ? new Date(jamOutRaw) : null;
 
     function updateTimer() {
@@ -570,5 +599,22 @@
         setInterval(updateTimer, 1000); // update tiap detik kalau jamOut belum ada
     }
 </script>
+@endif
+@if($absenTerakhir && is_null($absenTerakhir->jam_out))
+    <script type="text/javascript">
+        Swal.fire({
+            icon: 'info',
+            title: 'Perhatian!',
+            text: 'Absen Terakhir belum selesai, Selesaikan Absen!',
+            showCancelButton: true,
+            confirmButtonText: 'Oke',
+            cancelButtonText: 'Batal',
+            reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '{{ route('absen.create') }}'; // lanjut absen walau di luar radius
+                    }
+                });
+    </script>
 @endif
 @endpush

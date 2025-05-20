@@ -86,7 +86,7 @@
                     @endphp
                     <td>
                         @if ($lembur && $lembur->jam_in && $lembur->jam_out)
-                            {{ $lembur->jam_in }} - {{ $lembur->jam_out }}
+                            {{ Carbon\Carbon::parse($lembur->jam_in)->format('H:i:s') }} - {{ Carbon\Carbon::parse($lembur->jam_out)->format('H:i:s') }}
                             @php
                                 try {
                                     $jamIn = \Carbon\Carbon::createFromFormat('H:i:s', $lembur->jam_in);

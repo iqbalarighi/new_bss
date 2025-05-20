@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <title>Laporan Lemburan Karyawan</title>
+  <title>Laporan Lemburan Pegawai</title>
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/paper-css/0.4.1/paper.css">
@@ -111,7 +111,7 @@
           <img src="{{ public_path('storage/img/logo.png') }}">
       @endif
       <div>
-        <h3>LAPORAN LEMBURAN KARYAWAN</h3>
+        <h3>LAPORAN LEMBURAN PEGAWAI</h3>
         <strong>PERIODE <font class="text-uppercase">{{Carbon\Carbon::parse($periode)->isoFormat('MMMM YYYY')}}</font></strong><br>
         <strong>{{$pegawai->perusa->perusahaan}}</strong><br>
         <small>{{$pegawai->perusa->alamat}}</small>
@@ -129,7 +129,7 @@
     </td>
     <td valign="top" align="left">
       <table>
-        <tr><td><strong>NIK</strong></td><td>: {{$pegawai->nip}}</td></tr>
+        <tr><td><strong>NIP</strong></td><td>: {{$pegawai->nip}}</td></tr>
         <tr><td><strong>Nama Karyawan</strong></td><td class="text-uppercase">: {{$pegawai->nama_lengkap}}</td></tr>
         <tr><td><strong>Jabatan</strong></td><td>: {{$pegawai->jabat->jabatan}}</td></tr>
         <tr><td><strong>Departemen</strong></td><td>: {{$pegawai->deptmn->nama_dept}}</td></tr>
@@ -149,7 +149,7 @@
         <th>Jam Selesai</th>
         <th>Foto</th>
         <th>Area Kerja</th>
-        <th>Keterangan</th>
+        <th>Keperluan Lembur</th>
         <th>Jumlah Jam Lembur</th>
       </tr>
     </thead>
@@ -161,7 +161,7 @@
 
         {{-- Jam Masuk --}}
         <td>
-          {{ $a->jam_in ?? '-' }}
+          {{ Carbon\Carbon::parse($a->jam_in)->format('H:i:s') ?? '-' }}
         </td>
 
         {{-- Foto Masuk --}}
@@ -174,7 +174,7 @@
         </td>
 
         {{-- Jam Pulang --}}
-        <td>{{ $a->jam_out ?? '-' }}</td>
+        <td>{{ Carbon\Carbon::parse($a->jam_out)->format('H:i:s') ?? '-' }}</td>
 
         {{-- Foto Pulang --}}
         <td>
@@ -195,8 +195,8 @@
         <td>
           @php
             if ($a->jam_in && $a->jam_out) {
-              $jamMasuk = \Carbon\Carbon::parse($a->tgl_absen . ' ' . $a->jam_in);
-              $jamPulang = \Carbon\Carbon::parse($a->tgl_absen . ' ' . $a->jam_out);
+              $jamMasuk = \Carbon\Carbon::parse($a->jam_in);
+              $jamPulang = \Carbon\Carbon::parse($a->jam_out);
 
               if ($jamPulang->lt($jamMasuk)) {
                   $jamPulang->addDay(); // shift malam

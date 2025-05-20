@@ -25,7 +25,7 @@
   table {
     width: 100%;
     border-collapse: collapse;
-    table-layout: fixed;
+    table-layout: auto; /* agar kolom bisa autofit isi */
   }
 
   th, td {

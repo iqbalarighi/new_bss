@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <title>Laporan Presensi Karyawan</title>
+  <title>Laporan Presensi Pegawai</title>
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/paper-css/0.4.1/paper.css">
@@ -111,7 +111,7 @@
           <img src="{{ public_path('storage/img/logo.png') }}">
       @endif
       <div>
-        <h3>LAPORAN PRESENSI KARYAWAN</h3>
+        <h3>LAPORAN PRESENSI PEGAWAI</h3>
         <strong>PERIODE <font class="text-uppercase">{{Carbon\Carbon::parse($periode)->isoFormat('MMMM YYYY')}}</font></strong><br>
         <strong>{{$pegawai->perusa->perusahaan}}</strong><br>
         <small>{{$pegawai->perusa->alamat}}</small>
@@ -129,7 +129,7 @@
     </td>
     <td valign="top" align="left">
       <table>
-        <tr><td><strong>NIK</strong></td><td>: {{$pegawai->nip}}</td></tr>
+        <tr><td><strong>NIP</strong></td><td>: {{$pegawai->nip}}</td></tr>
         <tr><td><strong>Nama Karyawan</strong></td><td class="text-uppercase">: {{$pegawai->nama_lengkap}}</td></tr>
         <tr><td><strong>Jabatan</strong></td><td>: {{$pegawai->jabat->jabatan}}</td></tr>
         <tr><td><strong>Departemen</strong></td><td>: {{$pegawai->deptmn->nama_dept}}</td></tr>

@@ -749,8 +749,7 @@ public function laplem()
         $lembur = LemburModel::with('pegawai')
             ->where('nip', $pegawai->id)
             ->where('tgl_absen', 'LIKE', '%' . $periode . '%')
-            ->whereNotNull('jam_in')
-            ->whereNotNull('jam_out')
+
             ->orderBy('tgl_absen')
             ->get();
 

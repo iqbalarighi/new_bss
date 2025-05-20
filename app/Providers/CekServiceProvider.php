@@ -59,7 +59,11 @@ class CekServiceProvider extends ServiceProvider
                     ->orderByDesc('created_at')
                     ->first();
                 } else {
-                    $absenTerakhir = null;
+                    $absenTerakhir = AbsenModel::where('nip', $id)
+                    ->where('tgl_absen', '<', $harini)
+                    ->whereNull('jam_out')
+                    ->orderByDesc('created_at')
+                    ->first();
                 }
 
             }

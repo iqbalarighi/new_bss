@@ -67,7 +67,13 @@ class AbsenController extends Controller
                     ->orderByDesc('tgl_absen')
                     ->first();
 
-        return view('absen.index', compact('pegawai', 'absen', 'absens', 'rekap', 'leaderboard', 'rekapizin', 'cek', 'cek2', 'lembur', 'ceklem'));
+        $absenTerakhir = AbsenModel::where('nip', $id)
+            ->where('tgl_absen', '<', $harini)
+            ->whereNull('jam_out')
+            ->orderByDesc('created_at')
+            ->first();
+
+        return view('absen.index', compact('pegawai', 'absen', 'absens', 'rekap', 'leaderboard', 'rekapizin', 'cek', 'cek2', 'lembur', 'ceklem', 'absenTerakhir'));
     }
 
     public function create()
@@ -794,7 +800,7 @@ public function mulaiLembur(Request $request)
         'area_kerja' => $request->area_kerja,
         'uraian' => $request->uraian,
         'tgl_absen' => $tgl,
-        'jam_in' => now()->format('H:i:s'),
+        'jam_in' => now()->format('Y-m-d H:i:s'),
         'foto_in' => $fotoPath,
         'lokasi_in' => $request->lokasi,
     ]);
@@ -830,7 +836,7 @@ public function selesaiLembur(Request $request)
             $fotoPath = $this->simpanFotoBase64($request->foto, 'out');
             
             $abs = LemburModel::where('id', $lembursebelumnya->id)->update([
-                'jam_out' => now()->format('H:i:s'),
+                'jam_out' => now()->format('Y-m-d H:i:s'),
                 'foto_out' => $fotoPath,
                 'lokasi_out' => $request->lokasi,
             ]);

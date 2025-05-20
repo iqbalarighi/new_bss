@@ -46,7 +46,7 @@
         <th>Jam Selesai</th>
         <th>Foto</th>
         <th>Area Kerja</th>
-        <th>Keterangan</th>
+        <th>Keperluan Lembur</th>
         <th>Jumlah Jam Lembur</th>
       </tr>
     </thead>
@@ -58,7 +58,7 @@
 
         {{-- Jam Masuk --}}
         <td>
-          {{ $a->jam_in ?? '-' }}
+          {{ Carbon\Carbon::parse($a->jam_in)->format('H:i:s') ?? '-' }}
         </td>
 
         {{-- Foto Masuk --}}
@@ -71,7 +71,7 @@
         </td>
 
         {{-- Jam Pulang --}}
-        <td>{{ $a->jam_out ?? '-' }}</td>
+        <td>{{ Carbon\Carbon::parse($a->jam_out)->format('H:i:s') ?? '-' }}</td>
 
         {{-- Foto Pulang --}}
         <td>
@@ -92,8 +92,8 @@
         <td>
           @php
             if ($a->jam_in && $a->jam_out) {
-              $jamMasuk = \Carbon\Carbon::parse($a->tgl_absen . ' ' . $a->jam_in);
-              $jamPulang = \Carbon\Carbon::parse($a->tgl_absen . ' ' . $a->jam_out);
+              $jamMasuk = \Carbon\Carbon::parse($a->jam_in);
+              $jamPulang = \Carbon\Carbon::parse($a->jam_out);
 
               if ($jamPulang->lt($jamMasuk)) {
                   $jamPulang->addDay(); // shift malam

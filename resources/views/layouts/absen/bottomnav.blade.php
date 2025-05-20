@@ -57,7 +57,7 @@
                             </div>
                         </a>
                     @endif
-                @elseif($absenTerakhir && $absenTerakhir->jam_out == null)
+                @elseif($absenTerakhir && is_null($absenTerakhir->jam_out))
                     <a class="item">
                         <div class="col">
                             <button class="action-button large bg-danger" id="capture" data-absen="belum" data-stat="pulang">

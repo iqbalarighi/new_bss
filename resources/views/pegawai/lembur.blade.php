@@ -24,7 +24,7 @@
                 <th>Tanggal</th>
                 <th>Total Jam Lembur</th>
                 <th>Area Kerja</th>
-                <th>Alasan Lembur</th>
+                <th>Keperluan Lembur</th>
                 <th>Diajukan Oleh</th>
                 {{-- <th>Foto</th> --}}
                 <th>Disetujui oleh</th>
@@ -36,9 +36,8 @@
                 $durasiFormatted = null;
 
                 if ($l->jam_in && $l->jam_out) {
-                    $jamMasuk = \Carbon\Carbon::parse($l->tgl_absen . ' ' . $l->jam_in);
-                    $updated_at = \Carbon\Carbon::parse($l->updated_at)->format('Y-m-d');
-                    $jamKeluar = \Carbon\Carbon::parse($updated_at . ' ' . $l->jam_out);
+                    $jamMasuk = \Carbon\Carbon::parse($l->jam_in);
+                    $jamKeluar = \Carbon\Carbon::parse($l->jam_out);
 
                     if ($jamKeluar->lt($jamMasuk)) {
                         $jamKeluar->addDay();
@@ -73,9 +72,9 @@
                 <td>{{ $l->area_kerja }}</td>
                 <td>{{ $l->uraian }}</td>
                 <td>
-                    @if($l->aprv_by_spv == null )
+                    @if(is_null($l->aprv_by_spv))
                         <span class="badge bg-warning" style="cursor: not-allowed;">Menunggu</span> 
-                    @elseif($l->aprv_by_spv == 0 )
+                    @elseif($l->aprv_by_spv === 0 )
                         <span class="badge bg-danger">Ditolak</span> 
                     @else
                      <span class="text-success">{{ $l->spv->nama_lengkap ?? ''}}</span> 
@@ -92,14 +91,14 @@
                 </td> --}}
 
                 <td>
-                    @if($l->aprv_by_adm > 1)
+                    @if(!is_null($l->aprv_by_adm) && $l->aprv_by_adm !== 0)
                     <span class="badge bg-success {{$l->aprv_by_adm == Auth::user()->id ? 'approve-popup' : ''}}" data-id="{{ $l->id }}"  style="padding-left: 10px; padding-right: 10px; cursor: pointer;">Disetujui</span>
-                    @elseif($l->aprv_by_adm === '0')
+                    @elseif($l->aprv_by_adm === 0)
                        <span class="badge bg-danger approve-popup" data-id="{{ $l->id }}"  style="padding-left: 10px; padding-right: 10px; cursor: pointer;">Ditolak</span>
                     @else
-                        @if($l->aprv_by_spv === '0')
+                        @if($l->aprv_by_spv === 0)
                         <span class="badge bg-danger" onclick="decline()" style="padding-left: 10px; padding-right: 10px; cursor: not-allowed;">Ditolak</span>
-                        @elseif($l->aprv_by_spv == null)
+                        @elseif(is_null($l->aprv_by_spv))
                         <span class="badge bg-warning" onclick="onnull()" style="padding-left: 10px; padding-right: 10px; cursor: not-allowed;">Menunggu</span>
                         @else
                         <span class="badge bg-warning text-dark approve-popup" data-id="{{ $l->id }}"  style="padding-left: 10px; padding-right: 10px; cursor: pointer;">Validasi</span>

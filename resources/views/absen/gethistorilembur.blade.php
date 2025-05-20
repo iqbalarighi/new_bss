@@ -6,9 +6,8 @@
     $durasiFormatted = null;
 
     if ($item->jam_in && $item->jam_out) {
-        $jamMasuk = \Carbon\Carbon::parse($item->tgl_absen . ' ' . $item->jam_in);
-        $updated_at = \Carbon\Carbon::parse($item->updated_at)->format('Y-m-d');
-        $jamKeluar = \Carbon\Carbon::parse($updated_at . ' ' . $item->jam_out);
+        $jamMasuk = \Carbon\Carbon::parse($item->jam_in);
+        $jamKeluar = \Carbon\Carbon::parse($item->jam_out);
 
         if ($jamKeluar->lt($jamMasuk)) {
             $jamKeluar->addDay();
@@ -36,7 +35,7 @@
             <img src="{{ asset('storage/lembur/'.$item->pegawai->nip.'/'.$item->foto_in) }}" alt="Foto Masuk" class="rounded" width="50">
             <div class="text-center pl-1">
                 <span class="d-block">Mulai</span>
-                <strong>{{ $item->jam_in }}</strong>
+                <strong>{{ Carbon\Carbon::parse($item->jam_in)->format('H:i:s') }}</strong>
             </div>
         </div>
 
@@ -52,7 +51,7 @@
                 <img src="{{ asset('storage/lembur/'.$item->pegawai->nip.'/'.$item->foto_out) }}" alt="Foto Pulang" class="rounded" width="50">
                 <div class="text-center pl-1">
                     <span class="d-block">Selesai</span>
-                    <strong>{{ $item->jam_out }}</strong>
+                    <strong>{{ Carbon\Carbon::parse($item->jam_out)->format('H:i:s') }}</strong>
                 </div>
             </div>
         @endif

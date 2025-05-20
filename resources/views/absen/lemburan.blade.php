@@ -33,6 +33,9 @@
     .bg-null {
         background-color: #e0e0e0;
     }
+    .bg-kuning {
+        background-color: #fff6b0;
+    }
 </style>
 
 <div class="row" style="margin-top: 4rem;">
@@ -42,9 +45,8 @@
     $durasiFormatted = null;
 
     if ($d->jam_in && $d->jam_out) {
-        $jamMasuk = \Carbon\Carbon::parse($d->tgl_absen . ' ' . $d->jam_in);
-        $updated_at = \Carbon\Carbon::parse($d->updated_at)->format('Y-m-d');
-        $jamKeluar = \Carbon\Carbon::parse($updated_at . ' ' . $d->jam_out);
+        $jamMasuk = \Carbon\Carbon::parse($d->jam_in);
+        $jamKeluar = \Carbon\Carbon::parse($d->jam_out);
 
         if ($jamKeluar->lt($jamMasuk)) {
             $jamKeluar->addDay();
@@ -64,8 +66,12 @@
     }
 @endphp
         <ul class="listview image-listview">
-            <li {!! $d->jam_out == null ? 'onclick="beloman();"' : '' !!}>
-                <div class="item {{$d->aprv_by_adm == null ? 'bg-null' : ($d->aprv_by_adm == 0 ? 'bg-decline decline' : 'bg-apprv')}}">
+            <li {!! is_null($d->jam_out) ? 'onclick="beloman();"' : '' !!}>
+                <div class="item {{ 
+                        is_null($durasiFormatted) ? 'bg-kuning' :
+                        (is_null($d->aprv_by_adm) ? 'bg-null' : 
+                        ($d->aprv_by_adm === 0 ? 'bg-decline decline' : 'bg-apprv'))
+                    }}">
                     <div class="in">
                         <div style="width: 250px;">
                             <b>{{$d->pegawai->nama_lengkap}}</b><br>
@@ -77,14 +83,14 @@
                         
                         @if($d->aprv_by_spv != 0)
                             @if($d->aprv_by_adm > 1)
-                                <span class="badge bg-success {{$d->aprv_by_adm == null ? 'approve-popup' : ''}}" data-id="{{ $d->id }}"  style="padding-left: 10px; padding-right: 10px;">Disetujui</span>
-                            @elseif($d->aprv_by_adm === '0')
-                                <span class="badge bg-danger {{$d->aprv_by_adm == null ? 'approve-popup' : ''}}" data-id="{{ $d->id }}"  style="padding-left: 10px; padding-right: 10px;">Ditolak</span>
+                                <span class="badge bg-success {{is_null($d->aprv_by_adm) ? 'approve-popup' : ''}}" data-id="{{ $d->id }}"  style="padding-left: 10px; padding-right: 10px;">Disetujui</span>
+                            @elseif($d->aprv_by_adm === 0)
+                                <span class="badge bg-danger {{is_null($d->aprv_by_adm) ? 'approve-popup' : ''}}" data-id="{{ $d->id }}"  style="padding-left: 10px; padding-right: 10px;">Ditolak</span>
                             @else
-                                <span class="badge bg-warning {{$d->aprv_by_adm == null ? 'approve-popup' : ''}}" data-id="{{ $d->id }}"  style="padding-left: 10px; padding-right: 10px;">Menunggu</span>
+                                <span class="badge bg-warning {{is_null($d->aprv_by_adm) ? 'approve-popup' : ''}}" data-id="{{ $d->id }}"  style="padding-left: 10px; padding-right: 10px;">Menunggu</span>
                             @endif
-                        @elseif($d->aprv_by_spv === '0')
-                                <span class="badge bg-danger {{$d->aprv_by_adm == null ? 'approve-popup' : ''}}" data-id="{{ $d->id }}"  style="padding-left: 10px; padding-right: 10px;">Ditolak</span>
+                        @elseif($d->aprv_by_spv === 0)
+                                <span class="badge bg-danger {{is_null($d->aprv_by_adm) ? 'approve-popup' : ''}}" data-id="{{ $d->id }}"  style="padding-left: 10px; padding-right: 10px;">Ditolak</span>
                         @else
                             <span class="badge bg-warning text-dark approve-popup" data-id="{{ $d->id }}"  style="padding-left: 10px; padding-right: 10px;">Validasi</span>
                         @endif
