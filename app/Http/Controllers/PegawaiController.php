@@ -569,23 +569,16 @@ public function update(Request $request, $id)
                     ->where('status_approve', 1)
                     ->get();
 
-        if($satker != null ){
                 $rekap[] = [
                     'nip' => $k->nip,
                     'nama' => $k->nama_lengkap,
-                    'absensi' => $absensi,
-                    'izin' => $izin,
-                ];
-            } else {
-                $rekap[] = [
-                    'nip' => $k->nip,
-                    'nama' => $k->nama_lengkap,
-                    'sat' => $k->sat->satuan_kerja,
+                    'sat' => optional($k->sat)->satuan_kerja ?? '-',
                     'absensi' => $absensi,
                     'izin' => $izin,
                 ];
             }
-            }
+
+            $rekap = collect($rekap)->sortBy('sat')->values()->all();
 
     $agent = new Agent();
 
