@@ -578,7 +578,7 @@ public function update(Request $request, $id)
                 ];
             }
 
-            $rekap = collect($rekap)->sortBy('sat')->values()->all();
+            $rekap = collect($rekap)->sortBy('nama')->sortBy('sat')->values()->all();
 
     $agent = new Agent();
 
@@ -870,19 +870,12 @@ public function laplem()
             $rekap[] = [
                 'nip' => $pegawai->nip,
                 'nama' => $pegawai->nama_lengkap,
-                'sat' => $pegawai->sat->satuan_kerja ?? '-', // pastikan relasi satker ada
+                'sat' => optional($pegawai->sat)->satuan_kerja ?? '-', // pastikan relasi satker ada
                 'lembur' => $lembur,
             ];
         }
 
-        // return view('pegawai.reklem', [
-        //     'rekap' => $rekap,
-        //     'bulan' => $bulan,
-        //     'tahun' => $tahun,
-        //     'satker' => null // atau isi sesuai filter user
-        // ]);
-
-
+            $rekap = collect($rekap)->sortBy('nama')->sortBy('sat')->values()->all();
 
             $agent = new Agent();
 
