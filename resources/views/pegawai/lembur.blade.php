@@ -92,12 +92,12 @@
                 </td> --}}
 
                 <td>
-                    @if($l->aprv_by_adm == Auth::user()->id)
-                    <span class="badge bg-success approve-popup" data-id="{{ $l->id }}"  style="padding-left: 10px; padding-right: 10px; cursor: pointer;">Disetujui</span>
-                    @elseif($l->aprv_by_adm == '0')
+                    @if($l->aprv_by_adm > 1)
+                    <span class="badge bg-success {{$l->aprv_by_adm == Auth::user()->id ? 'approve-popup' : ''}}" data-id="{{ $l->id }}"  style="padding-left: 10px; padding-right: 10px; cursor: pointer;">Disetujui</span>
+                    @elseif($l->aprv_by_adm === '0')
                        <span class="badge bg-danger approve-popup" data-id="{{ $l->id }}"  style="padding-left: 10px; padding-right: 10px; cursor: pointer;">Ditolak</span>
                     @else
-                        @if($l->aprv_by_spv == '0')
+                        @if($l->aprv_by_spv === '0')
                         <span class="badge bg-danger" onclick="decline()" style="padding-left: 10px; padding-right: 10px; cursor: not-allowed;">Ditolak</span>
                         @elseif($l->aprv_by_spv == null)
                         <span class="badge bg-warning" onclick="onnull()" style="padding-left: 10px; padding-right: 10px; cursor: not-allowed;">Menunggu</span>
