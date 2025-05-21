@@ -107,7 +107,7 @@ Swal.fire({
             }
         </style>
         <input type="text" id="swal-input-area" class="swal2-input" placeholder="Area Kerja">
-        <textarea id="swal-input-uraian" class="swal2-textarea" placeholder="Uraian"></textarea>
+        <textarea id="swal-input-uraian" class="swal2-textarea" placeholder="Keperluan Lembur"></textarea>
     `,
     focusConfirm: false,
     showCancelButton: false,
@@ -118,7 +118,7 @@ Swal.fire({
         const uraian = document.getElementById('swal-input-uraian')?.value.trim();
 
         if (!areaKerja || !uraian) {
-            Swal.showValidationMessage('Area Kerja dan Uraian wajib diisi!');
+            Swal.showValidationMessage('Area Kerja dan Keperluan lembur wajib diisi!');
             return false;
         }
 
@@ -156,12 +156,43 @@ Swal.fire({
 <script>
 let peta = null;
 let marker = null;
-
 let fotoPreview = null;
 let lokasiPreview = null;
-
 let tipeAbsen = '';
 
+// Inisialisasi Webcam
+Webcam.set({
+    width: 480,
+    height: 640,
+    image_format: 'png',
+    png_quality: 80,
+    constraints: {
+        video: true,
+        facingMode: "user"
+    }
+});
+Webcam.attach('#my_camera');
+
+// Inisialisasi Peta
+document.addEventListener('DOMContentLoaded', function () {
+    peta = L.map('map').setView([-6.200000, 106.816666], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(peta);
+
+    ambilLokasi(function (lokasi) {
+        const [lat, lng] = lokasi.split(',').map(parseFloat);
+        lokasiPreview = `${lat},${lng}`;
+
+        if (marker) peta.removeLayer(marker);
+        marker = L.marker([lat, lng]).addTo(peta)
+            .bindPopup("Lokasi Anda").openPopup();
+
+        peta.setView([lat, lng], 17);
+    });
+});
+
+// Fungsi Ambil Foto
 function ambilFoto(callback) {
     if (!Webcam.live) {
         Swal.fire('Webcam belum siap. Mohon tunggu beberapa detik.');
@@ -170,105 +201,126 @@ function ambilFoto(callback) {
 
     Webcam.snap(function (data_uri) {
         fotoPreview = data_uri;
+        Swal.close();
         callback(data_uri);
     });
-}
 
-function ambilLokasi(callback) {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function (pos) {
-            const lat = pos.coords.latitude;
-            const lng = pos.coords.longitude;
-            lokasiPreview = `${lat},${lng}`;
-            callback(lokasiPreview);
-        }, function () {
-            Swal.fire('Gagal ambil lokasi');
-        });
-    } else {
-        Swal.fire('Browser tidak mendukung geolocation');
-    }
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-    // Inisialisasi Webcam
-    Webcam.set({
-        width: 480,
-        height: 640,
-        image_format: 'png',
-        png_quality: 90,
-        constraints: {
-            video: true // Biarkan browser memilih pengaturan terbaik
-        }
-    });
-    Webcam.attach('#my_camera');
-
-    // Inisialisasi Peta
-    peta = L.map('map').setView([-6.200000, 106.816666], 15);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(peta);
-
-    ambilLokasi(function(lokasi) {
-        let [lat, lng] = lokasi.split(',');
-        lat = parseFloat(lat);
-        lng = parseFloat(lng);
-
-        peta.setView([lat, lng], 17);
-        marker = L.marker([lat, lng]).addTo(peta)
-            .bindPopup("Lokasi Anda").openPopup();
-    });
-});
-
-function tampilkanPreviewDanKirim(url) {
-    let judul = (tipeAbsen === 'mulai') ? 'Absen Lembur Masuk' : 'Absen Lembur Selesai';
-    let confirm = $('#confirm').val();
-    let area_kerja = $('#area_kerja').val();
-    let uraian = $('#uraian').val();
     Swal.fire({
-        title: judul,
-        html: `<p><strong><ion-icon name="location" class="text-danger" style="font-size: 20px;"></ion-icon></strong> ${lokasiPreview}</p><img src="${fotoPreview}" style="width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius:8px" />`,
-        showCancelButton: true,
-        confirmButtonText: 'Kirim',
-        cancelButtonText: 'Batal',
-        reverseButtons: true
-    }).then((result) => {
-        if (result.isConfirmed) {
-            Swal.fire({
-                title: 'Mengirim Data...',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-            
-            $.post(url, {
-                _token: '{{ csrf_token() }}',
-                foto: fotoPreview,
-                lokasi: lokasiPreview,
-                confirm: confirm,
-                area_kerja: area_kerja,
-                uraian: uraian
-            }, function (response) {
-                Swal.fire({
-                    title: 'Berhasil',
-                    text: response.message,
-                    icon: 'success',
-                    timer: 1500,
-                    showConfirmButton: false
-                }).then(() => {
-                    window.location.href = '{{ route('absen') }}';
-                });
-            }).fail(function (xhr) {
-                Swal.fire('Gagal', xhr.responseJSON.message, 'error');
-            });
+        title: 'Mengambil Foto...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
         }
     });
 }
 
+// Fungsi Ambil Lokasi
+function ambilLokasi(callback) {
+    if (!navigator.geolocation) {
+        Swal.fire('Browser tidak mendukung Geolocation.');
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(function (pos) {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        callback(`${lat},${lng}`);
+    }, function (err) {
+        Swal.fire('Gagal mengambil lokasi', err.message, 'error');
+    }, {
+        enableHighAccuracy: true,
+        maximumAge: 1000
+    });
+}
+
+// Preview Foto & Konfirmasi
+function tampilkanPreviewDanKirim(url) {
+    const judul = tipeAbsen === 'mulai' ? 'Absen Lembur Masuk' : 'Absen Lembur Selesai';
+    const confirm = $('#confirm').val();
+    const area_kerja = $('#area_kerja').val();
+    const uraian = $('#uraian').val();
+
+    if (!fotoPreview || !lokasiPreview) {
+        Swal.fire('Data tidak lengkap!', 'Foto atau lokasi belum tersedia.', 'warning');
+        return;
+    }
+
+    const img = new Image();
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    img.onload = function () {
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        // Buat mirror horizontal
+        ctx.translate(img.width, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(img, 0, 0);
+
+        const mirroredImage = canvas.toDataURL('image/png', 0.8);
+
+        Swal.fire({
+            title: judul,
+            html: `<p>
+                        <strong>
+                            <ion-icon name="location" class="text-danger" style="font-size: 20px;"></ion-icon>
+                        </strong> ${lokasiPreview}
+                   </p>`,
+            imageUrl: mirroredImage,
+            imageWidth: 300,
+            imageAlt: 'Preview Foto',
+            showCancelButton: true,
+            confirmButtonText: 'Kirim',
+            cancelButtonText: 'Batal',
+            reverseButtons: true,
+            allowOutsideClick: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                kirimData(url, mirroredImage, lokasiPreview, confirm, area_kerja, uraian);
+            }
+        });
+    };
+
+    img.src = fotoPreview;
+}
+
+// Kirim Data via AJAX
+function kirimData(url, foto, lokasi, confirm, area_kerja, uraian) {
+    Swal.fire({
+        title: 'Mengirim Data...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+
+    $.post(url, {
+        _token: '{{ csrf_token() }}',
+        foto: foto,
+        lokasi: lokasi,
+        confirm: confirm,
+        area_kerja: area_kerja,
+        uraian: uraian
+    }, function (response) {
+        Swal.fire({
+            title: 'Berhasil',
+            text: response.message,
+            icon: 'success',
+            timer: 2000,
+            showConfirmButton: false
+        }).then(() => {
+            window.location.href = '{{ route('absen') }}';
+        });
+    }).fail(function (xhr) {
+        const msg = xhr.responseJSON?.message || 'Gagal mengirim data.';
+        Swal.fire('Gagal', msg, 'error');
+    });
+}
+
+// Fungsi Trigger Absen
 function mulaiLembur() {
     tipeAbsen = 'mulai';
-    ambilFoto(function () {
-        ambilLokasi(function () {
+    ambilFoto(() => {
+        ambilLokasi(() => {
             tampilkanPreviewDanKirim("/absen/lembur/mulai");
         });
     });
@@ -276,11 +328,12 @@ function mulaiLembur() {
 
 function selesaiLembur() {
     tipeAbsen = 'selesai';
-    ambilFoto(function () {
-        ambilLokasi(function () {
+    ambilFoto(() => {
+        ambilLokasi(() => {
             tampilkanPreviewDanKirim("/absen/lembur/selesai");
         });
     });
 }
 </script>
+
 @endpush

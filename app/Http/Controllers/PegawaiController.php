@@ -352,39 +352,39 @@ public function update(Request $request, $id)
 
     public function absensi(Request $request)
     {
-        $bultah = $request->tanggal; // Format: YYYY-MM
+        $tanggal = $request->tanggal; // Format: YYYY-MM
 
         if (Auth::user()->role == 0) {
-            if($bultah == ""){
+            if($tanggal == ""){
             $absen = AbsenModel::latest()->paginate(10);
             } else {
-            $absen = AbsenModel::where('tgl_absen', 'LIKE', '%'.$bultah.'%')
+            $absen = AbsenModel::where('tgl_absen', 'LIKE', '%'.$tanggal.'%')
                 ->latest()
                 ->paginate(10); // Sesuaikan kolomnya
 
-                $absen->appends(['bultah' => $bultah]);
+                $absen->appends(['tanggal' => $tanggal]);
             }
         } elseif (Auth::user()->role == 1) {
             $comp = Auth::user()->perusahaan;
             $kantor = $request->kantor;
 
-            if($bultah == ""){
+            if($tanggal == ""){
             $absen = AbsenModel::where('perusahaan', $comp)
                 ->latest()
                 ->paginate(10);
                 } else {
                 $absen = AbsenModel::where('perusahaan', $comp)
-                    ->where('tgl_absen', 'LIKE', '%'.$bultah.'%')
+                    ->where('tgl_absen', 'LIKE', '%'.$tanggal.'%')
                     ->latest()
                     ->paginate(10); // Sesuaikan kolomnya
 
-                    $absen->appends(['bultah' => $bultah]);
+                    $absen->appends(['tanggal' => $tanggal]);
                 }
         } elseif (Auth::user()->role == 3) {
             $comp = Auth::user()->perusahaan;
             $kantor = Auth::user()->kantor;
 
-            if($bultah == ""){
+            if($tanggal == ""){
             $absen = AbsenModel::where('perusahaan', $comp)
                 ->where('kantor', $kantor)
                 ->latest()
@@ -392,11 +392,11 @@ public function update(Request $request, $id)
                 } else {
                 $absen = AbsenModel::where('perusahaan', $comp)
                     ->where('kantor', $kantor)
-                    ->where('tgl_absen', 'LIKE', '%'.$bultah.'%')
+                    ->where('tgl_absen', 'LIKE', '%'.$tanggal.'%')
                     ->latest()
                     ->paginate(10); // Sesuaikan kolomnya
 
-                    $absen->appends(['bultah' => $bultah]);
+                    $absen->appends(['tanggal' => $tanggal]);
                 }
         } 
 
