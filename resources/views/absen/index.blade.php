@@ -188,7 +188,7 @@
          @if($lembur != null)
          <h5 class="mt-3"><ion-icon name="time"></ion-icon> Lembur</h5>
             <div class="card p-1 mb-1">
-                <h5>{{Carbon\carbon::parse($lembur->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} <span id="timer" class="{{ $lembur->jam_out ? 'text-success' : 'text-primary' }}">00:00:00</span></h5>
+                <h5>{{Carbon\carbon::parse($lembur->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} <span id="timer" class="float-end pe-2 {{ $lembur->jam_out ? 'text-success' : 'text-primary' }}">00:00:00</span></h5>
                 
 
                 <div class="d-flex justify-content-around align-items-center">
@@ -229,7 +229,7 @@
          @if($ceklem != null)
          <h5 class="mt-3"><ion-icon name="time"></ion-icon> Lembur</h5>
             <div class="card p-1 mb-1">
-                <h5>{{Carbon\carbon::parse($ceklem->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} <span id="timer" class="{{ $ceklem->jam_out ? 'text-success' : 'text-primary' }}">00:00:00</span></h5>
+                <h5>{{Carbon\carbon::parse($ceklem->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} <span id="timer" class="float-end pe-2 {{ $ceklem->jam_out ? 'text-success' : 'text-primary' }}">00:00:00</span></h5>
                 
 
                 <div class="d-flex justify-content-around align-items-center">
@@ -607,8 +607,8 @@
             title: 'Perhatian!',
             text: 'Absen Terakhir belum selesai, Selesaikan Absen!',
             showCancelButton: true,
-            confirmButtonText: 'Oke',
-            cancelButtonText: 'Batal',
+            confirmButtonText: 'Absen',
+            cancelButtonText: 'Nanti',
             reverseButtons: true
                 }).then((result) => {
                     if (result.isConfirmed) {
