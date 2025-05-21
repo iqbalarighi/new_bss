@@ -29,6 +29,7 @@ class HomeController extends Controller
     public function index()
     {
         $harini = Carbon::now()->format('Y-m-d');
+        $bulini = Carbon::now()->format('Y-m');
 //buat per akun kantor pakai Auth
 
     if(Auth::user()->role == 0) {
@@ -37,7 +38,7 @@ class HomeController extends Controller
                 ->selectRaw('COUNT(nip) as jmlhadir')
                 ->first();
 
-        $rekapizin = IzinabsenModel::where('created_at', 'LIKE', '%'.$harini.'%')
+        $rekapizin = IzinabsenModel::where('created_at', 'LIKE', '%'.$bulini.'%')
                     ->selectRaw("
                         SUM(CASE WHEN jenis_izin = 'i' THEN 1 ELSE 0 END) as izin, 
                         SUM(CASE WHEN jenis_izin = 's' THEN 1 ELSE 0 END) as sakit,
@@ -53,7 +54,7 @@ class HomeController extends Controller
                 ->selectRaw('COUNT(nip) as jmlhadir')
                 ->first();
                 
-        $rekapizin = IzinabsenModel::where('created_at', 'LIKE', '%'.$harini.'%')
+        $rekapizin = IzinabsenModel::where('created_at', 'LIKE', '%'.$bulini.'%')
                     ->where('perusahaan', Auth::user()->perusahaan)
                     ->selectRaw("
                         SUM(CASE WHEN jenis_izin = 'i' THEN 1 ELSE 0 END) as izin, 
@@ -72,7 +73,7 @@ class HomeController extends Controller
                 ->selectRaw('COUNT(nip) as jmlhadir')
                 ->first();
 
-        $rekapizin = IzinabsenModel::where('created_at', 'LIKE', '%'.$harini.'%')
+        $rekapizin = IzinabsenModel::where('created_at', 'LIKE', '%'.$bulini.'%')
                     ->where('perusahaan', Auth::user()->perusahaan)
                     ->where('nama_kantor', Auth::user()->kantor)
                     ->selectRaw("

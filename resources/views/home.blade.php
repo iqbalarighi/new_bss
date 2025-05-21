@@ -73,10 +73,10 @@
       <div class="col">
         <!-- Page pre-title -->
         <div class="page-pretitle">Dashboard</div>
-        <h2 class="page-title">Data Pegawai</h2>
+        {{-- <h2 class="page-title">Data Pegawai</h2> --}}
       </div>
     </div>
-    <div class="row justify-content-center">
+    <div class="row justify-content-center mt-2">
         <div class="row px-1">
             <div class="col-md-3 mb-2">
                 <div class="card shadow-sm p-2">

@@ -63,14 +63,15 @@
 
               <ul class=" py-1 dropdown-menu" aria-labelledby="dropdownMenuLink">
                 <li>
-                    <a class="dropdown-item font-weight-bold ps-2" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <a href="#" class="dropdown-item font-weight-bold ps-2" id="btn-logout">
                         {{ __('Logout') }}
                     </a>
+
                     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                         @csrf
                     </form>
                 </li>
-                <li><a href="#" class="dropdown-item font-weight-bold ps-2">Profile</a></li>
+                {{-- <li><a href="#" class="dropdown-item font-weight-bold ps-2">Profile</a></li> --}}
               </ul>
             </div>
             </div>
@@ -98,7 +99,25 @@
             crossorigin="anonymous">
     </script>
 
+<script>
+    document.getElementById('btn-logout').addEventListener('click', function (e) {
+        e.preventDefault();
 
+        Swal.fire({
+            title: 'Yakin ingin logout?',
+            text: "Kamu akan keluar dari sistem.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, logout',
+            cancelButtonText: 'Batal',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('logout-form').submit();
+            }
+        });
+    });
+</script>
 <script>
     function cekPass() {
   var x = document.getElementById("password");
