@@ -10,7 +10,7 @@
     <table>
         <tr>
             <td height="15px;"><img src="{{ public_path('storage/img/logo.png') }}" height="80" /></td>
-            <td colspan="7" style="text-align:center;"><b>LAPORAN PRESENSI KARYAWAN</b></td>
+            <td colspan="7" style="text-align:center;"><b>LAPORAN PRESENSI PEGAWAI</b></td>
         </tr>
         <tr><td colspan="8" style="text-align:center;">PERIODE {{ \Carbon\Carbon::parse($periode)->isoFormat('MMMM YYYY') }}</td></tr>
         <tr><td colspan="8" style="text-align:center;">{{ $pegawai->perusa->perusahaan ?? '-' }}</td></tr>
