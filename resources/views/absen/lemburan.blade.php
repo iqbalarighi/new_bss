@@ -38,7 +38,7 @@
     }
 </style>
 
-<div class="row" style="margin-top: 4rem;">
+<div class="row" style="margin-top: 4rem; margin-bottom: 4rem;">
     <div class="col">
         @forelse ($lembur as $d)
 @php
@@ -78,7 +78,7 @@
                             <small class="text-muted">Tanggal : {{ \Carbon\Carbon::parse($d->tgl_absen)->translatedFormat('d F Y') }}</small> <br>
                             <small class="text-muted">Total Waktu : {{ $durasiFormatted ?? 'Berlangsung'}}</small> <br>
                             <small class="text-muted">Area Kerja : {{ $d->area_kerja }}</small> <br>
-                            <small class="text-muted">Alasan Lembur : {{ $d->uraian }}</small>
+                            <small class="text-muted">Keperluan Lembur : {{ $d->uraian }}</small>
                         </div>
                         
                         @if($d->aprv_by_spv != 0)

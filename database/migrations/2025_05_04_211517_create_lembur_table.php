@@ -27,8 +27,8 @@ return new class extends Migration
             $table->string('jam_out')->nullable();
             $table->text('foto_out')->nullable();
             $table->text('lokasi_out')->nullable();
-            $table->text('aprv_by_spv')->nullable();
-            $table->text('aprv_by_adm')->nullable();
+            $table->integer('aprv_by_spv')->unsigned()->nullable();
+            $table->integer('aprv_by_adm')->unsigned()->nullable();
             $table->timestamps();
         });
     }
