@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AbsenController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CheckpointController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\MasterController;
@@ -83,32 +84,32 @@ Route::middleware(['auth:web'])->group(function () {
         Route::put('/shift/update/{id}', [MasterController::class, 'shiftUpdate'])->name('master.shift.update');
         Route::delete('/shift/destroy/{id}', [MasterController::class, 'shiftdest'])->name('shift.destroy');
 
-    Route::controller(PegawaiController::class)->group(function () {
-        Route::get('/pegawai', 'index')->name('pegawai.index');
-        Route::delete('/pegawai/delete/{id}', 'delete')->name('pegawai.delete');
-        Route::get('/pegawai/detail/{id}', 'detail')->name('pegawai.detail');
-        Route::get('/pegawai/input', 'input')->name('pegawai.input');
-        Route::post('/pegawai/store', 'store')->name('pegawai.store');
-        Route::get('/pegawai/edit/{id}', 'edit')->name('pegawai.edit');
-        Route::put('/pegawai/update/{id}', 'update')->name('pegawai.update');
-        Route::post('/pegawai/ubah-password/', 'ubahpass')->name('pegawai.upass');
-        Route::post('/cek-nip', 'cekNIP')->name('cek.nip');
-        Route::get('/pegawai/absensi/', 'absensi')->name('pegawai.absensi');
-        Route::get('/pegawai/absensi/laporan', 'lapor')->name('pegawai.absensi.laporan');
-        Route::post('/pegawai/absensi/preview', 'preview')->name('pegawai.absensi.preview');
-        Route::get('/pegawai/lembur/laporan', 'laplem')->name('pegawai.lembur.laporan');
-        Route::post('/pegawai/lembur/preview', 'prelem')->name('pegawai.lembur.preview');
-        Route::get('/pegawai/lembur/rekap', 'rekaplembur')->name('pegawai.lembur.rekap');
-        Route::post('/pegawai/lembur/reklem', 'reklem')->name('pegawai.lembur.reklem');
-        Route::get('/get-abs', 'getAbs')->name('get.abs');
-        Route::get('/pegawai/absensi/izin', 'izin')->name('pegawai.absensi.izin');
-        Route::get('/pegawai/lembur', 'lembur')->name('pegawai.lembur');
-        Route::post('/pegawai/lembur/{id}/adm', 'aprv_adm');
-        Route::post('/pegawai/absensi/izin/{id}/status', 'izinstatus');
-        Route::get('/pegawai/absensi/rekap', 'rekap')->name('pegawai.absensi.rekap');
-        Route::post('/pegawai/absensi/rekapview', 'rekapview')->name('pegawai.absensi.rekapview');
+        Route::controller(PegawaiController::class)->group(function () {
+            Route::get('/pegawai', 'index')->name('pegawai.index');
+            Route::delete('/pegawai/delete/{id}', 'delete')->name('pegawai.delete');
+            Route::get('/pegawai/detail/{id}', 'detail')->name('pegawai.detail');
+            Route::get('/pegawai/input', 'input')->name('pegawai.input');
+            Route::post('/pegawai/store', 'store')->name('pegawai.store');
+            Route::get('/pegawai/edit/{id}', 'edit')->name('pegawai.edit');
+            Route::put('/pegawai/update/{id}', 'update')->name('pegawai.update');
+            Route::post('/pegawai/ubah-password/', 'ubahpass')->name('pegawai.upass');
+            Route::post('/cek-nip', 'cekNIP')->name('cek.nip');
+            Route::get('/pegawai/absensi/', 'absensi')->name('pegawai.absensi');
+            Route::get('/pegawai/absensi/laporan', 'lapor')->name('pegawai.absensi.laporan');
+            Route::post('/pegawai/absensi/preview', 'preview')->name('pegawai.absensi.preview');
+            Route::get('/pegawai/lembur/laporan', 'laplem')->name('pegawai.lembur.laporan');
+            Route::post('/pegawai/lembur/preview', 'prelem')->name('pegawai.lembur.preview');
+            Route::get('/pegawai/lembur/rekap', 'rekaplembur')->name('pegawai.lembur.rekap');
+            Route::post('/pegawai/lembur/reklem', 'reklem')->name('pegawai.lembur.reklem');
+            Route::get('/get-abs', 'getAbs')->name('get.abs');
+            Route::get('/pegawai/absensi/izin', 'izin')->name('pegawai.absensi.izin');
+            Route::get('/pegawai/lembur', 'lembur')->name('pegawai.lembur');
+            Route::post('/pegawai/lembur/{id}/adm', 'aprv_adm');
+            Route::post('/pegawai/absensi/izin/{id}/status', 'izinstatus');
+            Route::get('/pegawai/absensi/rekap', 'rekap')->name('pegawai.absensi.rekap');
+            Route::post('/pegawai/absensi/rekapview', 'rekapview')->name('pegawai.absensi.rekapview');
 
-    });
+        });
 
     });
     // web.php
@@ -125,6 +126,9 @@ Route::middleware(['auth:web'])->group(function () {
         Route::delete('/laporan/{id}/hapus/{ids}', 'destroy')->name('lapor.admin.destroy');
 
     });
+
+    Route::resource('checkpoints', CheckpointController::class);
+    Route::get('checkpoints/{checkpoint}/qr', [CheckpointController::class, 'showQr'])->name('checkpoints.qr');
 
 });
 
@@ -163,6 +167,12 @@ Route::controller(AbsenController::class)->middleware(['redirif:pegawai'])->grou
     Route::put('/absen/updatelap/{id}', 'updatelap')->name('absen.updatelap');
     Route::delete('/laporan/hapus/{id}', 'destroy')->name('absen.destroy');
     Route::post('/laporan/hapus-foto/{ids}','hapusFoto')->name('absen.hapusFoto');
+
+        Route::post('scan-qrcode', [CheckpointController::class, 'scan'])->name('scan.qrcode');
+        Route::get('absen/patroli', [CheckpointController::class, 'patroli'])->name('absen.patroli');
+        Route::get('absen/patrolicheck', [CheckpointController::class, 'patroliscan'])->name('absen.patrolicheck');
+        Route::post('/checkpoint-info', [CheckpointController::class, 'getCheckpointInfo'])->name('checkpoint.info');
+
 });
 
 Route::post('/absen/logout', [AuthController::class, 'logout'])->middleware(['redirif:pegawai'])->name('absen.logout');
