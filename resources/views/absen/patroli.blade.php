@@ -23,7 +23,23 @@
 });
 </script>
 @endif
-
+@if ($belumAbsen)
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    Swal.fire({
+        icon: 'warning',
+        title: 'Belum Absen!',
+        text: 'Anda belum melakukan absensi hari ini.',
+        allowOutsideClick : false,
+        confirmButtonText: 'Absen Sekarang'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Ganti '/absen' dengan route tujuanmu
+            window.location.href = "{{ route('absen.create') }}";
+        }
+    });
+</script>
+@endif
 
 <div class="fab-button bottom-right" style="margin-bottom: 70px;">
     <a href="{{route('absen.patrolicheck')}}" class="fab"><ion-icon name="add-outline"></ion-icon></a>
@@ -32,27 +48,31 @@
 <div class="row" style="margin-top: 4rem;">
     <div class="col">
         {{-- buat nampilin data patroli disini --}}
-{{--         @foreach ($izin as $d)
+        @foreach ($show as $d)
         <ul class="listview image-listview">
+            @php
+                date_default_timezone_set('Asia/Jakarta'); // Set zona waktu ke WIB
+                $now = date('H:i', strtotime($d->waktu_scan));
+                $shift = ($now >= '07:00' && $now < '19:00') ? 'Shift Pagi' : 'Shift Malam';
+            @endphp
+
             <li>
                 <div class="item">
                     <div class="in">
                         <div>
-                            <b>{{ date("d-m-Y", strtotime($d->tanggal)) }} ({{ $d->jenis_izin == "s" ? "Sakit" : "Izin" }})</b><br>
-                            <small class="text-muted">{{ $d->keterangan }}</small>
+                            Area : <b>{{$d->checkpoint->nama}}</b> <br>
+                            Tanggal : {{ \Carbon\Carbon::parse($d->waktu_scan)->isoFormat('dddd, MMMM Y') }} <br>
+                            Jam : {{ \Carbon\Carbon::parse($d->waktu_scan)->Format('H:i:s')}} WIB <br>
+                            Personel : {{$d->user->nama_lengkap}} <br>
+                            Shift : {{ $d->shift}}  <br>
+                            Keterangan : {{ $d->keterangan }}
                         </div>
-                        @if ($d->status_approve == 0)
-                        <span class="badge bg-warning">Waiting</span>
-                        @elseif($d->status_approve == 1)
-                        <span class="badge bg-success">Approved</span>
-                        @elseif($d->status_approve == 2)
-                        <span class="badge bg-danger">Decline</span>
-                        @endif
+                        <img src="{{asset('storage/foto_patrol/'.$d->foto)}}" width="100">
                     </div>
                 </div>
             </li>
         </ul>
-        @endforeach --}}
+        @endforeach
     </div>
 </div>
 

@@ -105,7 +105,21 @@
                                 </a>
                             </div>
                             <div class="menu-name">
-                                Laporan
+                               <span class="text-center">Laporan</span>
+                            </div>
+                        </div>
+                        @endif
+
+                        @if(Str::contains(strtolower($pegawai->sat->satuan_kerja), ['kamdal', 'pam', 'pengamanan', 'satpam']) )
+
+                        <div class="item-menu text-center">
+                            <div class="menu-icon">
+                                <a href="{{ route('absen.patroli') }}" class="green" style="font-size: 40px;">
+                                    <ion-icon name="shield-checkmark"></ion-icon>
+                                </a>
+                            </div>
+                            <div class="menu-name">
+                                <span class="text-center">Patroli</span>
                             </div>
                         </div>
                         @endif

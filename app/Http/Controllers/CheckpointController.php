@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AbsenModel;
 use App\Models\CheckModel;
 use App\Models\PatrolLogModel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use carbon\Carbon;
 
 class CheckpointController extends Controller
 {
@@ -27,8 +31,14 @@ class CheckpointController extends Controller
         ]);
 
         $kode_unik = Str::uuid();
+        
+// buat filter lagi untuk beda role
 
         $checkpoint = CheckModel::create([
+            'perusahaan' = Auth::guard()->user()->perusahaan,
+            'kantor' = Auth::guard()->user()->nama_kantor,
+            'dept' = Auth::guard()->user()->dept,
+            'satker' = Auth::guard()->user()->satker,
             'nama' => $validated['nama'],
             'deskripsi' => $validated['deskripsi'],
             'lokasi' => $validated['lokasi'],
@@ -52,21 +62,38 @@ class CheckpointController extends Controller
             'foto' => 'required|string',
         ]);
 
+        $nip = Auth::guard('pegawai')->user()->id;
+        $tanggalHariIni = Carbon::now()->format('Y-m-d');
+        $tanggalKemarin = Carbon::yesterday()->format('Y-m-d');
+        // Cek apakah ada absen hari ini
+
+        $absen = AbsenModel::where('nip', $nip)
+            ->where('tgl_absen', $tanggalHariIni)
+            ->first();
+
+        if (!$absen) {
+            // Jika tidak ada, ambil absen hari kemarin
+            $absen = AbsenModel::where('nip', $nip)
+                ->where('tgl_absen', $tanggalKemarin)
+                ->first();
+        }
+
         $checkpoint = CheckModel::where('kode_unik', $request->kode_unik)->first();
 
         if (!$checkpoint) {
             return response()->json(['message' => 'QR Code tidak dikenali'], 404);
         }
 
-        // Simpan foto base64
+        // Simpan foto base64 ke storage
             $base64_image = $request->foto;
             $image_name = 'foto_' . uniqid() . '.jpg';
-            $path = public_path('uploads/foto_patrol');
-            if (!file_exists($path)) mkdir($path, 0777, true);
 
-            // FIX: Inisialisasi ImageManager secara manual
+            // Decode base64 dan simpan ke storage/app/public/foto_patrol
             $manager = new ImageManager(new Driver());
-            $manager->read($base64_image)->toJpeg(85)->save($path . '/' . $image_name);
+            $image = $manager->read($base64_image)->toJpeg(85);
+
+            // Simpan ke storage menggunakan Laravel Storage
+            Storage::disk('public')->put('foto_patrol/' . $image_name, (string) $image);
 
         // Simpan log
         PatrolLogModel::create([
@@ -74,6 +101,7 @@ class CheckpointController extends Controller
             'checkpoint_id' => $checkpoint->id,
             'waktu_scan' => now(),
             'keterangan' => $request->keterangan,
+            'shift' => $absen->shifts->shift,
             'foto' => $image_name,
         ]);
 
@@ -84,8 +112,30 @@ class CheckpointController extends Controller
 
     public function patroli()
     {
-        return view('absen.patroli');
+        $show = PatrolLogModel::latest()->get();
+        $nip = Auth::guard('pegawai')->user()->id;
+        $tanggalHariIni = Carbon::now()->format('Y-m-d');
+        $tanggalKemarin = Carbon::yesterday()->format('Y-m-d');
+        // Cek apakah ada absen hari ini
+
+        $absen = AbsenModel::where('nip', $nip)
+            ->where('tgl_absen', $tanggalHariIni)
+            ->first();
+
+        if (!$absen) {
+            // Jika tidak ada, ambil absen hari kemarin
+            $absen = AbsenModel::where('nip', $nip)
+                ->where('tgl_absen', $tanggalKemarin)
+                ->first();
+        }
+
+        return view('absen.patroli', [
+            'show' => $show,
+        'absen' => $absen,
+        'belumAbsen' => !$absen, // true jika belum absen
+    ]);
     }
+
     public function patroliscan()
     {
         return view('absen.patrolicheck');

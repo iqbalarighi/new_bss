@@ -7,15 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 class PatrolLogModel extends Model
 {
     protected $table = 'patrol_logs';
-    protected $fillable = ['user_id', 'checkpoint_id', 'keterangan', 'foto', 'waktu_scan'];
+    protected $fillable = ['user_id', 'checkpoint_id', 'keterangan', 'shift', 'foto', 'waktu_scan'];
 
     public function checkpoint()
     {
-        return $this->belongsTo(Checkpoint::class);
+        return $this->belongsTo(CheckModel::class);
     }
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(PegawaiModel::class);
     }
 }
