@@ -15,8 +15,6 @@ return new class extends Migration
             $table->id();
             $table->integer('perusahaan')->unsigned();
             $table->integer('kantor')->unsigned();
-            $table->integer('dept')->unsigned();
-            $table->integer('satker')->unsigned();
             $table->string('nama');
             $table->string('lokasi'); // Bisa alamat atau koordinat
             $table->text('deskripsi'); // Bisa alamat atau koordinat

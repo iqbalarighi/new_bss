@@ -37,6 +37,27 @@
 					          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
 					        </div>
 					        <div class="modal-body">
+					        	@php
+								    use App\Models\KantorModel;
+
+								    $user = Auth::user();
+								    $kantor = [];
+
+								    if ($user && in_array($user->role, [0, 1])) {
+								        $kantor = KantorModel::where('perusahaan', $user->perusahaan)->get();
+								    }
+								@endphp
+					          @if(Auth::user()->role == 0 || Auth::user()->role == 1)
+			                    <div class="mb-3">
+			                        <label for="kantor" class="form-label">Kantor</label>
+			                        <select name="kantor" id="kantor" class="form-select" required>
+			                            <option selected disabled value="">Pilih Kantor</option>
+			                            @foreach($kantor as $office)
+			                            <option value="{{$office->id}}">{{$office->nama_kantor}}</option>
+			                            @endforeach
+			                        </select>
+			                    </div>
+			                     @endif
 					          <div class="mb-3">
 					            <label for="nama" class="form-label">Nama Checkpoint</label>
 					            <input type="text" class="form-control" name="nama" id="nama" required>
@@ -64,6 +85,12 @@
 						<thead class="table-dark">
 							<tr>
 							<th>No</th>
+							@if(Auth::user()->role == 0)       
+		                    <th>Perusahaan</th>
+		                    @endif
+							@if(Auth::user()->role == 1)
+		                    <th>Gedung/Kantor</th>
+		                    @endif
 							<th>Checkpoint</th>
 							<th>Lokasi</th>
 							<th>Deskripsi</th>
@@ -74,6 +101,12 @@
 							@foreach($show as $n => $s)
 								<tr>
 								    <td>{{ $show->firstItem() + $n }}</td>
+								    @if(Auth::user()->role == 0) 
+								    <td>{{ $s->perusa->perusahaan }}</td>
+								    @endif
+								    @if(Auth::user()->role == 1)
+								    <td>{{ $s->kant->nama_kantor }}</td>
+								    @endif
 								    <td>{{ $s->nama }}</td>
 								    <td>{{ $s->lokasi }}</td>
 								    <td>{{ $s->deskripsi }}</td>

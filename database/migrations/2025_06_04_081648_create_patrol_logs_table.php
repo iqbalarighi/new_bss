@@ -16,8 +16,6 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->integer('perusahaan')->unsigned();
             $table->integer('kantor')->unsigned();
-            $table->integer('dept')->unsigned();
-            $table->integer('satker')->unsigned();
             $table->foreignId('checkpoint_id')->constrained()->onDelete('cascade');
             $table->string('shift');
             $table->text('keterangan');

@@ -18,7 +18,19 @@ class CheckpointController extends Controller
 {
    public function index()
    {
-       $show = CheckModel::paginate(10);
+$user = Auth::user();
+
+       if ($user->role == 0) {
+    // Admin: tampilkan semua data
+            $show = CheckModel::paginate(10);
+        } elseif ($user->role == 1) {
+            // Role 1 atau 3: filter berdasarkan perusahaan
+            $show = CheckModel::where('perusahaan', $user->perusahaan)->latest()->paginate(10);
+        } elseif ($user->role == 3) {
+            // Role 1 atau 3: filter berdasarkan perusahaan dan kantor
+            $show = CheckModel::where('perusahaan', $user->perusahaan)->where('kantor', $user->kantor)->latest()->paginate(10);
+        }
+
        return view('master.patrolarea', compact('show'));
    }
 
@@ -34,11 +46,20 @@ class CheckpointController extends Controller
         
 // buat filter lagi untuk beda role
 
+    if(Auth::user()->role == 0) {
+        $perus = '';
+        $kantor = '';
+    }  elseif(Auth::user()->role == 1 ) {
+        $perus = Auth::user()->perusahaan;
+        $kantor = $request->kantor;
+    } elseif(Auth::user()->role == 3) {
+        $perus = Auth::user()->perusahaan;
+        $kantor = Auth::user()->kantor;
+    } 
+
         $checkpoint = CheckModel::create([
-            'perusahaan' = Auth::guard()->user()->perusahaan,
-            'kantor' = Auth::guard()->user()->nama_kantor,
-            'dept' = Auth::guard()->user()->dept,
-            'satker' = Auth::guard()->user()->satker,
+            'perusahaan' => $perus,
+            'kantor'=>  $kantor,
             'nama' => $validated['nama'],
             'deskripsi' => $validated['deskripsi'],
             'lokasi' => $validated['lokasi'],
@@ -98,6 +119,8 @@ class CheckpointController extends Controller
         // Simpan log
         PatrolLogModel::create([
             'user_id' => auth()->guard('pegawai')->id(),
+            'perusahaan' => Auth::guard('pegawai')->user()->perusahaan,
+            'kantor' => Auth::guard('pegawai')->user()->nama_kantor,
             'checkpoint_id' => $checkpoint->id,
             'waktu_scan' => now(),
             'keterangan' => $request->keterangan,
@@ -112,7 +135,8 @@ class CheckpointController extends Controller
 
     public function patroli()
     {
-        $show = PatrolLogModel::latest()->get();
+        $show = PatrolLogModel::where('perusahaan', Auth::guard('pegawai')->user()->perusahaan)->latest()->get();
+
         $nip = Auth::guard('pegawai')->user()->id;
         $tanggalHariIni = Carbon::now()->format('Y-m-d');
         $tanggalKemarin = Carbon::yesterday()->format('Y-m-d');
