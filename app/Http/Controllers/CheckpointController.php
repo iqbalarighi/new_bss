@@ -118,7 +118,7 @@ $user = Auth::user();
 
         // Simpan log
         PatrolLogModel::create([
-            'user_id' => auth()->guard('pegawai')->id(),
+            'karyawan_id' => auth()->guard('pegawai')->id(),
             'perusahaan' => Auth::guard('pegawai')->user()->perusahaan,
             'kantor' => Auth::guard('pegawai')->user()->nama_kantor,
             'checkpoint_id' => $checkpoint->id,

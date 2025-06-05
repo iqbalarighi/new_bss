@@ -7,7 +7,7 @@
             <ion-icon name="chevron-back-outline" class="ion-icon"></ion-icon>
         </a>
     </div>
-    <div class="pageTitle">Izin</div>
+    <div class="pageTitle">Patroli</div>
     <div class="right"></div>
 </div>
 @endsection
@@ -48,31 +48,28 @@
 <div class="row" style="margin-top: 4rem;">
     <div class="col">
         {{-- buat nampilin data patroli disini --}}
-        @foreach ($show as $d)
-        <ul class="listview image-listview">
-            @php
-                date_default_timezone_set('Asia/Jakarta'); // Set zona waktu ke WIB
-                $now = date('H:i', strtotime($d->waktu_scan));
-                $shift = ($now >= '07:00' && $now < '19:00') ? 'Shift Pagi' : 'Shift Malam';
-            @endphp
-
-            <li>
-                <div class="item">
-                    <div class="in">
-                        <div>
-                            Area : <b>{{$d->checkpoint->nama}}</b> <br>
-                            Tanggal : {{ \Carbon\Carbon::parse($d->waktu_scan)->isoFormat('dddd, MMMM Y') }} <br>
-                            Jam : {{ \Carbon\Carbon::parse($d->waktu_scan)->Format('H:i:s')}} WIB <br>
-                            Personel : {{$d->user->nama_lengkap}} <br>
-                            Shift : {{ $d->shift}}  <br>
-                            Keterangan : {{ $d->keterangan }}
-                        </div>
-                        <img src="{{asset('storage/foto_patrol/'.$d->foto)}}" width="100">
-                    </div>
+@foreach ($show as $d)
+    <ul class="listview image-listview px-1 bg-light">
+        <li>
+            <div class="item d-flex rounded shadow-sm p-2">
+                <div class="me-3">
+                    <img src="{{ asset('storage/foto_patrol/' . $d->foto) }}" width="100" class="rounded shadow">
                 </div>
-            </li>
-        </ul>
-        @endforeach
+
+                <div>
+                    <b>{{ $d->karyawan->nama_lengkap }}</b><br>
+                    {{ $d->shift }}<br>
+                    {{ \Carbon\Carbon::parse($d->waktu_scan)->isoFormat('dddd, D MMMM Y') }}<br>
+                    {{ \Carbon\Carbon::parse($d->waktu_scan)->format('H:i:s') }} WIB<br>
+                    <b>{{ $d->checkpoint->nama }}</b><br>
+                    {{ $d->checkpoint->deskripsi }}<br>
+                    {{ $d->keterangan }}
+                </div>
+            </div>
+        </li>
+    </ul>
+@endforeach
+
     </div>
 </div>
 

@@ -147,7 +147,7 @@
 
         const formData = $(this).serialize();
         $.post("{{ route('scan.qrcode') }}", formData, function (res) {
-            Swal.fire('Berhasil', res.message, 'success').then(() => location.reload());
+            Swal.fire('Berhasil', res.message, 'success').then(() => window.location.href = "{{ route('absen.patroli') }}");
         }).fail(function (xhr) {
             const msg = xhr.responseJSON?.message || 'Terjadi kesalahan';
             Swal.fire('Gagal', msg, 'error');

@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('patrol_logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->integer('karyawan_id')->unsigned();
             $table->integer('perusahaan')->unsigned();
             $table->integer('kantor')->unsigned();
-            $table->foreignId('checkpoint_id')->constrained()->onDelete('cascade');
+            $table->integer('checkpoint_id')->unsigned();
             $table->string('shift');
             $table->text('keterangan');
             $table->text('foto');
