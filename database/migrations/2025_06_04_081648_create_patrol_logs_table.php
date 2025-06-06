@@ -18,9 +18,10 @@ return new class extends Migration
             $table->integer('kantor')->unsigned();
             $table->integer('checkpoint_id')->unsigned();
             $table->string('shift');
+            $table->string('tgl_patrol');
+            $table->timestamp('waktu_scan');
             $table->text('keterangan');
             $table->text('foto');
-            $table->timestamp('waktu_scan');
             $table->timestamps();
         });
 

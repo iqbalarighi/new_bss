@@ -7,7 +7,7 @@
             <ion-icon name="chevron-back-outline" class="ion-icon"></ion-icon>
         </a>
     </div>
-    <div class="pageTitle">Patroli</div>
+    <div class="pageTitle">Hasil Patroli</div>
     <div class="right"></div>
 </div>
 @endsection
@@ -40,10 +40,24 @@
     });
 </script>
 @endif
+@if ($absen && $absen->jam_out)
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    Swal.fire({
+        icon: 'warning',
+        title: 'Perhatian!',
+        text: 'Anda sudah selesai bertugas hari ini!',
+        allowOutsideClick : false,
+        confirmButtonText: 'OK'
+    });
+</script>
+@endif
 
-<div class="fab-button bottom-right" style="margin-bottom: 70px;">
-    <a href="{{route('absen.patrolicheck')}}" class="fab"><ion-icon name="add-outline"></ion-icon></a>
-</div>
+@if ($absen && $absen->jam_out == null)
+    <div class="fab-button bottom-right" style="margin-bottom: 70px;">
+        <a href="{{route('absen.patrolicheck')}}" class="fab"><ion-icon name="add-outline"></ion-icon></a>
+    </div>
+@endif
 
 <div class="row" style="margin-top: 4rem;">
     <div class="col">

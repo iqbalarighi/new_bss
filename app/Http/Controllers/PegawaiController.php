@@ -12,6 +12,7 @@ use App\Models\IzinabsenModel;
 use App\Models\JabatanModel;
 use App\Models\KantorModel;
 use App\Models\LemburModel;
+use App\Models\PatrolLogModel;
 use App\Models\PegawaiModel;
 use App\Models\PerusahaanModel;
 use App\Models\SatkerModel;
@@ -895,5 +896,12 @@ public function laplem()
                     'Rekap_Lembur_'.Carbon::parse($periode)->isoFormat('MMMM_YYYY').'.xlsx'
                 );
             }
+    }
+
+    public function patrol()
+    {
+        $logs = PatrolLogModel::where('perusahaan', Auth::user()->perusahaan)->latest()->paginate(10);
+
+        return view('pegawai.patroli', compact('logs'));
     }
 }

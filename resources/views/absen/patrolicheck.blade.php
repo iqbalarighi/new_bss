@@ -3,7 +3,7 @@
 @section('header')
 <div class="appHeader text-light" style="background-color: #ef3b3b;">
     <div class="left">
-        <a href="{{ route('absen') }}" class="headerButton goBack">
+        <a href="{{ route('absen.patroli') }}" class="headerButton goBack">
             <ion-icon name="chevron-back-outline" class="ion-icon"></ion-icon>
         </a>
     </div>
@@ -25,7 +25,7 @@
 @endif
 
 <!-- QR Code Reader -->
-<div style=" margin-top: 5rem;">
+<div style=" margin-top: 3.5rem;">
     <div id="reader" style="width: auto; margin: auto;"></div>
 </div>
 <!-- Form setelah scan QR -->
@@ -35,25 +35,23 @@
     <form id="log-form">
         @csrf
         <input type="hidden" name="kode_unik" id="kode_unik">
-        <textarea name="keterangan" class="form-control" placeholder="Masukkan keterangan..." required></textarea>
-        <br>
-
-        <!-- Kamera -->
-        <video id="video" autoplay playsinline style="width: 100%; max-width: 300px;"></video>
-        <canvas id="canvas" style="display:none;"></canvas>
-        <input type="hidden" name="foto" id="foto">
-
+        <div class="p-2">
+            <textarea name="keterangan" class="form-control p-1" placeholder="Masukkan keterangan..." required></textarea>
+        </div>
         <!-- Preview -->
         <div id="preview-container" style="display:none;">
-            <h5>Preview Foto:</h5>
-            <img id="foto-preview" src="" style="width: 100%; max-width: 300px; border:1px solid #ccc;" />
+            <button type="button" id="ulang-foto" class="btn btn-sm btn-primary">Ulangi Foto</button>
+            <button type="submit" class="btn btn-sm btn-info">Kirim</button>
             <br>
-            <button type="button" id="ulang-foto">Ulangi Foto</button>
+            <img id="foto-preview" src="" style="width: 100%; max-width: 300px; border:1px solid #ccc;" />
         </div>
+        <!-- Kamera -->
+        {{-- <video id="video" autoplay playsinline style="width: 100%; max-width: 300px;"></video> --}}
+        <video id="video" width="310" height="420px" autoplay playsinline></video>
 
-        <br>
-        <button type="button" id="ambil-foto">Ambil Foto</button>
-        <button type="submit">Kirim Log</button>
+        <canvas id="canvas" style="display:none;"></canvas>
+        <input type="hidden" name="foto" id="foto">
+        <button type="button" id="ambil-foto" class="btn btn-sm btn-primary mt-1">Ambil Foto</button>
     </form>
 </div>
 </center>
@@ -91,19 +89,26 @@
     }
 
     // Kamera
-    let videoStream;
+let videoStream;
 
-    function startCamera() {
-        navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => {
-            videoStream = stream;
-            const video = document.getElementById('video');
-            video.srcObject = stream;
-            video.play();
-        }).catch(err => {
-            Swal.fire('Gagal Akses Kamera', err.message, 'error');
-        });
-    }
+function startCamera() {
+    navigator.mediaDevices.getUserMedia({
+        video: {
+            facingMode: "environment", // Kamera belakang
+            width: { ideal: 310 },
+            height: { ideal: 420 }
+        }
+    })
+    .then(stream => {
+        videoStream = stream;
+        const video = document.getElementById('video');
+        video.srcObject = stream;
+        video.play();
+    })
+    .catch(err => {
+        Swal.fire('Gagal Akses Kamera', err.message, 'error');
+    });
+}
 
     // Ambil Foto
     $('#ambil-foto').click(function () {
@@ -136,22 +141,35 @@
         $('#foto').val('');
     });
 
-    // Kirim Data
-    $('#log-form').submit(function (e) {
-        e.preventDefault();
+// Kirim Data
+$('#log-form').submit(function (e) {
+    e.preventDefault();
 
-        if (!$('#foto').val()) {
-            Swal.fire('Error', 'Silakan ambil foto terlebih dahulu.', 'warning');
-            return;
+    if (!$('#foto').val()) {
+        Swal.fire('Error', 'Silakan ambil foto terlebih dahulu.', 'warning');
+        return;
+    }
+
+    // Tampilkan loading
+    Swal.fire({
+        title: 'Mengirim data...',
+        text: 'Harap tunggu sebentar',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
         }
-
-        const formData = $(this).serialize();
-        $.post("{{ route('scan.qrcode') }}", formData, function (res) {
-            Swal.fire('Berhasil', res.message, 'success').then(() => window.location.href = "{{ route('absen.patroli') }}");
-        }).fail(function (xhr) {
-            const msg = xhr.responseJSON?.message || 'Terjadi kesalahan';
-            Swal.fire('Gagal', msg, 'error');
-        });
     });
+
+    const formData = $(this).serialize();
+    $.post("{{ route('scan.qrcode') }}", formData, function (res) {
+        Swal.fire('Berhasil', res.message, 'success').then(() => {
+            window.location.href = "{{ route('absen.patroli') }}";
+        });
+    }).fail(function (xhr) {
+        const msg = xhr.responseJSON?.message || 'Terjadi kesalahan';
+        Swal.fire('Gagal', msg, 'error');
+    });
+});
+
 </script>
 @endpush

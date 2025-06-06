@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class PatrolLogModel extends Model
 {
     protected $table = 'patrol_logs';
-    protected $fillable = ['karyawan_id', 'checkpoint_id', 'perusahaan', 'kantor', 'keterangan', 'shift', 'foto', 'waktu_scan'];
+    protected $fillable = ['karyawan_id', 'checkpoint_id', 'perusahaan', 'kantor', 'keterangan', 'shift', 'foto', 'waktu_scan', 'tgl_patrol'];
 
     public function checkpoint()
     {

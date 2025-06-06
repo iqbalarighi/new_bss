@@ -122,6 +122,7 @@ $user = Auth::user();
             'perusahaan' => Auth::guard('pegawai')->user()->perusahaan,
             'kantor' => Auth::guard('pegawai')->user()->nama_kantor,
             'checkpoint_id' => $checkpoint->id,
+            'tgl_patrol' => $absen->tgl_absen,
             'waktu_scan' => now(),
             'keterangan' => $request->keterangan,
             'shift' => $absen->shifts->shift,
@@ -130,7 +131,6 @@ $user = Auth::user();
 
         return response()->json(['message' => 'Patroli berhasil dicatat']);
     }
-
 
 
     public function patroli()
@@ -150,6 +150,7 @@ $user = Auth::user();
             // Jika tidak ada, ambil absen hari kemarin
             $absen = AbsenModel::where('nip', $nip)
                 ->where('tgl_absen', $tanggalKemarin)
+                ->whereNull('jam_out')
                 ->first();
         }
 
