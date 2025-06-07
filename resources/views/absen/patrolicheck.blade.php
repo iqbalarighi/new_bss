@@ -23,38 +23,64 @@
     });
 </script>
 @endif
+<style>
+    #video {
+        width: 100%;
+        height: auto;
+        max-width: 310px;
+        border: 1px solid #ccc;
+    }
 
+    #foto-preview {
+        width: 100%;
+        max-width: 300px;
+        border: 1px solid #ccc;
+    }
+</style>
 <!-- QR Code Reader -->
 <div style=" margin-top: 3.5rem;">
     <div id="reader" style="width: auto; margin: auto;"></div>
 </div>
 <!-- Form setelah scan QR -->
-<center>
-<div id="form-container" style="display:none; margin-top: 3rem; margin-bottom: 4rem;">
-    <h3 id="checkpoint-nama"></h3>
-    <form id="log-form">
-        @csrf
-        <input type="hidden" name="kode_unik" id="kode_unik">
-        <div class="p-2">
-            <textarea name="keterangan" class="form-control p-1" placeholder="Masukkan keterangan..." required></textarea>
+<div class="container my-5">
+    <div id="form-container" style="display:none;">
+        <div class="text-center mb-4">
+            <h3 id="checkpoint-nama">Nama Checkpoint</h3>
         </div>
-        <!-- Preview -->
-        <div id="preview-container" style="display:none;">
-            <button type="button" id="ulang-foto" class="btn btn-sm btn-primary">Ulangi Foto</button>
-            <button type="submit" class="btn btn-sm btn-info">Kirim</button>
-            <br>
-            <img id="foto-preview" src="" style="width: 100%; max-width: 300px; border:1px solid #ccc;" />
-        </div>
-        <!-- Kamera -->
-        {{-- <video id="video" autoplay playsinline style="width: 100%; max-width: 300px;"></video> --}}
-        <video id="video" width="310" height="420px" autoplay playsinline></video>
 
-        <canvas id="canvas" style="display:none;"></canvas>
-        <input type="hidden" name="foto" id="foto">
-        <button type="button" id="ambil-foto" class="btn btn-sm btn-primary mt-1">Ambil Foto</button>
-    </form>
+        <form id="log-form">
+            @csrf
+            <input type="hidden" name="kode_unik" id="kode_unik">
+
+            <div class="mb-3">
+                <textarea name="keterangan" class="form-control" rows="3" placeholder="Masukkan keterangan..." required></textarea>
+            </div>
+
+            <!-- Kamera -->
+            <div class="text-center mb-3">
+                <video id="video" autoplay playsinline></video>
+                <canvas id="canvas" style="display:none;"></canvas>
+                <input type="hidden" name="foto" id="foto">
+                <button type="button" id="ambil-foto" class="btn btn-primary btn-sm mt-2">Ambil Foto</button>
+            </div>
+
+            <!-- Preview Foto -->
+            <div id="preview-container" class="text-center mb-3" style="display:none;">
+                <img id="foto-preview" src="" />
+                <div class="row justify-content-center mt-2">
+                    <div class="col-6 col-sm-4 text-end">
+                        <button type="button" id="ulang-foto" class="btn btn-sm btn-warning w-100">Ulangi Foto</button>
+                    </div>
+                    <div class="col-6 col-sm-4 text-start">
+                        <button type="submit" class="btn btn-sm btn-success w-100">Kirim</button>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+    </div>
 </div>
-</center>
+
 @endsection
 
 @push('myscript')
