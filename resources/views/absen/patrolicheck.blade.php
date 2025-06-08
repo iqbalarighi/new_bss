@@ -14,6 +14,7 @@
 
 @section('content')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 @if (Session::get('success'))
 <script>
     Swal.fire({
@@ -23,28 +24,36 @@
     });
 </script>
 @endif
-<style>
-    #video {
-        width: 100%;
-        height: auto;
-        max-width: 310px;
-        border: 1px solid #ccc;
-    }
+ <style>
+        #video {
+            display: block;
+            width: 100%;
+            max-width: 310px;
+            aspect-ratio: 3/4;
+            border: 1px solid #ccc;
+            object-fit: cover;
+            margin: auto;
+        }
 
-    #foto-preview {
-        width: 100%;
-        max-width: 300px;
-        border: 1px solid #ccc;
-    }
-</style>
+        #foto-preview {
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            aspect-ratio: 3 / 4;
+            object-fit: cover;
+            border: 1px solid #ccc;
+            margin: auto;
+        }
+    </style>
+
 <!-- QR Code Reader -->
 <div style=" margin-top: 3.5rem;">
     <div id="reader" style="width: auto; margin: auto;"></div>
 </div>
 <!-- Form setelah scan QR -->
-<div class="container my-5">
+<div class="container my-5" style=" margin-bottom: 3.5rem;">
     <div id="form-container" style="display:none;">
-        <div class="text-center mb-4">
+        <div class="text-center mb-1">
             <h3 id="checkpoint-nama">Nama Checkpoint</h3>
         </div>
 
@@ -53,11 +62,11 @@
             <input type="hidden" name="kode_unik" id="kode_unik">
 
             <div class="mb-3">
-                <textarea name="keterangan" class="form-control" rows="3" placeholder="Masukkan keterangan..." required></textarea>
+                <textarea name="keterangan" class="form-control" rows="2" placeholder="Masukkan keterangan..." required></textarea>
             </div>
 
             <!-- Kamera -->
-            <div class="text-center mb-3">
+            <div class="text-center mb-3" style="max-width: 100%; margin: auto;">
                 <video id="video" autoplay playsinline></video>
                 <canvas id="canvas" style="display:none;"></canvas>
                 <input type="hidden" name="foto" id="foto">
@@ -66,42 +75,98 @@
 
             <!-- Preview Foto -->
             <div id="preview-container" class="text-center mb-3" style="display:none;">
-                <img id="foto-preview" src="" />
-                <div class="row justify-content-center mt-2">
-                    <div class="col-6 col-sm-4 text-end">
-                        <button type="button" id="ulang-foto" class="btn btn-sm btn-warning w-100">Ulangi Foto</button>
-                    </div>
-                    <div class="col-6 col-sm-4 text-start">
-                        <button type="submit" class="btn btn-sm btn-success w-100">Kirim</button>
-                    </div>
-                </div>
-
+        <img id="foto-preview" src="" />
+        <div class="row justify-content-center mt-2">
+            <div class="col-6 col-sm-4 text-end">
+                <button type="button" id="ulang-foto" class="btn btn-sm btn-warning w-100">Ulangi Foto</button>
             </div>
+            <div class="col-6 col-sm-4 text-start">
+                <button type="submit" class="btn btn-sm btn-success w-100">Kirim</button>
+            </div>
+        </div>
+    </div>
         </form>
     </div>
 </div>
 
 @endsection
-
 @push('myscript')
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script>
-    // QR Scan
-    function onScanSuccess(decodedText) {
-        $('#kode_unik').val(decodedText);
-        fetchCheckpoint(decodedText);
-        html5QrCode.stop();
+    let html5QrCode;
+    let isScanning = false;
+
+    function startScanner() {
+        if (html5QrCode) {
+            html5QrCode.stop().then(() => {
+                html5QrCode.clear();
+                initScanner();
+            }).catch(() => {
+                initScanner();
+            });
+        } else {
+            initScanner();
+        }
     }
 
-    const html5QrCode = new Html5Qrcode("reader");
-    html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: 250 },
-        onScanSuccess
-    );
+    function initScanner() {
+        html5QrCode = new Html5Qrcode("reader");
+        html5QrCode.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: 250 },
+            onScanSuccess,
+            onScanFailure
+        ).then(() => {
+            isScanning = true;
+        }).catch(err => {
+            Swal.fire('Gagal Memulai Scanner', err.message || err, 'error');
+        });
+    }
 
-    // Ambil data checkpoint dari server
-    function fetchCheckpoint(kode_unik) {
+    function onScanSuccess(decodedText) {
+        if (!isScanning) return;
+
+        $('#kode_unik').val(decodedText);
+        fetchCheckpoint(decodedText);
+        html5QrCode.stop().then(() => {
+            html5QrCode.clear();
+            isScanning = false;
+        });
+    }
+
+    function onScanFailure(error) {
+        console.warn(`Scan gagal: ${error}`);
+    }
+
+    window.addEventListener('load', function () {
+        startScanner();
+
+        // Coba kirim data yang tersimpan di localStorage (jika ada)
+        const offlineLogs = JSON.parse(localStorage.getItem('offline_patrol_logs') || '[]');
+        if (offlineLogs.length > 0 && navigator.onLine) {
+            offlineLogs.forEach(log => {
+                $.post("{{ route('scan.qrcode') }}", log, function (res) {
+                    console.log('Log offline berhasil dikirim');
+                });
+            });
+            localStorage.removeItem('offline_patrol_logs');
+        }
+    });
+
+function fetchCheckpoint(kode_unik) {
+    if (!navigator.onLine) {
+        // Offline: ambil dari localStorage
+        const checkpoints = JSON.parse(localStorage.getItem('checkpoints') || '[]');
+        const checkpoint = checkpoints.find(c => c.kode_unik === kode_unik);
+        if (checkpoint) {
+            $('#checkpoint-nama').text(checkpoint.nama);
+            $('#form-container').show();
+            startCamera();
+        } else {
+            Swal.fire('Error', 'Checkpoint tidak ditemukan (offline)', 'error');
+        }
+    } else {
+        // Online: ambil dari server
         $.post("{{ route('checkpoint.info') }}", {
             _token: "{{ csrf_token() }}",
             kode_unik: kode_unik
@@ -113,89 +178,109 @@
             Swal.fire('Error', 'Checkpoint tidak ditemukan', 'error');
         });
     }
-
-    // Kamera
-let videoStream;
-
-function startCamera() {
-    navigator.mediaDevices.getUserMedia({
-        video: {
-            facingMode: "environment", // Kamera belakang
-            width: { ideal: 310 },
-            height: { ideal: 420 }
-        }
-    })
-    .then(stream => {
-        videoStream = stream;
-        const video = document.getElementById('video');
-        video.srcObject = stream;
-        video.play();
-    })
-    .catch(err => {
-        Swal.fire('Gagal Akses Kamera', err.message, 'error');
-    });
 }
 
-    // Ambil Foto
-    $('#ambil-foto').click(function () {
+    let videoStream;
+
+    function startCamera() {
+        navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: "environment",
+                width: { ideal: 310 },
+                height: { ideal: 420 }
+            }
+        })
+        .then(stream => {
+            videoStream = stream;
+            const video = document.getElementById('video');
+            video.srcObject = stream;
+            video.play();
+        })
+        .catch(err => {
+            Swal.fire('Gagal Akses Kamera', err.message, 'error');
+        });
+    }
+
+    $('#ambil-foto').on('click', function () {
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
-        const context = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d');
 
-        if (!video.videoWidth || !video.videoHeight) {
-            Swal.fire('Error', 'Kamera belum siap. Coba lagi.', 'error');
-            return;
+        const width = video.videoWidth;
+        const height = video.videoHeight;
+
+        canvas.width = width;
+        canvas.height = height;
+
+        ctx.drawImage(video, 0, 0, width, height);
+
+        let stream = video.srcObject;
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            video.srcObject = null;
         }
 
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        const dataUrl = canvas.toDataURL('image/jpeg');
-        $('#foto').val(dataUrl);
-        $('#foto-preview').attr('src', dataUrl);
-        $('#preview-container').show();
+        const imageData = canvas.toDataURL('image/jpeg');
+        $('#foto').val(imageData);
+        $('#foto-preview').attr('src', imageData);
         $('#video').hide();
-        $('#ambil-foto').hide();
+        $('#preview-container').show();
+        $(this).hide();
     });
 
-    // Ambil Ulang
     $('#ulang-foto').click(function () {
         $('#preview-container').hide();
         $('#video').show();
         $('#ambil-foto').show();
         $('#foto').val('');
+
+        startCamera();
     });
 
-// Kirim Data
 $('#log-form').submit(function (e) {
     e.preventDefault();
-
     if (!$('#foto').val()) {
         Swal.fire('Error', 'Silakan ambil foto terlebih dahulu.', 'warning');
         return;
     }
 
-    // Tampilkan loading
-    Swal.fire({
-        title: 'Mengirim data...',
-        text: 'Harap tunggu sebentar',
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
+    const formData = $(this).serializeArray();
+    let dataObj = {};
+    formData.forEach(item => {
+        dataObj[item.name] = item.value;
     });
 
-    const formData = $(this).serialize();
-    $.post("{{ route('scan.qrcode') }}", formData, function (res) {
+    if (!navigator.onLine) {
+        // Simpan data offline
+        let offlineLogs = JSON.parse(localStorage.getItem('offlineLogs') || '[]');
+        offlineLogs.push(dataObj);
+        localStorage.setItem('offlineLogs', JSON.stringify(offlineLogs));
+
+        Swal.fire('Gagal kirim', 'Data disimpan offline sementara.', 'warning').then(() => {
+            Swal.fire({
+                icon: 'info',
+                title: 'Sukses',
+                text: 'Data berhasil tersimpan offline dan akan dikirim saat koneksi tersedia.',
+                timer: 3000,
+                showConfirmButton: false
+            });
+            // tetap di halaman tanpa reload
+        });
+        return;
+    }
+
+    // Kirim data langsung jika online
+    $.post("{{ route('scan.qrcode') }}", dataObj)
+    .done(res => {
         Swal.fire('Berhasil', res.message, 'success').then(() => {
             window.location.href = "{{ route('absen.patroli') }}";
         });
-    }).fail(function (xhr) {
-        const msg = xhr.responseJSON?.message || 'Terjadi kesalahan';
-        Swal.fire('Gagal', msg, 'error');
+    })
+    .fail(xhr => {
+        Swal.fire('Gagal', xhr.responseJSON?.message || 'Terjadi kesalahan', 'error');
     });
 });
-
 </script>
 @endpush
+
+

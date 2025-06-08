@@ -132,11 +132,27 @@ $user = Auth::user();
         return response()->json(['message' => 'Patroli berhasil dicatat']);
     }
 
+    public function getCheckpointInfo(Request $request)
+    {
+        $request->validate(['kode_unik' => 'required|string']);
 
+        $checkpoint = CheckModel::where('kode_unik', $request->kode_unik)->first();
+
+        if (!$checkpoint) {
+            return response()->json(['message' => 'QR Code tidak valid'], 404);
+        }
+
+        return response()->json([
+            'checkpoint' => $checkpoint,
+        ]);
+    }
+
+
+// ===========================================================================================================================
     public function patroli()
     {
         $show = PatrolLogModel::where('perusahaan', Auth::guard('pegawai')->user()->perusahaan)->latest()->get();
-
+        $checkpoints = CheckModel::where('perusahaan', Auth::guard('pegawai')->user()->perusahaan)->where('kantor', Auth::guard('pegawai')->user()->nama_kantor)->get();
         $nip = Auth::guard('pegawai')->user()->id;
         $tanggalHariIni = Carbon::now()->format('Y-m-d');
         $tanggalKemarin = Carbon::yesterday()->format('Y-m-d');
@@ -158,6 +174,7 @@ $user = Auth::user();
             'show' => $show,
         'absen' => $absen,
         'belumAbsen' => !$absen, // true jika belum absen
+        'checkpoints' => $checkpoints,
     ]);
     }
 
@@ -166,19 +183,5 @@ $user = Auth::user();
         return view('absen.patrolicheck');
     }
 
-    public function getCheckpointInfo(Request $request)
-    {
-        $request->validate(['kode_unik' => 'required|string']);
-
-        $checkpoint = CheckModel::where('kode_unik', $request->kode_unik)->first();
-
-        if (!$checkpoint) {
-            return response()->json(['message' => 'QR Code tidak valid'], 404);
-        }
-
-        return response()->json([
-            'checkpoint' => $checkpoint,
-        ]);
-    }
 
 }
