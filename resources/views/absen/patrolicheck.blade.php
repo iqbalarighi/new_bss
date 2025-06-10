@@ -62,7 +62,7 @@
             <input type="hidden" name="kode_unik" id="kode_unik">
 
             <div class="mb-3">
-                <textarea name="keterangan" class="form-control" rows="2" placeholder="Masukkan keterangan..." required></textarea>
+                <textarea name="keterangan" id="ket" class="form-control" rows="2" placeholder="Masukkan keterangan..." required></textarea>
             </div>
 
             <!-- Kamera -->
@@ -91,185 +91,214 @@
 
 @endsection
 @push('myscript')
-<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="{{ asset('storage/html5-qrcode.min.js') }}"></script>
 <script>
-    let html5QrCode;
-    let isScanning = false;
+let html5QrCode;
+let isScanning = false;
+let videoStream = null;
 
-    function startScanner() {
-        if (html5QrCode) {
-            html5QrCode.stop().then(() => {
-                html5QrCode.clear();
-                initScanner();
-            }).catch(() => {
-                initScanner();
-            });
-        } else {
-            initScanner();
-        }
-    }
-
-    function initScanner() {
-        html5QrCode = new Html5Qrcode("reader");
-        html5QrCode.start(
-            { facingMode: "environment" },
-            { fps: 10, qrbox: 250 },
-            onScanSuccess,
-            onScanFailure
-        ).then(() => {
-            isScanning = true;
-        }).catch(err => {
-            Swal.fire('Gagal Memulai Scanner', err.message || err, 'error');
-        });
-    }
-
-    function onScanSuccess(decodedText) {
-        if (!isScanning) return;
-
-        $('#kode_unik').val(decodedText);
-        fetchCheckpoint(decodedText);
+// Start QR Scanner
+function startScanner() {
+    if (html5QrCode && isScanning) {
         html5QrCode.stop().then(() => {
             html5QrCode.clear();
             isScanning = false;
+            initScanner();
+        }).catch(() => {
+            initScanner();
+        });
+    } else {
+        initScanner();
+    }
+}
+
+
+// Inisialisasi Scanner
+function initScanner() {
+    html5QrCode = new Html5Qrcode("reader");
+    html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        onScanSuccess,
+        onScanFailure
+    ).then(() => {
+        isScanning = true;
+    }).catch(err => {
+        Swal.fire('Gagal Memulai Scanner', err.message || err, 'error');
+    });
+}
+
+// Callback QR sukses
+function onScanSuccess(decodedText) {
+    if (!isScanning) return;
+
+    $('#kode_unik').val(decodedText);
+    fetchCheckpoint(decodedText);
+
+    isScanning = false;
+
+    if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+            html5QrCode.clear();
+        }).catch(err => {
+            console.warn("Scanner tidak aktif saat stop:", err);
         });
     }
+}
 
-    function onScanFailure(error) {
-        console.warn(`Scan gagal: ${error}`);
-    }
 
-    window.addEventListener('load', function () {
-        startScanner();
+// Callback QR gagal
+function onScanFailure(error) {
+    // console.warn(`Scan gagal: ${error}`);
+}
 
-        // Coba kirim data yang tersimpan di localStorage (jika ada)
-        const offlineLogs = JSON.parse(localStorage.getItem('offline_patrol_logs') || '[]');
-        if (offlineLogs.length > 0 && navigator.onLine) {
-            offlineLogs.forEach(log => {
-                $.post("{{ route('scan.qrcode') }}", log, function (res) {
-                    console.log('Log offline berhasil dikirim');
-                });
+window.addEventListener('load', function () {
+    startScanner();
+
+    // Kirim log offline jika ada & online
+    const offlineLogs = JSON.parse(localStorage.getItem('offlineLogs') || '[]');
+    if (offlineLogs.length > 0 && navigator.onLine) {
+        offlineLogs.forEach(log => {
+            $.post("{{ route('scan.qrcode') }}", log, function (res) {
+                console.log('Offline log terkirim');
             });
-            localStorage.removeItem('offline_patrol_logs');
-        }
-    });
+        });
+        localStorage.removeItem('offlineLogs');
+    }
+});
 
+// Ambil data checkpoint dari server/localStorage
 function fetchCheckpoint(kode_unik) {
     if (!navigator.onLine) {
-        // Offline: ambil dari localStorage
         const checkpoints = JSON.parse(localStorage.getItem('checkpoints') || '[]');
         const checkpoint = checkpoints.find(c => c.kode_unik === kode_unik);
         if (checkpoint) {
             $('#checkpoint-nama').text(checkpoint.nama);
             $('#form-container').show();
+            $('#ambil-foto').show(); // pastikan tombol muncul
             startCamera();
         } else {
-            Swal.fire('Error', 'Checkpoint tidak ditemukan (offline)', 'error');
+            Swal.fire('Offline', 'Checkpoint tidak ditemukan', 'error');
         }
     } else {
-        // Online: ambil dari server
         $.post("{{ route('checkpoint.info') }}", {
             _token: "{{ csrf_token() }}",
             kode_unik: kode_unik
         }, function(res) {
             $('#checkpoint-nama').text(res.checkpoint.nama);
             $('#form-container').show();
+            $('#ambil-foto').show(); // pastikan tombol muncul
             startCamera();
         }).fail(function() {
-            Swal.fire('Error', 'Checkpoint tidak ditemukan', 'error');
+            Swal.fire('Gagal', 'Checkpoint tidak ditemukan', 'error');
         });
     }
 }
 
-    let videoStream;
+// Nyalakan kamera
+function startCamera() {
+    navigator.mediaDevices.getUserMedia({
+        video: {
+            facingMode: "environment",
+            width: { ideal: 310 },
+            height: { ideal: 420 }
+        }
+    }).then(stream => {
+        videoStream = stream;
+        const video = document.getElementById('video');
+        video.srcObject = stream;
+        video.play();
+    }).catch(err => {
+        Swal.fire('Akses Kamera Ditolak', err.message, 'error');
+    });
+}
 
-    function startCamera() {
-        navigator.mediaDevices.getUserMedia({
-            video: {
-                facingMode: "environment",
-                width: { ideal: 310 },
-                height: { ideal: 420 }
-            }
-        })
-        .then(stream => {
-            videoStream = stream;
-            const video = document.getElementById('video');
-            video.srcObject = stream;
-            video.play();
-        })
-        .catch(err => {
-            Swal.fire('Gagal Akses Kamera', err.message, 'error');
-        });
+// Tombol Ambil Foto
+$('#ambil-foto').on('click', function () {
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const videoWidth = video.videoWidth;
+    const videoHeight = video.videoHeight;
+    const targetRatio = 3 / 4;
+
+    let cropWidth = videoWidth;
+    let cropHeight = videoWidth / targetRatio;
+
+    if (cropHeight > videoHeight) {
+        cropHeight = videoHeight;
+        cropWidth = cropHeight * targetRatio;
     }
 
-    $('#ambil-foto').on('click', function () {
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
+    const cropX = (videoWidth - cropWidth) / 2;
+    const cropY = (videoHeight - cropHeight) / 2;
 
-        const width = video.videoWidth;
-        const height = video.videoHeight;
+    const outputWidth = 300;
+    const outputHeight = 400;
 
-        canvas.width = width;
-        canvas.height = height;
+    canvas.width = outputWidth;
+    canvas.height = outputHeight;
 
-        ctx.drawImage(video, 0, 0, width, height);
+    ctx.drawImage(
+        video,
+        cropX, cropY, cropWidth, cropHeight,
+        0, 0, outputWidth, outputHeight
+    );
 
-        let stream = video.srcObject;
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-            video.srcObject = null;
-        }
+    if (video.srcObject) {
+        video.srcObject.getTracks().forEach(track => track.stop());
+        video.srcObject = null;
+    }
 
-        const imageData = canvas.toDataURL('image/jpeg');
-        $('#foto').val(imageData);
-        $('#foto-preview').attr('src', imageData);
-        $('#video').hide();
-        $('#preview-container').show();
-        $(this).hide();
-    });
+    const imageData = canvas.toDataURL('image/jpeg');
+    $('#foto').val(imageData);
+    $('#foto-preview').attr('src', imageData);
+    $('#video').hide();
+    $('#preview-container').show();
+    $(this).hide();
+});
 
-    $('#ulang-foto').click(function () {
-        $('#preview-container').hide();
-        $('#video').show();
-        $('#ambil-foto').show();
-        $('#foto').val('');
+// Tombol Ulangi Foto
+$('#ulang-foto').click(function () {
+    $('#preview-container').hide();
+    $('#video').show();
+    $('#ambil-foto').show();
+    $('#foto').val('');
+    startCamera();
+});
 
-        startCamera();
-    });
-
+// Submit Form
 $('#log-form').submit(function (e) {
     e.preventDefault();
+
     if (!$('#foto').val()) {
-        Swal.fire('Error', 'Silakan ambil foto terlebih dahulu.', 'warning');
+        Swal.fire('Peringatan', 'Silakan ambil foto terlebih dahulu.', 'warning');
         return;
     }
 
     const formData = $(this).serializeArray();
     let dataObj = {};
-    formData.forEach(item => {
-        dataObj[item.name] = item.value;
-    });
+    formData.forEach(item => dataObj[item.name] = item.value);
 
     if (!navigator.onLine) {
-        // Simpan data offline
         let offlineLogs = JSON.parse(localStorage.getItem('offlineLogs') || '[]');
         offlineLogs.push(dataObj);
         localStorage.setItem('offlineLogs', JSON.stringify(offlineLogs));
 
-        Swal.fire('Gagal kirim', 'Data disimpan offline sementara.', 'warning').then(() => {
-            Swal.fire({
-                icon: 'info',
-                title: 'Sukses',
-                text: 'Data berhasil tersimpan offline dan akan dikirim saat koneksi tersedia.',
-                timer: 3000,
-                showConfirmButton: false
-            });
-            // tetap di halaman tanpa reload
+        Swal.fire('Tersimpan Sementara', 'Data akan dikirim saat koneksi tersedia.', 'info')
+        .then(() => {
+            $('#form-container').hide();
+            $('#video').show();
+            $('#preview-container').hide();
+            $('#ket').val('');
+            $('#foto').val('');
+            $('#ambil-foto').show();
+            startScanner(); // scanner aktif kembali saat offline
         });
         return;
     }
 
-    // Kirim data langsung jika online
     $.post("{{ route('scan.qrcode') }}", dataObj)
     .done(res => {
         Swal.fire('Berhasil', res.message, 'success').then(() => {
@@ -282,5 +311,3 @@ $('#log-form').submit(function (e) {
 });
 </script>
 @endpush
-
-
