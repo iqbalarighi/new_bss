@@ -605,11 +605,11 @@ public function update(Request $request, $id)
     {
 
         if(Auth::user()->role == 0){
-        $izinList = IzinabsenModel::paginate(15);
+        $izinList = IzinabsenModel::latest()->paginate(15);
         } else if(Auth::user()->role == 1) {
-        $izinList = IzinabsenModel::where('perusahaan', Auth::user()->perusahaan)->paginate(15);
+        $izinList = IzinabsenModel::where('perusahaan', Auth::user()->perusahaan)->latest()->paginate(15);
         } else if(Auth::user()->role == 3){
-        $izinList = IzinabsenModel::where('perusahaan', Auth::user()->perusahaan)->where('nama_kantor', Auth::user()->kantor)->paginate(15);
+        $izinList = IzinabsenModel::where('perusahaan', Auth::user()->perusahaan)->where('nama_kantor', Auth::user()->kantor)->latest()->paginate(15);
         }
 
         return view('pegawai.izin', compact('izinList'));

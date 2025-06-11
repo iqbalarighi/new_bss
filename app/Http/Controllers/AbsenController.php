@@ -865,7 +865,7 @@ public function selesaiLembur(Request $request)
     $fotoPath = $this->simpanFotoBase64($request->foto, 'out');
 
     $lembur->update([
-        'jam_out' => now()->format('H:i:s'),
+        'jam_out' => now()->format('Y-m-d H:i:s'),
         'foto_out' => $fotoPath,
         'lokasi_out' => $request->lokasi,
     ]);
