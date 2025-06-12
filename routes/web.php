@@ -109,6 +109,7 @@ Route::middleware(['auth:web'])->group(function () {
             Route::get('/pegawai/absensi/rekap', 'rekap')->name('pegawai.absensi.rekap');
             Route::post('/pegawai/absensi/rekapview', 'rekapview')->name('pegawai.absensi.rekapview');
             Route::get('/pegawai/patroli', 'patrol')->name('pegawai.patrol');
+            Route::get('/export-patrol', 'exportPatrol')->name('export.patrol');
 
         });
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exports\LemburBulananExport;
 use App\Exports\LemburExport;
+use App\Exports\PatrolLogExport;
 use App\Exports\PresensiExport;
 use App\Exports\RekapAbsensiExport;
 use App\Models\AbsenModel;
@@ -898,10 +899,44 @@ public function laplem()
             }
     }
 
-    public function patrol()
-    {
-        $logs = PatrolLogModel::where('perusahaan', Auth::user()->perusahaan)->latest()->paginate(10);
+    public function patrol(Request $request)
+        {
+            if (Auth::user()->role == 0) {
+                $query = PatrolLogModel::with(['karyawan', 'kant', 'checkpoint'])
+                ->latest()
+                ->get();
+            } elseif (Auth::user()->role == 1) {
+                if($request->kantor){
+                    $query = PatrolLogModel::with(['karyawan', 'kant', 'checkpoint'])
+                    ->where('perusahaan', Auth::user()->perusahaan)
+                    ->where('kantor', $request->kantor)
+                    ->latest();
+                } else {
+                    $query = PatrolLogModel::with(['karyawan', 'kant', 'checkpoint'])
+                    ->where('perusahaan', Auth::user()->perusahaan)
+                    ->latest();
+                }
+            } elseif (Auth::user()->role == 3) {
+                $query = PatrolLogModel::with(['karyawan', 'kant', 'checkpoint'])
+                    ->where('perusahaan', Auth::user()->perusahaan)
+                    ->where('kantor', Auth::user()->kantor)
+                    ->latest();
+            }
 
-        return view('pegawai.patroli', compact('logs'));
-    }
+            if ($request->filled('bulan')) {
+                $query->whereDate('tgl_patrol', 'LIKE', '%'.$request->bulan.'%');
+            }
+
+            $logs = $query->latest()->paginate(10)->appends($request->only('bulan', 'kantor'));
+
+            return view('pegawai.patroli', compact('logs'));
+        }
+
+    public function exportPatrol(Request $request)
+        {
+        return Excel::download(
+                new PatrolLogExport($request->bulan),
+                'Rekap_Patroli_periode_' . Carbon::parse($request->bulan)->isoFormat('MMMM_YYYY') . '.xlsx'
+            );
+        }
 }
