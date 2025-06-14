@@ -936,7 +936,7 @@ public function laplem()
         {
         return Excel::download(
                 new PatrolLogExport($request->bulan),
-                'Rekap_Patroli_periode_' . Carbon::parse($request->bulan)->isoFormat('MMMM_YYYY') . '.xlsx'
+                'Rekap_Patroli_Periode_' . Carbon::parse($request->bulan)->isoFormat('MMMM_YYYY') . '.xlsx'
             );
         }
 }

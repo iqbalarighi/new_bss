@@ -22,6 +22,7 @@
                     <a href="{{ route('satker') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('satker') ? 'active' : '' }}" style="width: 95%;">Satuan Kerja</a>
                     <a href="{{ route('jabatan') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('jabatan') ? 'active' : '' }}" style="width: 95%;">Jabatan</a>
                     <a href="{{ route('shift') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('shift') ? 'active' : '' }}" style="width: 95%;">Shift</a>
+                    <a href="{{ route('checkpoints.index') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('checkpoints') ? 'active' : '' }}" style="width: 95%;">Area Patroli</a>
                     <a href="{{ route('users') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('users') ? 'active' : '' }}" style="width: 95%;">Manage User</a>
         @endif
                 </div>
@@ -47,6 +48,7 @@
                     <a href="{{ route('pegawai.absensi.rekap') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('pegawai/absensi/rekap') ? 'active' : '' }}" style="width: 95%;">Rekap Absensi</a>
                     <a href="{{ route('pegawai.lembur.laporan') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('pegawai/lembur/laporan') ? 'active' : '' }}" style="width: 95%;">Laporan Lembur</a>
                     <a href="{{ route('pegawai.lembur.rekap') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('pegawai/lembur/rekap') ? 'active' : '' }}" style="width: 95%;">Rekap Lembur</a>
+                    <a href="{{ route('pegawai.patrol') }}" class="list-group-item list-group-item-action bg-light {{ request()->is('pegawai/patroli') ? 'active' : '' }}" style="width: 95%;">Patroli</a>
                 </div>
             </div>
         </div>
