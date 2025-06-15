@@ -127,21 +127,23 @@
 </head>
 <body>
     @if(Session::get('error'))
-<script type="text/javascript">
+        <script type="text/javascript">
             Swal.fire({
                 icon: 'error',
                 title: "{{ session('error') }}",
                 confirmButtonColor: '#d33',
                 confirmButtonText: 'OK',
-                allowOutsideClick: false // Mencegah klik di luar untuk menutup
+                allowOutsideClick: false
             });
-</script>
-        @endif
+        </script>
+    @endif
+
     <div class="login-container">
-    <div class="logo-container">
-        <img src="{{asset('storage/img/logo.png')}}" alt="Logo" width="200" class="mb-2" onclick="window.location='/'">
-    </div>
+        <div class="logo-container">
+            <img src="{{ asset('storage/img/logo.png') }}" alt="Logo" width="200" class="mb-2" onclick="window.location='/'">
+        </div>
         <h3 class="text-center text-danger fw-bold">Absensi Pegawai</h3>
+
         <form id="loginForm" action="{{ route('absen.login') }}" method="POST">
             @csrf
             <div class="mb-3">
@@ -149,9 +151,9 @@
                 <input type="tel" class="form-control" id="nip" name="nip" oninput="validateInput(event)" placeholder="Nomor Induk Pegawai" required autofocus>
             </div>
             <div class="mb-3 password-wrapper">
-                    <label for="password" class="form-label">Password</label>
-                    <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
-                    <i id="togglePassword" class="bi bi-eye mt-3"></i>
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                <i id="togglePassword" class="bi bi-eye mt-3"></i>
             </div>
             <div class="mb-3 form-check text-start">
                 <input type="checkbox" class="form-check-input" id="remember" name="remember">
@@ -164,37 +166,77 @@
                 </button>
             </div>
         </form>
+
+        <!-- TOMBOL INSTALL -->
+        <div id="installContainer" style="display: none; margin-top: 20px; text-align: center;">
+            <button id="installBtn" class="btn btn-success">
+                <i class="bi bi-download"></i> Install Aplikasi
+            </button>
+        </div>
     </div>
+
+    <!-- Service Worker -->
     <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function () {
-          navigator.serviceWorker.register('/service-worker.js')
-            .catch(function () {
-              // silently fail
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('/service-worker.js').catch(() => {});
             });
-        });
-      }
-    </script>
-</script>
-</body>
-<script>
-    $("#togglePassword").on("click", function() {
-        var passwordField = $("#password");
-        var type = passwordField.attr("type") === "password" ? "text" : "password";
-        passwordField.attr("type", type);
-        $(this).toggleClass("bi-eye bi-eye-slash");
-    });
-</script>
-    <script>
-        function validateInput(event) {
-            let input = event.target;
-            input.value = input.value.replace(/\D/g, ''); // Hanya izinkan angka
-        }
-    </script>    <script>
-        function validateInput(event) {
-            let input = event.target;
-            input.value = input.value.replace(/\D/g, ''); // Hanya izinkan angka
         }
     </script>
 
+    <!-- Toggle Password -->
+    <script>
+        $("#togglePassword").on("click", function () {
+            var passwordField = $("#password");
+            var type = passwordField.attr("type") === "password" ? "text" : "password";
+            passwordField.attr("type", type);
+            $(this).toggleClass("bi-eye bi-eye-slash");
+        });
+    </script>
+
+    <!-- Input Validator -->
+    <script>
+        function validateInput(event) {
+            let input = event.target;
+            input.value = input.value.replace(/\D/g, '');
+        }
+    </script>
+
+    <!-- INSTALL PWA -->
+    <script>
+        let deferredPrompt;
+        const installBtn = document.getElementById('installBtn');
+        const installContainer = document.getElementById('installContainer');
+
+        // Deteksi jika sudah dalam mode standalone
+        const isInStandaloneMode = () =>
+          window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+        if (isInStandaloneMode()) {
+            document.getElementById('installContainer').style.display = 'none';
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installContainer.style.display = 'block';
+
+            installBtn.addEventListener('click', async () => {
+                if (!deferredPrompt) return;
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    console.log('PWA accepted');
+                }
+                deferredPrompt = null;
+                installContainer.style.display = 'none';
+            });
+        });
+
+        window.addEventListener('appinstalled', () => {
+            installContainer.style.display = 'none';
+            console.log('PWA installed');
+        });
+    </script>
+</body>
 </html>
