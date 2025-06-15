@@ -13,6 +13,13 @@
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
+    <link rel="manifest" href="{{asset('manifest.json')}}">
+    <meta name="theme-color" content="#ef3b3b">
+
+    <!-- Tambahan untuk icon & PWA support -->
+    <link rel="apple-touch-icon" href="/absen/icons/icon-192.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
@@ -158,6 +165,17 @@
             </div>
         </form>
     </div>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/absen/service-worker.js')
+            .catch(function () {
+              // silently fail
+            });
+        });
+      }
+    </script>
+</script>
 </body>
 <script>
     $("#togglePassword").on("click", function() {

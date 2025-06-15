@@ -3,14 +3,10 @@
 // service worker usage on https://github.com/mozilla/serviceworker-cookbook
 /////////////////////////////////////////////////////////////////////////////
 
-// Cache name
-var CACHE_NAME = 'cache-version-1';
+const CACHE_NAME = 'cache-v1';
 
-// Files required to make this app work offline
-var REQUIRED_FILES = [
+const REQUIRED_FILES = [
   '/absen/login',
-  'https://fonts.googleapis.com/css?family=Inter:400,500,700&display=swap',
-  'https://unpkg.com/ionicons@5.0.0/dist/ionicons.js',
   'assets/js/lib/jquery-3.4.1.min.js',
   'assets/js/lib/popper.min.js',
   'assets/js/lib/bootstrap.min.js',
@@ -22,37 +18,32 @@ var REQUIRED_FILES = [
   'assets/css/style.css'
 ];
 
-self.addEventListener('install', function(event) {
-  // Perform install step:  loading each required file into cache
+self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(function(cache) {
-        // Add all offline dependencies to the cache
-        return cache.addAll(REQUIRED_FILES);
-      })
-      .then(function() {
-        return self.skipWaiting();
-      })
+      .then(cache => cache.addAll(REQUIRED_FILES))
+      .then(() => self.skipWaiting())
   );
 });
 
-self.addEventListener('fetch', function(event) {
+self.addEventListener('activate', event => {
+  const cacheWhitelist = [CACHE_NAME];
+  event.waitUntil(
+    caches.keys().then(cacheNames =>
+      Promise.all(
+        cacheNames.map(name => {
+          if (!cacheWhitelist.includes(name)) {
+            return caches.delete(name);
+          }
+        })
+      )
+    ).then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
-      .then(function(response) {
-        // Cache hit - return the response from the cached version
-        if (response) {
-          return response;
-        }
-        // Not in cache - return the result from the live server
-        // `fetch` is essentially a "fallback"
-        return fetch(event.request);
-      }
-    )
+      .then(resp => resp || fetch(event.request))
   );
-});
-
-self.addEventListener('activate', function(event) {
-  // Calling claim() to force a "controllerchange" event on navigator.serviceWorker
-  event.waitUntil(self.clients.claim());
 });

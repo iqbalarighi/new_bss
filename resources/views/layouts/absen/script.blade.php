@@ -19,7 +19,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        am4core.ready(function () {
+{{--         am4core.ready(function () {
 
             // Themes begin
             am4core.useTheme(am4themes_animated);
@@ -64,7 +64,16 @@
                 am4core.color("#37db63"),
                 am4core.color("#ba113b"),
             ];
-        }); // end am4core.ready()
+        }); --}} // end am4core.ready()
     </script>
-
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/absen/service-worker.js')
+            .catch(function () {
+              // silently fail
+            });
+        });
+      }
+    </script>
     @stack('myscript')
