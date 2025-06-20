@@ -145,17 +145,30 @@ document.addEventListener('DOMContentLoaded', function () {
             html: `
                 <div id="swal-qr">${qrHtml}</div>
                 <p><strong>Kode:</strong> ${kode}</p>
-                <a id="downloadQR" class="btn btn-success mt-2" download="QR-${nama}.png">Download QR</a>
+                <a id="downloadQR" class="btn btn-success mt-2">Download PNG</a>
             `,
             didOpen: () => {
-                // Convert SVG to PNG for download
-                const svg = document.querySelector('#swal-qr svg');
-                const xml = new XMLSerializer().serializeToString(svg);
-                const svg64 = btoa(xml);
-                const image64 = 'data:image/svg+xml;base64,' + svg64;
+                const svgElement = document.querySelector('#swal-qr svg');
+                const xml = new XMLSerializer().serializeToString(svgElement);
+                const svgBlob = new Blob([xml], { type: 'image/svg+xml;charset=utf-8' });
+                const url = URL.createObjectURL(svgBlob);
 
-                const link = document.getElementById('downloadQR');
-                link.href = image64;
+                const image = new Image();
+                image.onload = function () {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = image.width;
+                    canvas.height = image.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(image, 0, 0);
+                    URL.revokeObjectURL(url);
+
+                    const pngData = canvas.toDataURL('image/png');
+
+                    const link = document.getElementById('downloadQR');
+                    link.href = pngData;
+                    link.download = `QR-${nama}.png`;
+                };
+                image.src = url;
             }
         });
     });
