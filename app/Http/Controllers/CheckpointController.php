@@ -183,5 +183,31 @@ $user = Auth::user();
         return view('absen.patrolicheck');
     }
 
+    // Proses update data
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'nama' => 'required|string|max:255',
+            'lokasi' => 'nullable|string|max:255',
+            'deskripsi' => 'nullable|string',
+        ]);
 
+        $checkpoint = CheckModel::findOrFail($id);
+        $checkpoint->update([
+            'nama' => $request->nama,
+            'lokasi' => $request->lokasi,
+            'deskripsi' => $request->deskripsi,
+        ]);
+
+        return redirect()->back()->with('success', 'Checkpoint berhasil diperbarui.');
+    }
+
+    // Proses hapus data
+    public function destroy($id)
+    {
+        $checkpoint = CheckModel::findOrFail($id);
+        $checkpoint->delete();
+
+        return redirect()->back()->with('success', 'Checkpoint berhasil dihapus.');
+    }
 }

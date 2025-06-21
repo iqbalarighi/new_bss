@@ -1,6 +1,31 @@
 @extends('layouts.side.side')
 
 @section('content')
+@if ($errors->any())
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops!',
+            html: `{!! implode('<br>', $errors->all()) !!}`,
+        });
+    });
+</script>
+@endif
+@if(session('success'))
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: '{{ session('success') }}',
+            timer: 2000,
+            showConfirmButton: false
+        });
+    });
+</script>
+@endif
+
 
 <div class="container mw-100">
 	<style>
@@ -95,12 +120,13 @@
 							<th>Lokasi</th>
 							<th>Deskripsi</th>
 							<th>QRCode</th>
+							<th>Aksi</th>
 						</tr>
 						</thead>
 						<tbody>
 							@foreach($show as $n => $s)
 								<tr>
-								    <td>{{ $show->firstItem() + $n }}</td>
+								    <td align="center">{{ $show->firstItem() + $n }}</td>
 								    @if(Auth::user()->role == 0) 
 								    <td>{{ $s->perusa->perusahaan }}</td>
 								    @endif
@@ -110,19 +136,73 @@
 								    <td>{{ $s->nama }}</td>
 								    <td>{{ $s->lokasi }}</td>
 								    <td>{{ $s->deskripsi }}</td>
-								    <td>
+								    <td align="center">
 								        <button class="btn btn-primary btn-sm view-qr"
-								                data-nama="{{ $s->nama }}"
-								                data-kode="{{ $s->kode_unik }}">
-								            Lihat QR
-								        </button>
+										        data-nama="{{ $s->nama }}"
+										        data-kode="{{ $s->kode_unik }}"
+										        title="Lihat QR Code">
+										    <i class="bi bi-qr-code"></i>
+										</button>
 
 								        {{-- Elemen tersembunyi untuk menyimpan QR --}}
 								        <div id="qr-{{ $s->kode_unik }}" class="d-none">
 								            {!! QrCode::size(200)->generate($s->kode_unik) !!}
 								        </div>
 								    </td>
+<td class="text-center">
+    <div class="d-flex justify-content-center gap-2">
+        <!-- Tombol Edit -->
+        <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
+            data-bs-target="#editModal{{ $s->id }}" title="Edit">
+            <i class="bi bi-pencil-square"></i>
+        </button>
+
+        <!-- Tombol Hapus -->
+		<button type="button"
+		        class="btn btn-danger btn-sm btn-hapus"
+		        data-url="{{ route('checkpoints.destroy', $s->id) }}"
+		        title="Hapus">
+		    <i class="bi bi-trash"></i>
+		</button>
+    </div>
+</td>
+
 								</tr>
+								<!-- Modal Edit -->
+<div class="modal fade" id="editModal{{ $s->id }}" tabindex="-1" aria-labelledby="editModalLabel{{ $s->id }}" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="{{ route('checkpoints.update', $s->id) }}" method="POST">
+        @csrf
+        @method('PUT')
+        <div class="modal-header">
+          <h5 class="modal-title" id="editModalLabel{{ $s->id }}">Edit Checkpoint</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label>Nama Checkpoint</label>
+            <input type="text" name="nama" value="{{ $s->nama }}" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label>Lokasi</label>
+            <input type="text" name="lokasi" value="{{ $s->lokasi }}" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label>Deskripsi</label>
+            <textarea name="deskripsi" class="form-control">{{ $s->deskripsi }}</textarea>
+          </div>
+          <!-- Tambahkan field lain sesuai kebutuhan -->
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Simpan</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 								@endforeach
 						</tbody>
 					</table>
@@ -174,4 +254,37 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.btn-hapus').forEach(button => {
+        button.addEventListener('click', function () {
+            const url = this.getAttribute('data-url');
+
+            Swal.fire({
+                title: 'Yakin ingin menghapus?',
+                text: "Data yang dihapus tidak bisa dikembalikan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = url;
+                    form.innerHTML = `
+                        @csrf
+                        @method('DELETE')
+                    `;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        });
+    });
+});
+</script>
+
 @endpush
