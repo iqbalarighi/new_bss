@@ -76,61 +76,77 @@ $user = Auth::user();
     }
 
         public function scan(Request $request)
-    {
-        $request->validate([
-            'kode_unik' => 'required|string',
-            'keterangan' => 'required|string',
-            'foto' => 'required|string',
-        ]);
+{
+    $request->validate([
+        'kode_unik' => 'required|string',
+        'keterangan' => 'required|string',
+        'foto' => 'required|string',
+    ]);
 
-        $nip = Auth::guard('pegawai')->user()->id;
-        $tanggalHariIni = Carbon::now()->format('Y-m-d');
-        $tanggalKemarin = Carbon::yesterday()->format('Y-m-d');
-        // Cek apakah ada absen hari ini
+    $pegawai = Auth::guard('pegawai')->user();
+    $nip = $pegawai->id;
 
+    $tanggalHariIni = Carbon::now()->format('Y-m-d');
+    $tanggalKemarin = Carbon::yesterday()->format('Y-m-d');
+
+    $absen = AbsenModel::where('nip', $nip)
+        ->where('tgl_absen', $tanggalHariIni)
+        ->first();
+
+    if (!$absen) {
         $absen = AbsenModel::where('nip', $nip)
-            ->where('tgl_absen', $tanggalHariIni)
+            ->where('tgl_absen', $tanggalKemarin)
             ->first();
-
-        if (!$absen) {
-            // Jika tidak ada, ambil absen hari kemarin
-            $absen = AbsenModel::where('nip', $nip)
-                ->where('tgl_absen', $tanggalKemarin)
-                ->first();
-        }
-
-        $checkpoint = CheckModel::where('kode_unik', $request->kode_unik)->first();
-
-        if (!$checkpoint) {
-            return response()->json(['message' => 'QR Code tidak dikenali'], 404);
-        }
-
-        // Simpan foto base64 ke storage
-            $base64_image = $request->foto;
-            $image_name = 'foto_' . uniqid() . '.jpg';
-
-            // Decode base64 dan simpan ke storage/app/public/foto_patrol
-            $manager = new ImageManager(new Driver());
-            $image = $manager->read($base64_image)->toJpeg(85);
-
-            // Simpan ke storage menggunakan Laravel Storage
-            Storage::disk('public')->put('foto_patrol/' . $image_name, (string) $image);
-
-        // Simpan log
-        PatrolLogModel::create([
-            'karyawan_id' => auth()->guard('pegawai')->id(),
-            'perusahaan' => Auth::guard('pegawai')->user()->perusahaan,
-            'kantor' => Auth::guard('pegawai')->user()->nama_kantor,
-            'checkpoint_id' => $checkpoint->id,
-            'tgl_patrol' => $absen->tgl_absen,
-            'waktu_scan' => now(),
-            'keterangan' => $request->keterangan,
-            'shift' => $absen->shifts->shift,
-            'foto' => $image_name,
-        ]);
-
-        return response()->json(['message' => 'Patroli berhasil dicatat']);
     }
+
+    if (!$absen) {
+        return response()->json(['message' => 'Data absen tidak ditemukan'], 404);
+    }
+
+    $checkpoint = CheckModel::where('kode_unik', $request->kode_unik)->first();
+
+    if (!$checkpoint) {
+        return response()->json(['message' => 'QR Code tidak dikenali'], 404);
+    }
+
+    // ⛔ Validasi: jangan simpan jika sudah scan checkpoint sama dalam 1 jam terakhir
+    $satuJamLalu = now()->subHour();
+
+    $sudahScan = PatrolLogModel::where('karyawan_id', $pegawai->id)
+        ->where('checkpoint_id', $checkpoint->id)
+        ->whereBetween('waktu_scan', [$satuJamLalu, now()])
+        ->exists();
+
+    if ($sudahScan) {
+        return response()->json([
+            'message' => 'Checkpoint ini sudah dipindai dalam 1 jam terakhir'
+        ], 409);
+    }
+
+    // ✅ Simpan foto base64
+    $base64_image = $request->foto;
+    $image_name = 'foto_' . uniqid() . '.jpg';
+
+    $manager = new ImageManager(new Driver());
+    $image = $manager->read($base64_image)->toJpeg(85);
+
+    Storage::disk('public')->put('foto_patrol/' . $image_name, (string) $image);
+
+    // ✅ Simpan log patroli
+    PatrolLogModel::create([
+        'karyawan_id' => $pegawai->id,
+        'perusahaan' => $pegawai->perusahaan,
+        'kantor' => $pegawai->nama_kantor,
+        'checkpoint_id' => $checkpoint->id,
+        'tgl_patrol' => $absen->tgl_absen,
+        'waktu_scan' => now(),
+        'keterangan' => $request->keterangan,
+        'shift' => $absen->shifts->shift ?? '-', // hindari error jika shifts null
+        'foto' => $image_name,
+    ]);
+
+    return response()->json(['message' => 'Patroli berhasil dicatat']);
+}
 
     public function getCheckpointInfo(Request $request)
     {
