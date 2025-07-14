@@ -103,7 +103,6 @@
       </div>
     </div>
 
-    
     <table>
       <thead>
         <tr>
@@ -113,58 +112,67 @@
           @if($satker == null)
           <th rowspan="2">Satker</th>
           @endif
-          <th colspan="31">Tanggal</th>
+          <th colspan="{{$jumlahHari}}">Tanggal</th>
           <th rowspan="2">THE</th>
         </tr>
         <tr>
           <!-- Kolom Tanggal 1-31 -->
           <!-- Bisa disesuaikan agar dinamis -->
-          @for ($i = 1; $i <= 31; $i++)
+          @for ($i = 1; $i <= $jumlahHari; $i++)
             <th>{{ $i }}</th>
           @endfor
         </tr>
       </thead>
       <tbody>
         @foreach ($rekap as $index => $r)
-        <tr>
-          <td>{{ $index + 1 }}</td>
-          <td>{{ $r['nip'] }}</td>
-          <td class="text-start" style="white-space: wrap;">{{ $r['nama'] }}</td>
-          @if($satker == null)
-          <td class="text-start" style="white-space: wrap;">{{ $r['sat'] }}</td>
-          @endif
-          @for ($i = 1; $i <= 31; $i++)
-          @php
-            $tgl = \Carbon\Carbon::createFromDate($tahun, $bulan, $i)->toDateString();
-            $absen = $r['absensi']->firstWhere('tgl_absen', $tgl);
-            $izin = $r['izin']->firstWhere('tanggal', $tgl);
-          @endphp
-          <td>
-            @if ($absen)
-              <span class="{{$absen->jam_in > $absen->shifts->jam_masuk ? 'red' : ''}}">{{ $absen->jam_in ?? '' }}</span><br>
-              <span class="{{$absen->jam_out ?? 'red'}}">{{ $absen->jam_out ?? '00:00:00' }}</span>
-            @elseif ($izin)
-                    @if (Str::contains(strtolower($izin->jenis_izin), 's'))
-                        <span style="color:red; font-weight:bold;">S</span>
-                    @elseif (Str::contains(strtolower($izin->jenis_izin), 'i'))
-                        <span style="color:green; font-weight:bold;">I</span>
-                    @else
-                        <span style="color:blue; font-weight:bold;">C</span>
-                    @endif
-                @else
-                    {{-- Tidak ada data izin --}}
-                    <span>-</span>
+          <tr>
+            <td>{{ $index + 1 }}</td>
+            <td>{{ $r['nip'] }}</td>
+            <td class="text-start" style="white-space: normal;">{{ $r['nama'] }}</td>
+            @if ($satker == null)
+              <td class="text-start" style="white-space: normal;">{{ $r['sat'] }}</td>
             @endif
-          </td>
-        @endfor
 
-          @php
+            @for ($i = 1; $i <= $jumlahHari; $i++)
+              @php
+                $tgl = Carbon::createFromDate($tahun, $bulan, $i);
+                $absen = $r['absensi']->first(function ($a) use ($tgl) {
+                    return Carbon::parse($a->tgl_absen)->isSameDay($tgl);
+                });
+                $izin = $r['izin']->first(function ($z) use ($tgl) {
+                    return Carbon::parse($z->tanggal)->isSameDay($tgl);
+                });
+              @endphp
+              <td>
+                @if ($absen)
+                  <span class="{{ isset($absen->shifts) && $absen->jam_in > $absen->shifts->jam_masuk ? 'red' : '' }}">
+                    {{ $absen->jam_in ?? '' }}
+                  </span><br>
+                  <span class="{{ $absen->jam_out == null ? 'red' : '' }}">
+                    {{ $absen->jam_out ?? '00:00:00' }}
+                  </span>
+                @elseif ($izin)
+                  @php $jenis = strtolower($izin->jenis_izin); @endphp
+                  @if (Str::contains($jenis, 's'))
+                    <span style="color:red; font-weight:bold;">S</span>
+                  @elseif (Str::contains($jenis, 'i'))
+                    <span style="color:green; font-weight:bold;">I</span>
+                  @else
+                    <span style="color:blue; font-weight:bold;">C</span>
+                  @endif
+                @else
+                  <span>-</span>
+                @endif
+              </td>
+            @endfor
+
+            @php
               $totalHadir = $r['absensi']->count();
-              $totalIzin = $r['izin']->count(); // hanya izin yang sudah "diterima" karena sudah difilter di controller
+              $totalIzin = $r['izin']->count();
               $totalTHE = $totalHadir + $totalIzin;
             @endphp
             <td><strong>{{ $totalTHE }}</strong></td>
-        </tr>
+          </tr>
         @endforeach
       </tbody>
     </table>
