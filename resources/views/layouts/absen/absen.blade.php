@@ -22,7 +22,11 @@
     <link rel="apple-touch-icon" sizes="180x180" href={{asset("assets/img/icon/192x192.png")}}>
     <link rel="stylesheet" href={{asset("assets/css/style.css")}}>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" >
-
+<style>
+    body {
+        {{-- opacity: 0.7; --}}
+    }
+</style>
 </head>
 <body style="background-color:#e9ecef;">
 

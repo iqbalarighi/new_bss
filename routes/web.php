@@ -181,7 +181,6 @@ Route::post('/absen/logout', [AuthController::class, 'logout'])->middleware(['re
 
 Route::post('/absen/login', [AuthController::class, 'login'])->middleware('guest');
 
-
-
-
-
+Route::get('/offline', function () {
+    return response()->view('offline')->header('Content-Type', 'text/html');
+});

@@ -6,7 +6,6 @@
 const CACHE_NAME = 'cache-v1';
 
 const REQUIRED_FILES = [
-  '/absen/login',
   'assets/js/lib/jquery-3.4.1.min.js',
   'assets/js/lib/popper.min.js',
   'assets/js/lib/bootstrap.min.js',
