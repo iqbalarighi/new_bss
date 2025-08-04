@@ -167,19 +167,26 @@ $user = Auth::user();
 // ===========================================================================================================================
     public function patroli()
     {
-        $show = PatrolLogModel::where('perusahaan', Auth::guard('pegawai')->user()->perusahaan)->latest()->get();
-        $checkpoints = CheckModel::where('perusahaan', Auth::guard('pegawai')->user()->perusahaan)->where('kantor', Auth::guard('pegawai')->user()->nama_kantor)->get();
+        $show = PatrolLogModel::where('perusahaan', Auth::guard('pegawai')->user()->perusahaan)
+            ->latest()
+            ->limit(50)
+            ->get();
+
+        $checkpoints = CheckModel::where('perusahaan', Auth::guard('pegawai')->user()->perusahaan)
+            ->where('kantor', Auth::guard('pegawai')->user()->nama_kantor)
+            ->get();
+
         $nip = Auth::guard('pegawai')->user()->id;
         $tanggalHariIni = Carbon::now()->format('Y-m-d');
         $tanggalKemarin = Carbon::yesterday()->format('Y-m-d');
-        // Cek apakah ada absen hari ini
 
+        // Cek apakah ada absen hari ini
         $absen = AbsenModel::where('nip', $nip)
             ->where('tgl_absen', $tanggalHariIni)
             ->first();
 
         if (!$absen) {
-            // Jika tidak ada, ambil absen hari kemarin
+            // Jika tidak ada, ambil absen hari kemarin jika belum jam_out
             $absen = AbsenModel::where('nip', $nip)
                 ->where('tgl_absen', $tanggalKemarin)
                 ->whereNull('jam_out')
@@ -188,11 +195,12 @@ $user = Auth::user();
 
         return view('absen.patroli', [
             'show' => $show,
-        'absen' => $absen,
-        'belumAbsen' => !$absen, // true jika belum absen
-        'checkpoints' => $checkpoints,
-    ]);
+            'absen' => $absen,
+            'belumAbsen' => !$absen, // true jika belum absen
+            'checkpoints' => $checkpoints,
+        ]);
     }
+
 
     public function patroliscan()
     {
