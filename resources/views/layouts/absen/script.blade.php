@@ -66,7 +66,7 @@
             ];
         }); --}} // end am4core.ready()
     </script>
-    <script>
+{{--     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function () {
           navigator.serviceWorker.register('/service-worker.js')
@@ -75,5 +75,18 @@
             });
         });
       }
-    </script>
+    </script> --}}
+    <script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(function (registration) {
+        console.log('Service Worker terdaftar dengan sukses:', registration.scope);
+      })
+      .catch(function (error) {
+        console.error('Pendaftaran Service Worker gagal:', error);
+      });
+  });
+}
+</script>
     @stack('myscript')

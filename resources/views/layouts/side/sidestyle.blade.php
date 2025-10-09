@@ -10,6 +10,7 @@
 <style>
             body {
         overflow-x: hidden;
+        {{-- opacity: 0.7; --}}
         }
         #sidebar-wrapper {
         min-height: 100vh;

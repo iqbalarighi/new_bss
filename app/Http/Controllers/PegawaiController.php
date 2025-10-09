@@ -559,15 +559,17 @@ public function update(Request $request, $id)
 
             $rekap = [];
             $depar = DeptModel::findOrFail($dept);
-           
+            $start1 = $start->format('Y-m-d');
+            $end1 = $end->format('Y-m-d');
 
             foreach ($karyawan as $k) {
                 $absensi = AbsenModel::where('nip', $k->id)
-                    ->whereBetween('tgl_absen', [$start, $end])
+                    ->whereBetween('tgl_absen', [$start1, $end1])
+                    ->orderBy('tgl_absen', 'asc')
                     ->get();
 
                 $izin = IzinabsenModel::where('nip', $k->id)
-                    ->whereBetween('tanggal', [$start, $end])
+                    ->whereBetween('tanggal', [$start1, $end1])
                     ->where('status_approve', 1)
                     ->get();
 

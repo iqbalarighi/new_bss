@@ -132,10 +132,9 @@
             @if ($satker == null)
               <td class="text-start" style="white-space: normal;">{{ $r['sat'] }}</td>
             @endif
-
             @for ($i = 1; $i <= $jumlahHari; $i++)
               @php
-                $tgl = Carbon::createFromDate($tahun, $bulan, $i);
+                $tgl = Carbon::createFromDate($tahun, $bulan, $i)->format('Y-m-d');
                 $absen = $r['absensi']->first(function ($a) use ($tgl) {
                     return Carbon::parse($a->tgl_absen)->isSameDay($tgl);
                 });
