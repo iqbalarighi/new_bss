@@ -899,38 +899,35 @@ public function laplem()
             }
     }
 
-    public function patrol(Request $request)
-        {
-            if (Auth::user()->role == 0) {
-                $query = PatrolLogModel::with(['karyawan', 'kant', 'checkpoint'])
-                ->latest()
-                ->get();
-            } elseif (Auth::user()->role == 1) {
-                if($request->kantor){
-                    $query = PatrolLogModel::with(['karyawan', 'kant', 'checkpoint'])
-                    ->where('perusahaan', Auth::user()->perusahaan)
-                    ->where('kantor', $request->kantor)
-                    ->latest();
-                } else {
-                    $query = PatrolLogModel::with(['karyawan', 'kant', 'checkpoint'])
-                    ->where('perusahaan', Auth::user()->perusahaan)
-                    ->latest();
-                }
-            } elseif (Auth::user()->role == 3) {
-                $query = PatrolLogModel::with(['karyawan', 'kant', 'checkpoint'])
-                    ->where('perusahaan', Auth::user()->perusahaan)
-                    ->where('kantor', Auth::user()->kantor)
-                    ->latest();
-            }
-
-            if ($request->filled('bulan')) {
-                $query->whereDate('tgl_patrol', 'LIKE', '%'.$request->bulan.'%');
-            }
-
-            $logs = $query->latest()->paginate(10)->appends($request->only('bulan', 'kantor'));
-
-            return view('pegawai.patroli', compact('logs'));
+public function patrol(Request $request)
+{
+    if (Auth::user()->role == 0) {
+        $query = PatrolLogModel::with(['karyawan', 'kant', 'checkpoint']);
+    } elseif (Auth::user()->role == 1) {
+        $query = PatrolLogModel::with(['karyawan', 'kant', 'checkpoint'])
+                ->where('perusahaan', Auth::user()->perusahaan);
+        
+        if($request->kantor) {
+            $query->where('kantor', $request->kantor);
         }
+    } elseif (Auth::user()->role == 3) {
+        $query = PatrolLogModel::with(['karyawan', 'kant', 'checkpoint'])
+                ->where('perusahaan', Auth::user()->perusahaan)
+                ->where('kantor', Auth::user()->kantor);
+    }
+
+    // Filter bulan
+    if ($request->filled('bulan')) {
+        $query->whereDate('tgl_patrol', 'LIKE', '%'.$request->bulan.'%');
+    }
+
+    // Execute query dengan pagination
+    $logs = $query->latest()
+                  ->paginate(10)
+                  ->appends($request->only('bulan', 'kantor'));
+
+    return view('pegawai.patroli', compact('logs'));
+}
 
     public function exportPatrol(Request $request)
         {
