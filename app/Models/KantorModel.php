@@ -13,5 +13,12 @@ class KantorModel extends Model
         'nama_kantor',
         'alamat',
         'lokasi',
+        'radius',
     ];
+
+
+    public function perusa()
+    {
+        return $this->belongsTo(PerusahaanModel::class, 'perusahaan');
+    }  
 }

@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('kantor', function (Blueprint $table) {
             $table->id();
-            $table->integer('perusahaan');
+            $table->unsignedInteger('perusahaan');
             $table->string('nama_kantor');
             $table->text('alamat');
+            $table->text('radius');
             $table->text('lokasi');
             $table->timestamps();
         });

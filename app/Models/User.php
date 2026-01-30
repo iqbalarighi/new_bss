@@ -6,28 +6,33 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'perusahaan',
+        'kantor',
+        'dept',
+        'satker',
+        'jabatan',
+        'role',
+
     ];
 
     /**
      * The attributes that should be hidden for serialization.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $hidden = [
         'password',
@@ -47,14 +52,28 @@ class User extends Authenticatable
         ];
     }
 
-    /**
-     * Get the user's initials
-     */
-    public function initials(): string
+
+     public function perusa()
     {
-        return Str::of($this->name)
-            ->explode(' ')
-            ->map(fn (string $name) => Str::of($name)->substr(0, 1))
-            ->implode('');
+        return $this->belongsTo(PerusahaanModel::class, 'perusahaan');
+    }
+
+public function kant()
+    {
+        return $this->belongsTo(KantorModel::class, 'kantor');
+    }
+
+public function jabat()
+    {
+        return $this->belongsTo(JabatanModel::class, 'jabatan');
+    }
+
+public function sat()
+    {
+        return $this->belongsTo(SatkerModel::class, 'satker');
+    }
+
+public function deptmn() {
+	return $this->belongsTo(DeptModel::class, 'dept');
     }
 }

@@ -2,21 +2,15 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "build": "vite build"
     },
-    "dependencies": {
-        "@tailwindcss/vite": "^4.0.7",
-        "autoprefixer": "^10.4.20",
-        "axios": "^1.7.4",
-        "concurrently": "^9.0.1",
+    "devDependencies": {
+        "@popperjs/core": "^2.11.6",
+        "axios": "^1.6.4",
+        "bootstrap": "^5.2.3",
         "laravel-vite-plugin": "^1.0",
-        "tailwindcss": "^4.0.7",
-        "vite": "^6.0"
-    },
-    "optionalDependencies": {
-        "@rollup/rollup-linux-x64-gnu": "4.9.5",
-        "@tailwindcss/oxide-linux-x64-gnu": "^4.0.1",
-        "lightningcss-linux-x64-gnu": "^1.29.1"
+        "sass": "^1.56.1",
+        "vite": "^5.0"
     }
 }

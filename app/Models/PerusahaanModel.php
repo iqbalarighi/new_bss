@@ -15,4 +15,9 @@ class PerusahaanModel extends Model
         'logo',
         'status',
     ];
+
+        public function kantors()
+    {
+        return $this->belongsTo(KantorModel::class, 'id');
+    }  
 }

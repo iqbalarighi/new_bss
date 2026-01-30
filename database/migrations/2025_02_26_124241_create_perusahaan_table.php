@@ -16,7 +16,6 @@ return new class extends Migration
             $table->string('perusahaan');
             $table->text('alamat');
             $table->string('no_tlp');
-            $table->string('status');
             $table->timestamps();
         });
     }

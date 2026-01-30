@@ -1,0 +1,180 @@
+@php
+    use Carbon\Carbon;
+
+    $tanggalAwal = Carbon::createFromDate($tahun, $bulan, 1);
+    $jumlahHari = $tanggalAwal->daysInMonth;
+@endphp
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Laporan Presensi Pegawai</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/paper-css/0.4.1/paper.css">
+    <style>
+   @page { 
+    size: A4 landscape;
+    margin: 0.5cm 0.5cm 0.5cm 0.5cm;
+  }
+
+  body {
+    font-size: 8px;
+    font-family: Arial, sans-serif;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto; /* agar kolom bisa autofit isi */
+  }
+
+  th, td {
+    border: 1px solid #000;
+    text-align: center;
+    padding: 0.2px;
+    word-wrap: break-word;
+  }
+
+  th {
+    background-color: #f0f0f0;
+  }
+
+  .text-start {
+    text-align: left;
+  }
+
+  .red {
+    color: red;
+  }
+
+  td:nth-child(2) { width: 40px; }   /* NIP */
+  td:nth-child(3) { width: 120px; }  /* Nama */
+  th[colspan="31"] > div {
+    display: flex;
+    justify-content: space-between;
+  }
+
+      h2, h3, h4 {
+      margin: 0;
+      padding: 0;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 10px;
+      padding-top: 10px;
+    }
+
+    .header img {
+      float: left;
+      height: 60px;
+      margin-right: 10px;
+      margin-top: -20px;
+    }
+
+        .text-lowercase {
+    text-transform: lowercase;
+    }
+    .text-uppercase {
+        text-transform: uppercase;
+    }
+    .text-capitalize {
+        text-transform: capitalize;
+    }
+  </style>
+</head>
+
+<body class="A4 landscape">
+  <section class="sheet padding-10mm">
+    <div class="header">
+      <img src="{{ public_path('storage/img/logo.png') }}" alt="Logo" />
+      <div class="text-uppercase" style="font-size: 10pt !important; margin-bottom: 15px; margin-top: -15px;">
+        <h4 style="text-align: center;">Rekap Absensi Bulanan</h4>
+        @if ($satker == null)
+        <strong>Departemen {{$depar->nama_dept}}<br></strong>
+          @else
+          <strong>Departemen {{$depar->nama_dept}}<br></strong>
+        <strong>Satuan Kerja {{$sat->satuan_kerja}}<br></strong>
+        @endif
+        <strong>PERIODE {{Carbon::parse($periode)->isoFormat('MMMM YYYY')}}</strong><br>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2">No</th>
+          <th rowspan="2">NIK</th>
+          <th rowspan="2">Nama</th>
+          @if($satker == null)
+          <th rowspan="2">Satker</th>
+          @endif
+          <th colspan="{{$jumlahHari}}">Tanggal</th>
+          <th rowspan="2">THE</th>
+        </tr>
+        <tr>
+          <!-- Kolom Tanggal 1-31 -->
+          <!-- Bisa disesuaikan agar dinamis -->
+          @for ($i = 1; $i <= $jumlahHari; $i++)
+            <th>{{ $i }}</th>
+          @endfor
+        </tr>
+      </thead>
+      <tbody>
+        @foreach ($rekap as $index => $r)
+          <tr>
+            <td>{{ $index + 1 }}</td>
+            <td>{{ $r['nip'] }}</td>
+            <td class="text-start" style="white-space: normal;">{{ $r['nama'] }}</td>
+            @if ($satker == null)
+              <td class="text-start" style="white-space: normal;">{{ $r['sat'] }}</td>
+            @endif
+            @for ($i = 1; $i <= $jumlahHari; $i++)
+              @php
+                $tgl = Carbon::createFromDate($tahun, $bulan, $i)->format('Y-m-d');
+                $absen = $r['absensi']->first(function ($a) use ($tgl) {
+                    return Carbon::parse($a->tgl_absen)->isSameDay($tgl);
+                });
+                $izin = $r['izin']->first(function ($z) use ($tgl) {
+                    return Carbon::parse($z->tanggal)->isSameDay($tgl);
+                });
+              @endphp
+              <td>
+                @if ($absen)
+                  <span class="{{ isset($absen->shifts) && $absen->jam_in > $absen->shifts->jam_masuk ? 'red' : '' }}">
+                    {{ $absen->jam_in ?? '' }}
+                  </span><br>
+                  <span class="{{ $absen->jam_out == null ? 'red' : '' }}">
+                    {{ $absen->jam_out ?? '00:00:00' }}
+                  </span>
+                @elseif ($izin)
+                  @php $jenis = strtolower($izin->jenis_izin); @endphp
+                  @if (Str::contains($jenis, 's'))
+                    <span style="color:red; font-weight:bold;">S</span>
+                  @elseif (Str::contains($jenis, 'i'))
+                    <span style="color:green; font-weight:bold;">I</span>
+                  @else
+                    <span style="color:blue; font-weight:bold;">C</span>
+                  @endif
+                @else
+                  <span>-</span>
+                @endif
+              </td>
+            @endfor
+
+            @php
+              $totalHadir = $r['absensi']->count();
+              $totalIzin = $r['izin']->count();
+              $totalTHE = $totalHadir + $totalIzin;
+            @endphp
+            <td><strong>{{ $totalTHE }}</strong></td>
+          </tr>
+        @endforeach
+      </tbody>
+    </table>
+  </section>
+
+</html>

@@ -1,107 +1,142 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<?php 
-header("Pragma: no-cache"); // HTTP 1.0.
-header("Expires: 0"); // Proxies.
-?>
-            <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover" />
-    {{-- <meta name="apple-mobile-web-app-capable" content="yes" /> --}}
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#000000">
-    <title>BSS</title>
-    <meta name="description" content="Mobilekit HTML Mobile UI Kit">
-    <meta name="keywords" content="bootstrap 4, mobile template, cordova, phonegap, mobile, html" />
-    <link rel="icon" type="image/png" href={{asset("assets/img/favicon.png")}} sizes="32x32">
-    <link rel="apple-touch-icon" sizes="180x180" href={{asset("assets/img/icon/192x192.png")}}>
-    <link rel="stylesheet" href={{asset("assets/css/style.css")}}>
-    <link rel="manifest" href="{{asset('__manifest.json')}}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <title>Login Pegawai</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #ff0000, #ff4d4d, #ff8080);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+        }
+        .card {
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            animation: fadeInUp 1s ease-in-out;
+        }
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .logo-container img {
+            width: 180px;
+            filter: drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.3)); /* Efek shadow */
+            border-radius: 50%;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+        .password-wrapper i {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+
+        .login-container {
+        margin-top: -30px; 
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        animation: fadeIn 1s ease-in-out;
+        text-align: center;
+        width: 100%;
+        max-width: 400px; /* Batasi ukuran maksimal */
+    }
+    </style>
 </head>
+<body>
+    <div class="container">
+        <div class="col-md-6 col-sm-8 col-10 mx-auto login-container">
+            
+            <div class="card">
+                <div class="card-header bg-white text-danger text-center fw-bold">
+                    <div class="logo-container">
+                        <img src="{{asset('storage/img/logo.png')}}" alt="Logo" width="200" class="mb-2">
+                    </div>
+                </div>
+                <div class="card-body">
 
-<body class="bg-white">
+                @error('email')
+                <script type="text/javascript">
+                            Swal.fire({
+                                icon: 'error',
+                                title: "{{ $errors->get('email')[0] }}",
+                                confirmButtonColor: '#d33',
+                                confirmButtonText: 'OK',
+                                allowOutsideClick: false // Mencegah klik di luar untuk menutup
+                            });
+                </script>
+                @enderror
 
-    <!-- loader -->
-    <div id="loader">
-        <div class="spinner-border text-primary" role="status"></div>
-    </div>
-    <!-- * loader -->
-
-
-    <!-- App Capsule -->
-    <div id="appCapsule" class="pt-0">
-
-        <div class="login-form mt-1">
-            <div class="section">
-                <img src="{{asset('assets/img/sample/photo/vector4.png')}}" alt="image" class="form-image">
-            </div>
-            <div class="section mt-1">
-                <h1>BSS</h1>
-                <h4>Login Absensi</h4>
-            </div>
-            <div class="section mt-1 mb-5 mw-50">
-                <form action="/loginabsen" method="POST">
-                	@csrf
-                    <div class="form-group boxed">
-                        <div class="input-wrapper">
-                            <input type="text" name="nip" class="form-control" id="nip" placeholder="NIP">
-                            <i class="clear-input">
-                                <ion-icon name="close-circle"></ion-icon>
-                            </i>
+                    <form method="POST" action="{{ route('login') }}" id="loginForm">
+                        @csrf
+                        <div class="mb-3">
+                            <label for="email" class="form-label text-danger">Email Address</label>
+                            <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" required autofocus>
                         </div>
-                    </div>
-
-                    <div class="form-group boxed">
-                        <div class="input-wrapper">
-                            <input type="password" name="password" class="form-control" id="password1" placeholder="Password">
-                            <i class="clear-input">
-                                <ion-icon name="close-circle"></ion-icon>
-                            </i>
+                        <div class="mb-3 password-wrapper">
+                            <label for="password" class="form-label text-danger">Password</label>
+                            <input id="password" type="password" class="form-control @error('email') is-invalid @enderror" name="password" required>
+                            <i id="togglePassword" class="bi bi-eye mt-3"></i>
                         </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                            <label class="form-check-label" for="remember">Remember me</label>
+                        </div>
+                        <button type="submit" id="loginButton" class="btn btn-danger w-100 d-flex align-items-center justify-content-center">
+                            <span class="btn-text">Login</span>
+                            <div class="spinner-border spinner-border-sm text-light ms-2 d-none" role="status" id="loadingSpinner"></div>
+                        </button>
+                    </form>
+                    <div class="mt-3 text-center">
+                        <a href="{{ route('absen.login') }}" class="btn btn-secondary w-100">Login Absen</a>
                     </div>
-
-                    <div class="form-links mt-2">
-                       {{--  <div>
-                            <a href="page-register.html">Register Now</a>
-                        </div> --}}
-                        <div><a href="page-forgot-password.html" class="text-muted">Forgot Password?</a></div>
-                    </div>
-
-                    <div class="form-button-group">
-                        <button type="submit" class="btn btn-primary btn-block btn-lg">Log in</button>
-                    </div>
-
-                </form>
+                </div>
             </div>
         </div>
-
-
     </div>
-    <!-- * App Capsule -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let loginForm = document.getElementById("loginForm");
+            let loginButton = document.getElementById("loginButton");
+            let loadingSpinner = document.getElementById("loadingSpinner");
+            let btnText = document.querySelector(".btn-text");
 
-    <script src="{{asset('assets/js/lib/jquery-3.4.1.min.js')}}"></script>
-    <!-- Bootstrap-->
-    <script src="{{asset('assets/js/lib/popper.min.js')}}"></script>
-    <script src="{{asset('assets/js/lib/bootstrap.min.js')}}"></script>
-    <!-- Ionicons -->
-    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
-    <!-- Owl Carousel -->
-    <script src="{{asset('assets/js/plugins/owl-carousel/owl.carousel.min.js')}}"></script>
-    <!-- jQuery Circle Progress -->
-    <script src="{{asset('assets/js/plugins/jquery-circle-progress/circle-progress.min.js')}}"></script>
-    <script src="{{asset('assets/js/base.js')}}"></script>
-    <!-- ///////////// Js Files ////////////////////  -->
-    <!-- Jquery -->
-      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-
+            if (loginForm) {
+                loginForm.addEventListener("submit", function () {
+                    loginButton.disabled = true;
+                    loadingSpinner.classList.remove("d-none");
+                    btnText.style.display = "none";
+                });
+            }
+        });
+    </script>
+    <script type="text/javascript">
+    
+    $("#togglePassword").on("click", function() {
+    var passwordField = $("#password");
+    var type = passwordField.attr("type") === "password" ? "text" : "password";
+    passwordField.attr("type", type);
+    $(this).toggleClass("bi-eye bi-eye-slash");
+});
+</script>
 </body>
-
 </html>
