@@ -4,15 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\AbsenModel;
 use App\Models\IzinabsenModel;
-use App\Models\JabatanModel;
 use App\Models\LaporanModel;
 use App\Models\LemburModel;
 use App\Models\PegawaiModel;
-use App\Models\PengecualianAbsen;
-use App\Models\ReguAnggotaModel;
-use App\Models\ReguModel;
 use App\Models\ShiftModel;
-use App\Services\FaceRecognitionService;
+use App\Models\JabatanModel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use File;
 use Illuminate\Http\Request;
@@ -25,6 +21,8 @@ use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
 use Jenssegers\Agent\Agent;
 use carbon\Carbon;
+use App\Services\FaceRecognitionService;
+use App\Models\PengecualianAbsen;
 
 
 class AbsenController extends Controller
@@ -57,108 +55,18 @@ class AbsenController extends Controller
         //         ->orderBy('jam_in')
         //         ->get();
                 
-        // $leaderboard = AbsenModel::with('pegawai.perusa', 'pegawai.jabat')
-        //     ->where('tgl_absen', $harini)
-        //     ->where('perusahaan', Auth::guard('pegawai')->user()->perusahaan)
-        //     ->where('kantor', Auth::guard('pegawai')->user()->nama_kantor)
+        $leaderboard = AbsenModel::with('pegawai.perusa', 'pegawai.jabat')
+            ->where('tgl_absen', $harini)
+            ->where('perusahaan', Auth::guard('pegawai')->user()->perusahaan)
+            ->where('kantor', Auth::guard('pegawai')->user()->nama_kantor)
         
-        //     // 🔥 FILTER SATKER
-        //     ->whereHas('pegawai', function ($q) {
-        //         $q->where('satker', Auth::guard('pegawai')->user()->satker);
-        //     })
+            // 🔥 FILTER SATKER
+            ->whereHas('pegawai', function ($q) {
+                $q->where('satker', Auth::guard('pegawai')->user()->satker);
+            })
         
-        //     ->orderBy('jam_in')
-        //     ->get();
-
-//=============================================================================
-    $user = Auth::guard('pegawai')->user();
-$hariIni = '2026-04-24';
-// $hariIni = Carbon::today();
-
-$jabatan = strtolower($user->jabat->jabatan ?? '');
-
-// ================= CEK REGU =================
-$anggotaRegu = ReguAnggotaModel::where('pegawai_id', $user->id)->first();
-
-$anggota = [];
-$filteredIds = [];
-
-// ================= SUPERVISOR =================
-if ($jabatan == 'supervisor pam') {
-
-    // 🔥 ambil semua regu yang dia pegang
-    $reguIds = ReguModel::where('supervisor_id', $user->id)
-        ->pluck('id');
-
-    if ($reguIds->isNotEmpty()) {
-
-        $anggota = ReguAnggotaModel::whereIn('regu_id', $reguIds)
-            ->pluck('pegawai_id')
-            ->toArray();
-
-        // 🔥 tambahkan dirinya sendiri
-        $filteredIds = array_unique(array_merge($anggota, [$user->id]));
-    }
-
-}
-
-// ================= DANRU =================
-elseif ($jabatan == 'danru pam') {
-
-    // 🔥 ambil regu yang dia pimpin
-    $reguId = ReguModel::where('danru_id', $user->id)->value('id');
-
-    if ($reguId) {
-
-        $anggota = ReguAnggotaModel::where('regu_id', $reguId)
-            ->pluck('pegawai_id')
-            ->toArray();
-
-        // 🔥 dirinya + anggota
-        $filteredIds = array_unique(array_merge($anggota, [$user->id]));
-    }
-
-}
-
-// ================= ANGGOTA =================
-else {
-
-    $reguId = optional($anggotaRegu)->regu_id;
-
-    if ($reguId) {
-        $anggota = ReguAnggotaModel::where('regu_id', $reguId)
-            ->pluck('pegawai_id')
-            ->toArray();
-    }
-
-    $filteredIds = $anggota;
-}
-
-
-// ================= JIKA TIDAK ADA REGU =================
-if (empty($filteredIds)) {
-
-    $leaderboard = AbsenModel::with('pegawai.perusa', 'pegawai.jabat')
-        ->whereDate('tgl_absen', $hariIni)
-        ->where('perusahaan', $user->perusahaan)
-        ->where('kantor', $user->nama_kantor)
-        ->whereHas('pegawai', function ($q) use ($user) {
-            $q->where('satker', $user->satker);
-        })
-        ->orderBy('jam_in')
-        ->get();
-
-} else {
-
-    //================= LEADERBOARD =================
-    $leaderboard = AbsenModel::with('pegawai.perusa', 'pegawai.jabat')
-        ->whereDate('tgl_absen', $hariIni)
-        ->whereIn('nip', $filteredIds) // 🔥 FIX (bukan nip)
-        ->orderBy('jam_in')
-        ->get();
-}
-
-//=============================================================================
+            ->orderBy('jam_in')
+            ->get();
 
         $rekapizin = IzinabsenModel::where('nip', $id)
                     ->where('tanggal', 'LIKE', '%'.Carbon::now()->format('Y-m').'%')
@@ -463,15 +371,7 @@ private function detectTimezone($lat, $lng)
         $nip = Auth::guard('pegawai')->user()->nip;
         $profile = PegawaiModel::where('nip', $nip)->first();
 
-        $anggotaRegu = ReguAnggotaModel::with(['regu.danru'])
-            ->where('pegawai_id', $profile->id)
-            ->first();
-
-        $reguSupervisor = ReguModel::with('danru')
-            ->where('supervisor_id', $profile->id)
-            ->get();
-
-        return view('absen.profile', compact('profile', 'anggotaRegu', 'reguSupervisor'));
+        return view('absen.profile', compact('profile'));
     }
 
     // public function profilimage(Request $request)

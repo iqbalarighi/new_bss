@@ -100,34 +100,34 @@
 <script>
 
     function validateForm() {
-	    const personil = document.getElementById('personil');
-	    const kegiatan = document.getElementById('kegiatan');
-	    const keterangan = document.getElementById('keterangan');
-	    const foto = document.getElementById('foto');
+        const personil = document.getElementById('personil');
+        const kegiatan = document.getElementById('kegiatan');
+        const keterangan = document.getElementById('keterangan');
+        const foto = document.getElementById('foto');
 
-	    if (personil.value === '') {
-	        Swal.fire('Error', 'Personil wajib diisi.', 'error').then(() => personil.focus());
-	        return false;
-	    }
+        if (personil.value === '') {
+            Swal.fire('Error', 'Personil wajib diisi.', 'error').then(() => personil.focus());
+            return false;
+        }
 
-	    if (kegiatan.value === '') {
-	        Swal.fire('Error', 'Kegiatan mohon di isi.', 'error').then(() => kegiatan.focus());
-	        return false;
-	    }
+        if (kegiatan.value === '') {
+            Swal.fire('Error', 'Kegiatan mohon di isi.', 'error').then(() => kegiatan.focus());
+            return false;
+        }
 
-	    if (keterangan.value.trim() === '') {
-	        Swal.fire('Error', 'Keterangan wajib diisi.', 'error').then(() => keterangan.focus());
-	        return false;
-	    }
+        if (keterangan.value.trim() === '') {
+            Swal.fire('Error', 'Keterangan wajib diisi.', 'error').then(() => keterangan.focus());
+            return false;
+        }
 
-	    if (foto.value === '') {
-	        Swal.fire('Error', 'Foto wajib diisi.', 'error').then(() => foto.focus());
-	        return false;
-	    }
+        if (foto.value === '') {
+            Swal.fire('Error', 'Foto wajib diisi.', 'error').then(() => foto.focus());
+            return false;
+        }
 
-	    document.getElementById('loading').style.display = 'flex';
-	    return true;
-	}
+        document.getElementById('loading').style.display = 'flex';
+        return true;
+    }
 
 </script>
 @endpush

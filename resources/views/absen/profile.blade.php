@@ -1,7 +1,7 @@
 @extends('layouts.absen.absen')
 
 @section('header')
-	<div class="appHeader text-light" style="background-color: #ef3b3b;">
+    <div class="appHeader text-light" style="background-color: #ef3b3b;">
     <div class="left">
         <a href="javascript:;" class="headerButton goBack">
             <ion-icon name="chevron-back-outline" class="ion-icon"></ion-icon>
@@ -59,8 +59,8 @@
 
 @section('content')
 <div style="margin-top: 3.5rem;" class="bg-light">
-	
-	<div class="container py-3" style="margin-bottom: 3rem;">
+    
+    <div class="container py-3" style="margin-bottom: 3rem;">
         <div class="card shadow-sm rounded-4 mb-2 border-0">
 
             <div class="card-body text-center bg-white" style="padding: 20px;">

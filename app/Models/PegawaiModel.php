@@ -80,14 +80,9 @@ public function deptmn()
     {
         return $this->belongsTo(DeptModel::class, 'dept');
     }
-    
 public function shifts()
     {
         return $this->belongsTo(ShiftModel::class, 'shift');
     }
 
-    public function regu()
-    {
-        return $this->belongsToMany(ReguModel::class, 'regu_anggota', 'pegawai_id', 'regu_id');
-    }
 }

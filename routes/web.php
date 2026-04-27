@@ -92,8 +92,8 @@ Route::middleware(['auth:web'])->group(function () {
         Route::put('/pengecualian-absen/{id}', [MasterController::class, 'pengecualianUpdate']);
         Route::get('/api/karyawan', [MasterController::class, 'getKaryawan']);
 
-        Route::post('/regu/store', [MasterController::class, 'reguStore'])->name('regu.store');
         Route::get('/regu', [MasterController::class, 'reguIndex'])->name('regu');
+        Route::post('/regu/store', [MasterController::class, 'reguStore'])->name('regu.store');
         Route::delete('/regu/{id}', [MasterController::class, 'reguDestroy'])->name('regu.destroy');
         Route::delete('/regu/anggota/{id}', [MasterController::class, 'destroyAnggotaRegu'])->name('regu.anggota.delete');
         Route::post('/regu/{id}/anggota', [MasterController::class, 'tambahAnggota'])

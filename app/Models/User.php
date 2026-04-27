@@ -74,6 +74,6 @@ public function sat()
     }
 
 public function deptmn() {
-	return $this->belongsTo(DeptModel::class, 'dept');
+    return $this->belongsTo(DeptModel::class, 'dept');
     }
 }

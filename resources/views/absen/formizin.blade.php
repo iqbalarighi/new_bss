@@ -82,50 +82,50 @@
 @push('myscript')
 <script>
     function previewImage(event) {
-	    const input = event.target;
-	    const preview = document.getElementById('preview');
-	    if (input.files && input.files[0]) {
-	        const reader = new FileReader();
-	        reader.onload = function(e) {
-	            preview.src = e.target.result;
-	            preview.style.display = 'block';
-	        }
-	        reader.readAsDataURL(input.files[0]);
-	    } else {
-	        preview.style.display = 'none';
-	        preview.src = '#';
-	    }
-	}
+        const input = event.target;
+        const preview = document.getElementById('preview');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            }
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            preview.style.display = 'none';
+            preview.src = '#';
+        }
+    }
 
     function validateForm() {
-	    const tanggal = document.getElementById('tanggal');
-	    const jenisIzin = document.getElementById('jenisIzin');
-	    const keterangan = document.getElementById('keterangan');
-	    const buktiFoto = document.getElementById('buktiFoto');
+        const tanggal = document.getElementById('tanggal');
+        const jenisIzin = document.getElementById('jenisIzin');
+        const keterangan = document.getElementById('keterangan');
+        const buktiFoto = document.getElementById('buktiFoto');
 
-	    if (tanggal.value === '') {
-	        Swal.fire('Error', 'Tanggal wajib diisi.', 'error').then(() => tanggal.focus());
-	        return false;
-	    }
+        if (tanggal.value === '') {
+            Swal.fire('Error', 'Tanggal wajib diisi.', 'error').then(() => tanggal.focus());
+            return false;
+        }
 
-	    if (jenisIzin.value === '') {
-	        Swal.fire('Error', 'Jenis izin wajib dipilih.', 'error').then(() => jenisIzin.focus());
-	        return false;
-	    }
+        if (jenisIzin.value === '') {
+            Swal.fire('Error', 'Jenis izin wajib dipilih.', 'error').then(() => jenisIzin.focus());
+            return false;
+        }
 
-	    if (keterangan.value.trim() === '') {
-	        Swal.fire('Error', 'Keterangan wajib diisi.', 'error').then(() => keterangan.focus());
-	        return false;
-	    }
+        if (keterangan.value.trim() === '') {
+            Swal.fire('Error', 'Keterangan wajib diisi.', 'error').then(() => keterangan.focus());
+            return false;
+        }
 
-	    if (buktiFoto.value === '') {
-	        Swal.fire('Error', 'Keterangan wajib diisi.', 'error').then(() => keterangan.focus());
-	        return false;
-	    }
+        if (buktiFoto.value === '') {
+            Swal.fire('Error', 'Keterangan wajib diisi.', 'error').then(() => keterangan.focus());
+            return false;
+        }
 
-	    document.getElementById('loading').style.display = 'flex';
-	    return true;
-	}
+        document.getElementById('loading').style.display = 'flex';
+        return true;
+    }
 
 </script>
 @endpush

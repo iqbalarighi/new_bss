@@ -311,7 +311,11 @@ function ambilFotoDanAbsen() {
         let shift = $('#shift').val();
 
         Swal.fire({
-            html: `Lokasi: ${lokasi}`,
+            html: `
+                Lokasi Absen<br>
+                <ion-icon name="location" style="color:red; font-size:18px;"></ion-icon>
+                ${lokasi}
+            `,
             imageUrl: uri,
             showCancelButton: true
         }).then(result => {

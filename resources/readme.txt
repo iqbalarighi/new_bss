@@ -23,4 +23,4 @@ Ganti your_username dan your_domain dengan nilai yang sebenarnya. Pastikan izin 
 Saat menggunakan hPanel untuk membuat repositori Git di luar folder public_html:
 Pergi ke Websites → Manage → Git di sidebar kiri.
 Di bagian "Create a New Repository", atur Install Path ke folder yang diinginkan di luar public_html, misalnya, /home/your_username/your_folder.
-Pastikan direktori kosong dan dapat diakses. Konfigurasikan alamat repositori dan cabang sesuai kebutuhan.
+Pastikan direktori kosong dan dapat diakses. Konfigurasikan alamat repositori dan cabang sesuai kebutuhan. 

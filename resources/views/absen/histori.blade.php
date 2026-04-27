@@ -26,9 +26,9 @@
             <div class="col-12">
                 <div class="form-group d-flex justify-content-around">
                     <div class="col-5">
-                    	<button class="btn btn-sm btn-primary btn-block btn-hover" onclick="ubahJudul('absen')" id="getabsen">
-                    		<ion-icon name="search-outline"></ion-icon> Absen
-                    	</button>
+                        <button class="btn btn-sm btn-primary btn-block btn-hover" onclick="ubahJudul('absen')" id="getabsen">
+                            <ion-icon name="search-outline"></ion-icon> Absen
+                        </button>
                     </div>
                     <div class="col-5">
                     <button class="btn btn-sm btn-info btn-block btn-hover" onclick="ubahJudul('lembur')" id="getlembur">
