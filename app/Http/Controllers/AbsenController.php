@@ -72,7 +72,7 @@ class AbsenController extends Controller
 
 //=============================================================================
     $user = Auth::guard('pegawai')->user();
-$hariIni = '2026-04-24';
+$hariIni = Carbon::now();
 // $hariIni = Carbon::today();
 
 $jabatan = strtolower($user->jabat->jabatan ?? '');
