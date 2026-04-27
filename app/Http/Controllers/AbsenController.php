@@ -4,10 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\AbsenModel;
 use App\Models\IzinabsenModel;
+use App\Models\JabatanModel;
 use App\Models\LaporanModel;
 use App\Models\LemburModel;
 use App\Models\PegawaiModel;
+use App\Models\PengecualianAbsen;
+use App\Models\ReguAnggotaModel;
+use App\Models\ReguModel;
 use App\Models\ShiftModel;
+use App\Services\FaceRecognitionService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use File;
 use Illuminate\Http\Request;
@@ -20,7 +25,6 @@ use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
 use Jenssegers\Agent\Agent;
 use carbon\Carbon;
-use App\Services\FaceRecognitionService;
 
 
 class AbsenController extends Controller
@@ -46,12 +50,115 @@ class AbsenController extends Controller
             ')
             ->first();
 
-        $leaderboard = AbsenModel::with('pegawai.perusa', 'pegawai.jabat')
-                ->where('tgl_absen', $harini)
-                ->where('perusahaan', Auth::guard('pegawai')->user()->perusahaan)
-                ->where('kantor', Auth::guard('pegawai')->user()->nama_kantor)
-                ->orderBy('jam_in')
-                ->get();
+        // $leaderboard = AbsenModel::with('pegawai.perusa', 'pegawai.jabat')
+        //         ->where('tgl_absen', $harini)
+        //         ->where('perusahaan', Auth::guard('pegawai')->user()->perusahaan)
+        //         ->where('kantor', Auth::guard('pegawai')->user()->nama_kantor)
+        //         ->orderBy('jam_in')
+        //         ->get();
+                
+        // $leaderboard = AbsenModel::with('pegawai.perusa', 'pegawai.jabat')
+        //     ->where('tgl_absen', $harini)
+        //     ->where('perusahaan', Auth::guard('pegawai')->user()->perusahaan)
+        //     ->where('kantor', Auth::guard('pegawai')->user()->nama_kantor)
+        
+        //     // 🔥 FILTER SATKER
+        //     ->whereHas('pegawai', function ($q) {
+        //         $q->where('satker', Auth::guard('pegawai')->user()->satker);
+        //     })
+        
+        //     ->orderBy('jam_in')
+        //     ->get();
+
+//=============================================================================
+    $user = Auth::guard('pegawai')->user();
+$hariIni = '2026-04-24';
+// $hariIni = Carbon::today();
+
+$jabatan = strtolower($user->jabat->jabatan ?? '');
+
+// ================= CEK REGU =================
+$anggotaRegu = ReguAnggotaModel::where('pegawai_id', $user->id)->first();
+
+$anggota = [];
+$filteredIds = [];
+
+// ================= SUPERVISOR =================
+if ($jabatan == 'supervisor pam') {
+
+    // 🔥 ambil semua regu yang dia pegang
+    $reguIds = ReguModel::where('supervisor_id', $user->id)
+        ->pluck('id');
+
+    if ($reguIds->isNotEmpty()) {
+
+        $anggota = ReguAnggotaModel::whereIn('regu_id', $reguIds)
+            ->pluck('pegawai_id')
+            ->toArray();
+
+        // 🔥 tambahkan dirinya sendiri
+        $filteredIds = array_unique(array_merge($anggota, [$user->id]));
+    }
+
+}
+
+// ================= DANRU =================
+elseif ($jabatan == 'danru pam') {
+
+    // 🔥 ambil regu yang dia pimpin
+    $reguId = ReguModel::where('danru_id', $user->id)->value('id');
+
+    if ($reguId) {
+
+        $anggota = ReguAnggotaModel::where('regu_id', $reguId)
+            ->pluck('pegawai_id')
+            ->toArray();
+
+        // 🔥 dirinya + anggota
+        $filteredIds = array_unique(array_merge($anggota, [$user->id]));
+    }
+
+}
+
+// ================= ANGGOTA =================
+else {
+
+    $reguId = optional($anggotaRegu)->regu_id;
+
+    if ($reguId) {
+        $anggota = ReguAnggotaModel::where('regu_id', $reguId)
+            ->pluck('pegawai_id')
+            ->toArray();
+    }
+
+    $filteredIds = $anggota;
+}
+
+
+// ================= JIKA TIDAK ADA REGU =================
+if (empty($filteredIds)) {
+
+    $leaderboard = AbsenModel::with('pegawai.perusa', 'pegawai.jabat')
+        ->whereDate('tgl_absen', $hariIni)
+        ->where('perusahaan', $user->perusahaan)
+        ->where('kantor', $user->nama_kantor)
+        ->whereHas('pegawai', function ($q) use ($user) {
+            $q->where('satker', $user->satker);
+        })
+        ->orderBy('jam_in')
+        ->get();
+
+} else {
+
+    //================= LEADERBOARD =================
+    $leaderboard = AbsenModel::with('pegawai.perusa', 'pegawai.jabat')
+        ->whereDate('tgl_absen', $hariIni)
+        ->whereIn('nip', $filteredIds) // 🔥 FIX (bukan nip)
+        ->orderBy('jam_in')
+        ->get();
+}
+
+//=============================================================================
 
         $rekapizin = IzinabsenModel::where('nip', $id)
                     ->where('tanggal', 'LIKE', '%'.Carbon::now()->format('Y-m').'%')
@@ -84,6 +191,17 @@ class AbsenController extends Controller
         $nip_id = Auth::guard('pegawai')->user()->id;
         $cek = AbsenModel::where('tgl_absen', $harini)->where('nip', $nip_id)->count();
         $cek2 = AbsenModel::where('tgl_absen', $harini)->where('nip', $nip_id)->first();
+        
+        $today = Carbon::today();
+
+$today = now()->format('Y-m-d');
+
+$pengecualian = PengecualianAbsen::where('perusahaan', Auth::guard('pegawai')->user()->perusahaan)
+    ->where('nama_kantor', Auth::guard('pegawai')->user()->nama_kantor)
+    ->get()
+    ->filter(fn($item) => $item->isTodayIncluded($today))
+    ->pluck('karyawan_id')
+    ->values();
 
         if($cek2 == null){
         $absenTerakhir = AbsenModel::where('nip', $nip_id)
@@ -110,129 +228,250 @@ class AbsenController extends Controller
 
         $pegawai = PegawaiModel::with('perusa', 'kantor', 'jabat', 'sat' )->findOrFail($nip_id);
 
-        return view('absen.create', compact('pegawai', 'cek', 'cek2', 'absenTerakhir', 'shift'));
+        return view('absen.create', compact('pegawai', 'cek', 'cek2', 'absenTerakhir', 'shift', 'pengecualian'));
     }
 
-    public function store(Request $request, FaceRecognitionService $face)
-    {
-        $pegawai = Auth::guard('pegawai')->user();
-        $nip_id  = $pegawai->id;
+public function store(Request $request, FaceRecognitionService $face)
+{
+    $pegawai = Auth::guard('pegawai')->user();
+    $nip_id  = $pegawai->id;
 
-        $request->validate([
-            'image' => 'required|file|image|mimes:jpg,jpeg,png|max:5120',
-        ]);
+    $request->validate([
+        'image'  => 'required|file|image|mimes:jpg,jpeg,png|max:5120',
+        'lokasi' => 'required'
+    ]);
 
-        // ================= FACE VERIFICATION =================
-        if (!$pegawai->face_embedding) {
-            return response()->json([
-                'message' => 'Wajah belum diregistrasi'
-            ], 400);
+    // ================= DEFAULT STATUS =================
+    $faceVerified = false;
+    $faceScore    = null;
+    $isFallback   = false;
+    $faceStatus   = 'verified';
+
+    // ================= CEK FACE =================
+    if (empty($pegawai->face_embedding) || $pegawai->face_embedding === '[]') {
+        return response()->json([
+            'status'  => 'fail',
+            'reason'  => 'face_not_registered',
+            'message' => 'Wajah belum diregistrasi'
+        ], 422);
+    }
+
+    $storedEmbedding = is_array($pegawai->face_embedding)
+        ? $pegawai->face_embedding
+        : json_decode($pegawai->face_embedding, true);
+
+    try {
+        $verify = $face->verifyFace(
+            $request->file('image'),
+            $storedEmbedding
+        );
+
+        if ($verify['status'] !== 200) {
+            return response()->json($verify['data'], $verify['status']);
         }
 
-        $storedEmbedding = json_decode($pegawai->face_embedding, true);
-// dd($storedEmbedding);
-        try {
-            $verify = $face->verifyFace(
-                $request->file('image'),
-                $storedEmbedding
-            );
+        if (empty($verify['data']['match'])) {
+            return response()->json(['reason' => 'not_match'], 403);
+        }
 
-            if (!$verify['match']) {
-                return response()->json([
-                    'message' => 'Verifikasi wajah gagal'
-                ], 403);
+        $faceVerified = true;
+        $faceScore    = $verify['data']['similarity'] ?? null;
+
+    } catch (\RuntimeException $e) {
+        $isFallback = true;
+        $faceStatus = 'fallback';
+
+    } catch (\Throwable $e) {
+        return response()->json(['reason' => 'verification_error'], 403);
+    }
+
+    // ================= TIMEZONE FROM GPS =================
+    $lokasi = $request->lokasi;
+
+    $lat = null;
+    $lng = null;
+
+    if ($lokasi) {
+        $coords = explode(',', $lokasi);
+        if (count($coords) == 2) {
+            $lat = (float) trim($coords[0]);
+            $lng = (float) trim($coords[1]);
+        }
+    }
+
+    $timezone = $this->detectTimezone($lat, $lng);
+    $now = \Carbon\Carbon::now($timezone);
+
+    // ================= DATA =================
+    $tgl_absen = $now->format('Y-m-d');
+    $jam_absen = $now->format('H:i:s');
+    $jam_foto  = $now->format('His');
+
+    $folderPath = storage_path('app/public/absensi/' . $pegawai->nip);
+    if (!file_exists($folderPath)) {
+        mkdir($folderPath, 0777, true);
+    }
+
+    $shift  = $pegawai->shift ?? $request->shift;
+    $confirm = (int) $request->confirm;
+
+    // ================= AUTO ABSEN PULANG (KEMARIN) =================
+    if ($confirm === 1) {
+
+        $absenSebelumnya = AbsenModel::where('nip', $nip_id)
+            ->where('tgl_absen', '<', $tgl_absen)
+            ->whereNull('jam_out')
+            ->latest('tgl_absen')
+            ->first();
+
+        if ($absenSebelumnya) {
+
+            $fileName = "{$absenSebelumnya->tgl_absen}-{$jam_foto}-out.png";
+            $request->file('image')->move($folderPath, $fileName);
+
+            $absenSebelumnya->update([
+                'jam_out'       => $jam_absen,
+                'foto_out'      => $fileName,
+                'lokasi_out'    => $lokasi,
+                'face_verified' => $faceVerified,
+                'face_score'    => $faceScore,
+                'is_fallback'   => $isFallback,
+                'verified_at'   => $faceVerified ? now() : null,
+            ]);
+
+            echo $isFallback
+                ? "absplg|Absen pulang kemarin (verifikasi menyusul)|out"
+                : "absplg|Terima Kasih, Absen Pulang Kemarin Berhasil|out";
+            return;
+        }
+    }
+
+    // ================= CEK HARI INI =================
+    $cek = AbsenModel::where('nip', $nip_id)
+        ->whereDate('tgl_absen', $tgl_absen)
+        ->first();
+
+    // ================= ABSEN PULANG =================
+    if ($cek && $cek->jam_in && !$cek->jam_out) {
+
+        $jamMasuk = \Carbon\Carbon::parse($cek->tgl_absen . ' ' . $cek->jam_in, $timezone);
+        $sekarang = \Carbon\Carbon::now($timezone);
+
+        $bolehPulang = false;
+
+        $jamShiftSelesai = optional($cek->shifts)->jam_keluar
+            ?? optional($pegawai->shifts)->jam_keluar;
+
+        // ================= LINTAS HARI =================
+        if ($cek->tgl_absen < $tgl_absen) {
+            $bolehPulang = true;
+        } else {
+
+            $minimalJam = $jamMasuk->copy()->addHours(5);
+
+            if ($sekarang->greaterThanOrEqualTo($minimalJam)) {
+                $bolehPulang = true;
             }
 
-            // ================= DATA ABSENSI =================
-            $tgl_absen = date('Y-m-d');
-            $jam_absen = date('H:i:s');
-            $jam_foto  = date('His');
+            if ($jamShiftSelesai) {
 
-            $folderPath = storage_path('app/public/absensi/' . $pegawai->nip);
-            if (!file_exists($folderPath)) {
-                mkdir($folderPath, 0777, true);
-            }
+                $jamShift = \Carbon\Carbon::parse($cek->tgl_absen . ' ' . $jamShiftSelesai, $timezone);
 
-            $lokasi = $request->lokasi;
-            $shift  = $pegawai->shift ?? $request->shift;
+                if ($jamShift->lessThan($jamMasuk)) {
+                    $jamShift->addDay();
+                }
 
-            // ================= AUTO ABSEN PULANG =================
-            if ($request->confirm) {
-
-                $absenSebelumnya = AbsenModel::where('nip', $nip_id)
-                    ->where('tgl_absen', '<', $tgl_absen)
-                    ->whereNull('jam_out')
-                    ->latest('tgl_absen')
-                    ->first();
-
-                if ($absenSebelumnya) {
-
-                    $fileName = "{$absenSebelumnya->tgl_absen}-{$jam_foto}-out.png";
-                    $request->file('image')->move($folderPath, $fileName);
-
-                    $absenSebelumnya->update([
-                        'jam_out'    => $jam_absen,
-                        'foto_out'   => $fileName,
-                        'lokasi_out' => $lokasi,
-                    ]);
-
-                    echo "absplg|Terima Kasih, Absen Pulang Berhasil|out";
-                    return;
+                if ($sekarang->greaterThanOrEqualTo($jamShift)) {
+                    $bolehPulang = true;
                 }
             }
 
-            // ================= CEK ABSEN HARI INI =================
-            $cek = AbsenModel::where('nip', $nip_id)
-                ->where('tgl_absen', $tgl_absen)
-                ->first();
+            if (!$bolehPulang) {
 
-            // ================= ABSEN PULANG =================
-            if ($cek) {
-
-                $fileName = "{$tgl_absen}-{$jam_foto}-out.png";
-                $request->file('image')->move($folderPath, $fileName);
-
-                $cek->update([
-                    'jam_out'    => $jam_absen,
-                    'foto_out'   => $fileName,
-                    'lokasi_out' => $lokasi,
-                ]);
-
-                echo "success|Terima Kasih, Absen Pulang Berhasil|out";
+                echo "fail|Belum waktunya absen pulang|in";
                 return;
             }
+        }
 
-            // ================= ABSEN MASUK =================
-            $fileName = "{$tgl_absen}-{$jam_foto}-in.png";
-            $request->file('image')->move($folderPath, $fileName);
+        // ================= SIMPAN PULANG =================
+        $fileName = "{$tgl_absen}-{$jam_foto}-out.png";
+        $request->file('image')->move($folderPath, $fileName);
 
-            AbsenModel::create([
-                'nip'        => $nip_id,
-                'shift'      => $shift,
-                'perusahaan' => $pegawai->perusahaan,
-                'kantor'     => $pegawai->nama_kantor,
-                'tgl_absen'  => $tgl_absen,
-                'jam_in'     => $jam_absen,
-                'foto_in'    => $fileName,
-                'lokasi_in'  => $lokasi,
-            ]);
+        $cek->update([
+            'jam_out'       => $jam_absen,
+            'foto_out'      => $fileName,
+            'lokasi_out'    => $lokasi,
+            'face_verified' => $faceVerified,
+            'face_score'    => $faceScore,
+            'is_fallback'   => $isFallback,
+            'verified_at'   => $faceVerified ? now() : null,
+        ]);
 
-            echo "success|Terima Kasih, Absen Masuk Berhasil|in";
+        echo $isFallback
+            ? "success|Absen pulang (verifikasi menyusul)|out"
+            : "success|Terima Kasih, Absen Pulang Berhasil|out";
+        return;
+    }
 
-        } catch (\Throwable $e) {
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 400);
+    // ================= ABSEN MASUK =================
+    $fileName = "{$tgl_absen}-{$jam_foto}-in.png";
+    $request->file('image')->move($folderPath, $fileName);
+
+    AbsenModel::create([
+        'nip'           => $nip_id,
+        'shift'         => $shift,
+        'perusahaan'    => $pegawai->perusahaan,
+        'kantor'        => $pegawai->nama_kantor,
+        'tgl_absen'     => $tgl_absen,
+        'jam_in'        => $jam_absen,
+        'foto_in'       => $fileName,
+        'lokasi_in'     => $lokasi,
+        'face_verified' => $faceVerified,
+        'face_score'    => $faceScore,
+        'is_fallback'   => $isFallback,
+        'verified_at'   => $faceVerified ? now() : null,
+        'face_status'   => $faceStatus,
+    ]);
+
+    echo $isFallback
+        ? "success|Absen berhasil (verifikasi menyusul)|in"
+        : "success|Terima Kasih, Absen Masuk Berhasil|in";
+}
+
+private function detectTimezone($lat, $lng)
+{
+    if ($lat >= -11 && $lat <= 6) {
+
+        if ($lng >= 95 && $lng < 115) {
+            return 'Asia/Jakarta';
+        }
+
+        if ($lng >= 115 && $lng < 120) {
+            return 'Asia/Makassar';
+        }
+
+        if ($lng >= 120 && $lng <= 141) {
+            return 'Asia/Jayapura';
         }
     }
 
+    return 'Asia/Jakarta';
+}
 
     public function profile()
     {
         $nip = Auth::guard('pegawai')->user()->nip;
         $profile = PegawaiModel::where('nip', $nip)->first();
 
-        return view('absen.profile', compact('profile'));
+        $anggotaRegu = ReguAnggotaModel::with(['regu.danru'])
+            ->where('pegawai_id', $profile->id)
+            ->first();
+
+        $reguSupervisor = ReguModel::with('danru')
+            ->where('supervisor_id', $profile->id)
+            ->get();
+
+        return view('absen.profile', compact('profile', 'anggotaRegu', 'reguSupervisor'));
     }
 
     // public function profilimage(Request $request)
@@ -459,13 +698,108 @@ public function profilimage(Request $request)
        return view('absen.gethistorilembur', compact('get'));
     }
 
-    public function izin()
-    {
-        $nip_id = Auth::guard('pegawai')->user()->id;
-        $izin = IzinabsenModel::where('nip', $nip_id)->get();
 
-        return view('absen.izin', compact('izin'));
+   public function izin(Request $request)
+{
+    $user = Auth::guard('pegawai')->user();
+    $nip_id = $user->id;
+
+    $now = Carbon::now();
+
+    // 🔥 TAMBAHAN: ambil input bulan dari blade
+    $bulanInput = $request->bulan;
+
+    if ($bulanInput) {
+        $tanggal = Carbon::parse($bulanInput);
+    } else {
+        $tanggal = $now;
     }
+
+    $bulan = $tanggal->month;
+    $tahun = $tanggal->year;
+
+    $jabatan = JabatanModel::where('id', $user->jabatan)->first();
+    $roleJabatan = strtolower($jabatan->jabatan ?? '');
+
+    // whitelist kantor
+    $multiKantorUser = [
+        338 => [10,18,19,20,21,22,23,24,25,26,27,28,29,30],
+    ];
+
+    $isMultiKantor = isset($multiKantorUser[$user->id]);
+
+    $kantorFilter = [$user->nama_kantor ?? 0];
+
+    if ($isMultiKantor) {
+        $kantorFilter = $multiKantorUser[$user->id];
+    }
+    
+    $kantorFilter = array_map('intval', $kantorFilter);
+    
+    if (
+        str_contains($roleJabatan, 'supervisor pam') ||
+        str_contains($roleJabatan, 'koordinator pam')||
+        str_contains($roleJabatan, 'komandan pam')
+    ) {
+
+        $izin = IzinabsenModel::with('pegawai.jabat')
+    ->where(function ($query) use ($user, $kantorFilter, $isMultiKantor) {
+
+        // 🔥 DATA MILIK SENDIRI (WAJIB MASUK)
+        $query->where('nip', $user->id);
+
+        // 🔥 DATA ORANG LAIN (KHUSUS MULTI KANTOR)
+        if ($isMultiKantor) {
+            $query->orWhere(function ($q2) use ($user, $kantorFilter) {
+                $q2->whereIn('nama_kantor', $kantorFilter)
+
+                   ->whereHas('pegawai', function ($q3) use ($user) {
+                       $q3->whereHas('jabat', function ($q4) {
+                           $q4->where(function ($sub) {
+                               $sub->where('jabatan', 'like', '%pam%')
+                                   ->orWhere('jabatan', 'like', '%kamdal%')
+                                   ->orWhere('jabatan', 'like', '%pengamanan%');
+                           });
+                       });
+                   });
+            });
+        }
+    })
+
+    // 🔥 FILTER BULAN TETAP BERLAKU UNTUK SEMUA
+    ->whereMonth('tanggal', $bulan)
+    ->whereYear('tanggal', $tahun)
+
+    ->where('perusahaan', $user->perusahaan)
+
+    ->orderBy('tanggal', 'desc')
+    ->get()
+
+    ->groupBy(function ($item) {
+        return Carbon::parse($item->tanggal)->format('Y-m-d');
+    });
+
+    } else {
+
+        $izin = IzinabsenModel::where('nip', $nip_id)
+
+            // 🔥 UPDATE: pakai bulan dari input / default sekarang
+            ->whereMonth('tanggal', $bulan)
+            ->whereYear('tanggal', $tahun)
+
+            ->orderBy('tanggal', 'desc')
+            ->get()
+
+            ->groupBy(function ($item) {
+                return Carbon::parse($item->tanggal)->format('Y-m-d');
+            });
+    }
+
+    // 🔥 UPDATE: mengikuti bulan filter
+    $bulanNow = $tanggal->translatedFormat('F Y');
+
+    return view('absen.izin', compact('izin','bulanNow','bulanInput'));
+}
 
     public function formizin()
     {
@@ -509,15 +843,15 @@ public function profilimage(Request $request)
     public function formizinsimpan(Request $request)
     {
         $request->validate([
-            'tanggal' => 'required|date',
-            'jenisIzin' => 'required|in:i,s,c',
-            'keterangan' => 'required|string|max:255',
-            'buktiFoto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'tanggal'     => 'required|date',
+            'jenisIzin'   => 'required|in:i,s,c',
+            'keterangan'  => 'required|string|max:255',
+            'buktiFoto'   => 'nullable|image|mimes:jpeg,png,jpg,gif|max:6144',
         ]);
 
         $user = Auth::guard('pegawai')->user();
 
-        // Cek apakah sudah ada izin dengan tanggal dan nip yang sama
+        // Cek duplikasi izin di tanggal yang sama
         $cekIzin = IzinabsenModel::where('nip', $user->id)
                     ->whereDate('tanggal', $request->tanggal)
                     ->exists();
@@ -527,28 +861,44 @@ public function profilimage(Request $request)
         }
 
         $data = [
-            'nip' => $user->id,
-            'perusahaan' => $user->perusahaan,
-            'nama_kantor' => $user->nama_kantor,
-            'tanggal' => $request->tanggal,
-            'jenis_izin' => $request->jenisIzin,
-            'keterangan' => $request->keterangan,
+            'nip'           => $user->id,
+            'perusahaan'    => $user->perusahaan,
+            'nama_kantor'   => $user->nama_kantor,
+            'tanggal'       => $request->tanggal,
+            'jenis_izin'    => $request->jenisIzin,
+            'keterangan'    => $request->keterangan,
         ];
 
+        // ================= FOTO =================
         if ($request->hasFile('buktiFoto')) {
+
             $file = $request->file('buktiFoto');
-            $filename = Str::random(40) . '.' . $file->getClientOriginalExtension();
+
+            // pakai jpg biar konsisten & kecil
+            $filename = Str::random(40) . '.jpg';
 
             $destinationPath = public_path('storage/bukti_izin/' . $user->nip . '/');
 
+            // buat folder jika belum ada
             if (!File::exists($destinationPath)) {
                 File::makeDirectory($destinationPath, 0755, true);
             }
 
-            $file->move($destinationPath, $filename);
+            // ================= INTERVENTION V3 =================
+            $manager = new ImageManager(new Driver());
+
+            // baca & auto orient (biar tidak miring)
+            $image = $manager->read($file)
+                ->orient()          // fix rotation dari kamera HP
+                ->scale(width: 800); // resize max lebar 800px (rasio aman)
+
+            // simpan + kompres
+            $image->toJpeg(75)->save($destinationPath . $filename);
+
             $data['foto'] = $filename;
         }
 
+        // ================= SIMPAN DATA =================
         IzinabsenModel::create($data);
 
         return redirect('absen/izin')->with('success', 'Data izin berhasil disimpan.');

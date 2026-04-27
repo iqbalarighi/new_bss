@@ -168,6 +168,7 @@ $user = Auth::user();
     public function patroli()
     {
         $show = PatrolLogModel::where('perusahaan', Auth::guard('pegawai')->user()->perusahaan)
+            ->where('kantor', Auth::guard('pegawai')->user()->nama_kantor)
             ->latest()
             ->limit(50)
             ->get();

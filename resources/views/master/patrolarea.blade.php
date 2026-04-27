@@ -139,6 +139,7 @@
 								    <td align="center">
 								        <button class="btn btn-primary btn-sm view-qr"
 										        data-nama="{{ $s->nama }}"
+										        data-lokasi="{{ $s->lokasi }}"
 										        data-kode="{{ $s->kode_unik }}"
 										        title="Lihat QR Code">
 										    <i class="bi bi-qr-code"></i>
@@ -221,17 +222,22 @@ document.addEventListener('DOMContentLoaded', function () {
     $('.view-qr').on('click', function () {
         const nama = $(this).data('nama');
         const kode = $(this).data('kode');
+        const lokasi = $(this).data('lokasi'); 
         const qrHtml = $('#qr-' + kode).html();
 
         Swal.fire({
             title: 'QR Code: ' + nama,
             html: `
-                <div id="swal-qr">${qrHtml}</div>
-                <p><strong>Kode:</strong> ${kode}</p>
+                <div id="swal-qr" style="display: flex; justify-content: center;">${qrHtml}</div>
+                <p class="mt-3"><strong>Kode:</strong> ${kode}</p>
                 <a id="downloadQR" class="btn btn-success mt-2">Download PNG</a>
             `,
             didOpen: () => {
                 const svgElement = document.querySelector('#swal-qr svg');
+                
+                // Pastikan SVG memiliki namespace agar terbaca sebagai gambar
+                svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+                
                 const xml = new XMLSerializer().serializeToString(svgElement);
                 const svgBlob = new Blob([xml], { type: 'image/svg+xml;charset=utf-8' });
                 const url = URL.createObjectURL(svgBlob);
@@ -239,14 +245,39 @@ document.addEventListener('DOMContentLoaded', function () {
                 const image = new Image();
                 image.onload = function () {
                     const canvas = document.createElement('canvas');
-                    canvas.width = image.width;
-                    canvas.height = image.height;
+                    const paddingGeneral = 25; 
+                    const paddingBottom = 80;  
+                    
+                    canvas.width = image.width + (2 * paddingGeneral);
+                    canvas.height = image.height + paddingGeneral + paddingBottom;
+
                     const ctx = canvas.getContext('2d');
-                    ctx.drawImage(image, 0, 0);
+
+                    // 1. Background Putih
+                    ctx.fillStyle = "white";
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    // 2. Gambar QR Code
+                    ctx.drawImage(image, paddingGeneral, paddingGeneral);
+
+                    // 3. Tambahkan Teks Nama
+                    ctx.fillStyle = "black";
+                    ctx.font = "bold 18px Arial";
+                    ctx.textAlign = "center";
+                    const textX = canvas.width / 2;
+                    const namaY = image.height + paddingGeneral + 35; 
+                    ctx.fillText(nama, textX, namaY);
+
+                    // 4. Tambahkan Teks Lokasi
+                    ctx.fillStyle = "black";
+                    ctx.font = "bold 14px Arial";
+                    const lokasiY = namaY + 25; 
+                    ctx.fillText(lokasi, textX, lokasiY);
+
+                    // Bersihkan memori
                     URL.revokeObjectURL(url);
 
                     const pngData = canvas.toDataURL('image/png');
-
                     const link = document.getElementById('downloadQR');
                     link.href = pngData;
                     link.download = `QR-${nama}.png`;

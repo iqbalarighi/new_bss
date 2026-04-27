@@ -6,7 +6,10 @@ use App\Models\DeptModel;
 use App\Models\JabatanModel;
 use App\Models\KantorModel;
 use App\Models\PegawaiModel;
+use App\Models\PengecualianAbsen;
 use App\Models\PerusahaanModel;
+use App\Models\ReguAnggotaModel;
+use App\Models\ReguModel;
 use App\Models\SatkerModel;
 use App\Models\ShiftModel;
 use App\Models\User;
@@ -1094,4 +1097,423 @@ $perusa = Auth::user()->perusahaan;
         return redirect()->back()->with('success', 'Shift berhasil dihapus.');
     }
     
+    public function pengecualianIndex(Request $request)
+    {
+        $user = Auth::user();
+    
+        $query = PengecualianAbsen::with('karyawan')
+            ->where('perusahaan', $user->perusahaan);
+    
+        // 🔥 FILTER KANTOR
+        if ($request->kantor) {
+            $query->where('nama_kantor', $request->kantor);
+        } else {
+            // default role 3 tetap dibatasi kantor sendiri
+            if ($user->role == 3) {
+                $query->where('nama_kantor', $user->kantor);
+            }
+        }
+    
+        // 🔥 SEARCH NAMA / NIP
+        if ($request->search) {
+            $query->whereHas('karyawan', function ($q) use ($request) {
+                $q->where('nama_lengkap', 'like', '%' . $request->search . '%')
+                  ->orWhere('nip', 'like', '%' . $request->search . '%');
+            });
+        }
+    
+        $data = $query->paginate(15)->appends($request->all());
+    
+        // ambil list kantor
+    $kantor = \App\Models\KantorModel::whereIn('id', function ($query) {
+            $query->select('nama_kantor')
+                  ->from('pengecualian_absen')
+                  ->distinct();
+        })
+        ->where('perusahaan', $user->perusahaan)
+        ->get();
+    
+        return view('master.pengecualian', compact('data', 'kantor'));
+    }
+    
+    public function pengecualianStore(Request $request)
+{
+    $request->validate([
+        'karyawan_id' => 'required',
+        'tanggal' => 'required'
+    ]);
+
+    $user = Auth::user();
+
+    // ambil karyawan
+    $karyawan = PegawaiModel::where('id', $request->karyawan_id)
+        ->where('perusahaan', $user->perusahaan)
+        ->first();
+
+    if (!$karyawan) {
+        return back()->with('error', 'Data karyawan tidak ditemukan!');
+    }
+
+    // 🔥 pecah tanggal dari flatpickr (string → array)
+    if (is_array($request->tanggal)) {
+        $tanggalList = $request->tanggal;
+    } else {
+        $tanggalList = array_map('trim', explode(',', $request->tanggal));
+    }
+
+    // 🔥 ambil data existing (kalau ada)
+    $existing = PengecualianAbsen::where('karyawan_id', $karyawan->id)
+        ->first();
+        
+    $existingTanggal = $existing ? ($existing->tanggal ?? []) : [];
+
+    $duplikat = array_intersect($existingTanggal, $tanggalList);
+
+    if ($existing) {
+
+        // gabungkan tanggal lama + baru
+        $merged = array_unique(array_merge($existing->tanggal ?? [], $tanggalList));
+
+        $existing->update([
+            'tanggal' => $merged,
+            'keterangan' => $request->keterangan
+        ]);
+
+    } else {
+
+        PengecualianAbsen::create([
+            'karyawan_id' => $karyawan->id,
+            'perusahaan' => $karyawan->perusahaan,
+            'nama_kantor' => $karyawan->nama_kantor,
+            'keterangan' => $request->keterangan,
+            'tanggal' => $tanggalList
+        ]);
+    }
+
+if (count($duplikat)) {
+    return back()->with('error', 'Tanggal sudah ada: ' . implode(', ', $duplikat));
+}
+    return redirect()
+    ->back()
+    ->with('success', 'Data berhasil disimpan')
+    ->with('open_modal_tambah', true);
+}
+    
+    public function pengecualianDelete($id)
+    {
+        $data = PengecualianAbsen::findOrFail($id);
+    
+        // optional: keamanan (biar tidak bisa hapus data kantor lain)
+        if ($data->perusahaan != Auth::user()->perusahaan) {
+            abort(403);
+        }
+    
+        $data->delete();
+    
+        return back()->with('success', 'Data berhasil dihapus');
+    }
+    
+    
+    public function getKaryawan(Request $request)
+    {
+        $user = Auth::user();
+        $search = $request->q;
+        $kantor = $request->kantor;
+    
+        $data = PegawaiModel::where('perusahaan', $user->perusahaan)
+    
+            // 🔥 FILTER KANTOR
+            ->when($kantor, function ($query) use ($kantor) {
+                $query->where('nama_kantor', $kantor);
+            }, function ($query) use ($user) {
+                // default kalau tidak pilih kantor
+                if ($user->role == 3) {
+                    $query->where('nama_kantor', $user->kantor);
+                }
+            })
+    
+            // 🔥 SEARCH
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('nama_lengkap', 'like', "%$search%")
+                      ->orWhere('nip', 'like', "%$search%")
+                      ->orWhere('id', 'like', "%$search%");
+                });
+            })
+    
+            ->limit(20)
+            ->get();
+    
+        return response()->json(
+            $data->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'text' => $item->nama_lengkap . ' - ' . $item->nip
+                ];
+            })
+        );
+    }
+    
+    public function pengecualianUpdate(Request $request, $id)
+    {
+        $request->validate([
+            'tanggal' => 'required'
+        ]);
+    
+        $data = PengecualianAbsen::findOrFail($id);
+    
+        $tanggalList = [];
+    
+        if (is_array($request->tanggal)) {
+            foreach ($request->tanggal as $item) {
+                $tanggalList = array_merge($tanggalList, explode(',', $item));
+            }
+        } else {
+            $tanggalList = explode(',', $request->tanggal);
+        }
+    
+        $tanggalList = array_map('trim', $tanggalList);
+        $tanggalList = array_values(array_filter($tanggalList));
+    
+        $data->update([
+            'keterangan' => $request->keterangan,
+            'tanggal'    => $tanggalList // simpan array
+        ]);
+    
+        return back()->with('success', 'Data berhasil diupdate');
+    }
+    
+public function reguStore(Request $request)
+{
+    $request->validate([
+        'nama_regu'     => 'required',
+        'pegawai_id'    => 'nullable|array'
+    ]);
+
+    $regu = ReguModel::create([
+        'nama_regu'    => $request->nama_regu,
+        'perusahaan'   => Auth::user()->perusahaan,
+        'supervisor_id'=> null,
+        'danru_id'     => null // 🔥 tambahan
+    ]);
+
+    if (!empty($request->pegawai_id)) {
+        foreach ($request->pegawai_id as $pegawai) {
+            ReguAnggotaModel::create([
+                'regu_id' => $regu->id,
+                'pegawai_id' => $pegawai
+            ]);
+        }
+    }
+
+    return back()->with('success', 'Regu berhasil dibuat');
+}
+
+public function reguIndex(Request $request)
+{
+    $user = Auth::user();
+    $search = $request->search;
+
+    $regu = ReguModel::with('anggota.pegawai.kantor', 'anggota.pegawai.jabat', 'supervisor', 'danru')
+        ->when($user->role == 1, function ($q) use ($user) {
+            $q->where('perusahaan', $user->perusahaan);
+        })
+
+        // 🔥 SEARCH DATABASE
+        ->when($search, function ($q) use ($search) {
+            $q->where(function ($q2) use ($search) {
+                $q2->where('nama_regu', 'like', "%$search%")
+                   ->orWhereHas('danru', function ($q3) use ($search) {
+                       $q3->where('nama_lengkap', 'like', "%$search%");
+                   })
+                   ->orWhereHas('supervisor', function ($q3) use ($search) {
+                       $q3->where('nama_lengkap', 'like', "%$search%");
+                   })
+                   ->orWhereHas('anggota.pegawai', function ($q3) use ($search) {
+                       $q3->where('nama_lengkap', 'like', "%$search%")
+                          ->orWhere('nip', 'like', "%$search%");
+                   });
+            });
+        })
+
+        ->latest()
+        ->paginate(10)
+        ->withQueryString(); // 🔥 penting biar search tetap di pagination
+
+    $regu->getCollection()->transform(function ($r) {
+        $r->anggota = $r->anggota
+            ->sortBy(function ($a) {
+                $kantor = strtolower($a->pegawai->kantor->nama_kantor ?? '');
+                $nama   = strtolower($a->pegawai->nama_lengkap ?? '');
+                return $kantor . '|' . $nama;
+            })
+            ->values();
+
+        return $r;
+    });
+
+    $listKantor = KantorModel::where('perusahaan', $user->perusahaan)->get();
+    $pegawai = PegawaiModel::with('kantor')
+        ->where('perusahaan', $user->perusahaan)
+        ->orderBy('nama_lengkap')
+        ->get();
+    $pegawaiSudahMasukRegu = ReguAnggotaModel::pluck('pegawai_id')->toArray();
+
+    return view('master.regu', compact('regu', 'pegawai', 'listKantor', 'search', 'pegawaiSudahMasukRegu'));
+}
+
+public function tambahAnggota(Request $request, $id)
+{
+    $request->validate([
+        'pegawai_id' => 'required|array'
+    ]);
+
+    $existing = ReguAnggotaModel::where('regu_id', $id)
+        ->pluck('pegawai_id')
+        ->toArray();
+
+    $dataInsert = [];
+
+    foreach ($request->pegawai_id as $pegawaiId) {
+        if (!in_array($pegawaiId, $existing)) {
+            $dataInsert[] = [
+                'regu_id' => $id,
+                'pegawai_id' => $pegawaiId,
+                'created_at' => now(), // Tambahkan ini
+                'updated_at' => now(), // Tambahkan ini
+            ];
+        }
+    }
+
+    if (!empty($dataInsert)) {
+        ReguAnggotaModel::insert($dataInsert);
+    }
+
+    return back()->with('success', 'Anggota berhasil ditambahkan');
+}
+
+public function reguDestroy($id)
+{
+    ReguAnggotaModel::where('regu_id', $id)->delete();
+    ReguModel::destroy($id);
+
+    return back()->with('success', 'Regu berhasil dihapus');
+}
+
+public function destroyAnggotaRegu($id)
+{
+    $anggota = ReguAnggotaModel::find($id);
+
+    if ($anggota) {
+
+        // 🔥 cek di tabel regu
+        ReguModel::where('id', $anggota->regu_id)
+            ->where('danru_id', $anggota->pegawai_id)
+            ->update(['danru_id' => null]);
+
+        // 🔥 optional (kalau mau sekalian supervisor)
+        ReguModel::where('id', $anggota->regu_id)
+            ->where('supervisor_id', $anggota->pegawai_id)
+            ->update(['supervisor_id' => null]);
+
+        // 🔥 hapus anggota
+        ReguAnggotaModel::destroy($id);
+    }
+
+    return back()->with('success', 'Anggota dihapus dari regu');
+}
+
+public function setSupervisor(Request $request, $id)
+{
+    $request->validate([
+        'supervisor_id' => 'required|exists:karyawan,id'
+    ]);
+
+    $regu = ReguModel::findOrFail($id);
+
+    $regu->update([
+        'supervisor_id' => $request->supervisor_id
+    ]);
+
+    return back()->with('success', 'Supervisor berhasil di-assign');
+}
+
+public function assignDanru(Request $request, $id)
+{
+    $request->validate([
+        'danru_id' => 'required|exists:karyawan,id'
+    ]);
+
+    $regu = ReguModel::findOrFail($id);
+
+    // 🔥 CEK: danru sudah dipakai di regu lain?
+    $sudahDipakai = ReguModel::where('danru_id', $request->danru_id)
+        ->where('id', '!=', $id)
+        ->exists();
+
+    if ($sudahDipakai) {
+        return back()->with('error', 'Danru sudah digunakan di regu lain!');
+    }
+
+    // ================= HAPUS DANRU LAMA DARI ANGGOTA =================
+    if ($regu->danru_id) {
+        ReguAnggotaModel::where('regu_id', $regu->id)
+            ->where('pegawai_id', $regu->danru_id)
+            ->delete();
+    }
+
+    // ================= UPDATE DANRU =================
+    $regu->update([
+        'danru_id' => $request->danru_id
+    ]);
+
+    // ================= MASUKKAN DANRU BARU KE ANGGOTA =================
+    ReguAnggotaModel::firstOrCreate([
+        'regu_id' => $regu->id,
+        'pegawai_id' => $request->danru_id
+    ]);
+
+    return back()->with('success', 'Danru berhasil di-assign');
+}
+
+    public function moveAnggota(Request $request)
+    {
+        $request->validate([
+            'pegawai_id' => 'required',
+            'regu_id' => 'required'
+        ]);
+
+        $anggota = ReguAnggotaModel::where('pegawai_id', $request->pegawai_id)->first();
+
+        if ($anggota) {
+
+            // 🔥 AMBIL REGU LAMA
+            $reguLama = ReguModel::find($anggota->regu_id);
+
+            // ================== INI POSISI YANG BENAR ==================
+            if ($reguLama && $reguLama->danru_id == $request->pegawai_id) {
+                $reguLama->update([
+                    'danru_id' => null
+                ]);
+            }
+            // ===========================================================
+
+            // pindahkan anggota ke regu baru
+            $anggota->update([
+                'regu_id' => $request->regu_id
+            ]);
+
+        } else {
+
+            ReguAnggotaModel::create([
+                'pegawai_id' => $request->pegawai_id,
+                'regu_id' => $request->regu_id
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Anggota berhasil dipindahkan'
+        ]);
+    }
 }

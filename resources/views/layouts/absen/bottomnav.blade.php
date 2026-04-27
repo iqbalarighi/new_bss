@@ -193,8 +193,25 @@
                             </div>
                         </a>
                     @endif
+
+                    @elseif($lembr && $lembr->jam_out == null)
+                        <a class="item" onclick="absenLemburSelesai()">
+                            <div class="col">
+                                <button class="action-button large" style="background-color: orange;">
+                                    <ion-icon name="camera-outline"></ion-icon>
+                                </button>
+                            </div>
+                        </a>
+                    @elseif($lembr && $lembr->jam_out != null)
+                        <a href="{{route('absen.create')}}" class="item test">
+                            <div class="col">
+                                <div class="action-button large">
+                                    <ion-icon name="camera-outline"></ion-icon>
+                                </div>
+                            </div>
+                        </a>
                 @else
-                    <a href="{{route('absen.create')}}" class="item test">
+                    <a class="item" onclick="showChoiceAlert()">
                         <div class="col">
                             <div class="action-button large">
                                 <ion-icon name="camera-outline"></ion-icon>

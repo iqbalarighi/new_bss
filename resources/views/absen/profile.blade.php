@@ -18,6 +18,43 @@
     margin: 5px;
 }
 </style>
+<style>
+.profile-item {
+    background: linear-gradient(145deg, #f8f9fa, #ffffff) !important;
+    border: 1px solid #e9ecef !important;
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    transition: all 0.2s ease-in-out;
+}
+
+.profile-item:hover {
+    background: #f1f5f9 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+}
+
+.profile-icon {
+    font-size: 20px;
+    color: #333;
+    min-width: 22px;
+}
+
+.profile-label {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.profile-value {
+    font-weight: 600;
+    margin: 0;
+}
+
+/* 🔥 FORCE BACKGROUND CONTAINER BIAR TIDAK TRANSPARAN */
+.card-body {
+    background-color: #fff !important;
+}
+</style>
 @endsection
 
 @section('content')
@@ -99,53 +136,88 @@
             </div>
         </div>
 
-        {{-- <div class="card shadow-sm rounded-4 mb-2 border-0">
+        <!-- <div class="card shadow-sm rounded-4 mb-2 border-0">
             <div class="card-body p-3">
                 <h6 class="fw-bold mb-2">Rekening Bank</h6>
                 <p class="mb-0">Belum terdaftar</p>
                 <small>-</small>
             </div>
-        </div> --}}
+        </div>  -->
 
-        <div class="card shadow-sm rounded-4 mb-2 border-0">
+        <div class="card shadow-sm rounded-4 mb-2 border-0 bg-white">
             <div class="card-body p-3">
-            	<h6 class="fw-bold mb-2">Penempatan</h6>
-                <div class="list-group-item border-0 px-0 d-flex align-items-center justify-content-between" style="gap: 1rem;">
-                    <div class="d-flex align-items-center" style="gap: 1rem;">
-                        <ion-icon name="business-outline" class="text-black" style="font-size: 20px;"></ion-icon>
-                        <div>
-                            <small>Unit Kerja</small>
-                            <p class="mb-0 fw-bold">{{$profile->kantor->nama_kantor}}</p>
+                <h6 class="fw-bold mb-3">Penempatan</h6>
+
+                {{-- UNIT KERJA --}}
+                <div class="profile-item d-flex align-items-center">
+                    <ion-icon name="business-outline" class="profile-icon"></ion-icon>
+                    <div class="ms-3">
+                        <div class="profile-label">Unit Kerja</div>
+                        <p class="profile-value">{{ $profile->kantor->nama_kantor ?? '-' }}</p>
+                    </div>
+                </div>
+
+                {{-- DEPARTEMEN --}}
+                <div class="profile-item d-flex align-items-center">
+                    <ion-icon name="people-outline" class="profile-icon"></ion-icon>
+                    <div class="ms-3">
+                        <div class="profile-label">Departemen</div>
+                        <p class="profile-value">{{ $profile->deptmn->nama_dept ?? '-' }}</p>
+                    </div>
+                </div>
+
+                {{-- SATUAN KERJA --}}
+                <div class="profile-item d-flex align-items-center">
+                    <ion-icon name="star-outline" class="profile-icon"></ion-icon>
+                    <div class="ms-3">
+                        <div class="profile-label">Satuan Kerja</div>
+                        <p class="profile-value">{{ $profile->sat->satuan_kerja ?? '-' }}</p>
+                    </div>
+                </div>
+
+                {{-- POSISI --}}
+                <div class="profile-item d-flex align-items-center">
+                    <ion-icon name="person-outline" class="profile-icon"></ion-icon>
+                    <div class="ms-3">
+                        <div class="profile-label">Posisi</div>
+                        <p class="profile-value">{{ $profile->jabat->jabatan ?? '-' }}</p>
+                    </div>
+                </div>
+
+                {{-- REGU --}}
+                @if($anggotaRegu)
+                <div class="profile-item d-flex align-items-center">
+                    <ion-icon name="people-outline" class="profile-icon"></ion-icon>
+                    <div class="ms-3">
+                        <div class="profile-label">Regu</div>
+                        <p class="profile-value">
+                            {{ $anggotaRegu->regu->nama_regu ?? '-' }}
+                        </p>
+                        <small class="text-muted">
+                            Danru: {{ $anggotaRegu->regu->danru->nama_lengkap ?? '-' }}
+                        </small>
+                    </div>
+                </div>
+                @endif
+
+                {{-- SUPERVISOR --}}
+                @if($reguSupervisor->count())
+                <div class="profile-item">
+                    <div class="d-flex align-items-start">
+                        <ion-icon name="shield-checkmark-outline" class="profile-icon"></ion-icon>
+                        <div class="ms-3 w-100">
+                            <div class="profile-label">Supervisor Regu</div>
+
+                            <p class="profile-value mb-0">
+                                @foreach($reguSupervisor as $r)
+                                    • {{ $r->nama_regu }} (Danru: {{ $r->danru->nama_lengkap ?? '-' }}) <br>
+                                @endforeach
+                            </p>
                         </div>
                     </div>
                 </div>
-                <div class="list-group-item border-0 px-0 d-flex align-items-center justify-content-between" style="gap: 1rem;">
-                    <div class="d-flex align-items-center" style="gap: 1rem;">
-                        <ion-icon name="people-outline" class="text-black" style="font-size: 20px;"></ion-icon>
-                        <div>
-                            <small>Departemen</small>
-                            <p class="mb-0 fw-bold">{{$profile->deptmn->nama_dept}}</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="list-group-item border-0 px-0 d-flex align-items-center justify-content-between" style="gap: 1rem;">
-                    <div class="d-flex align-items-center" style="gap: 1rem;">
-                        <ion-icon name="star-outline" class="text-black" style="font-size: 20px;"></ion-icon>
-                        <div>
-                            <small>Satuan Kerja</small>
-                            <p class="mb-0 fw-bold">{{$profile->sat->satuan_kerja}}</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="list-group-item border-0 px-0 d-flex align-items-center justify-content-between" style="gap: 1rem;">
-                    <div class="d-flex align-items-center" style="gap: 1rem;">
-                        <ion-icon name="person-outline" class="text-black" style="font-size: 20px;"></ion-icon>
-                        <div>
-                            <small>Posisi</small>
-                            <p class="mb-0 fw-bold">{{$profile->jabat->jabatan}}</p>
-                        </div>
-                    </div>
-                </div>
+                @endif
+
             </div>
         </div>
 
@@ -497,13 +569,78 @@ function dataURItoBlob(dataURI) {
 
 $('#btnRegisterFace').on('click', function () {
 
+    let capturedImage = null;
+
     Swal.fire({
         title: 'Daftarkan Wajah',
-        html: `<center><div class="webcam-face"></div></center>`,
-        confirmButtonText: 'Simpan',
-        cancelButtonText: 'Batal',
+        html: `
+<style>
+.face-frame-wrapper {
+    position: relative;
+    width: 320px;
+    height: 420px;
+    margin: auto;
+    overflow: hidden; /* Tambahkan ini agar shadow tidak meluber keluar */
+    border-radius: 12px;
+}
+
+.webcam-face video,
+.webcam-face canvas,
+#preview-face {
+    width: 320px !important;
+    height: 420px !important;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+.face-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 5; /* Pastikan di atas video */
+    pointer-events: none;
+}
+
+.face-oval {
+    width: 200px;
+    height: 260px;
+    border: 3px solid #00ffcc;
+    border-radius: 50%;
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* Shadow ini yang sering menutupi teks jika wrapper tidak di-overflow hidden */
+    box-shadow: 0 0 0 999px rgba(0,0,0,0.4); 
+}
+
+.face-tip {
+    font-size: 13px;
+    color: #333 !important; /* Ubah ke warna gelap agar terlihat di modal putih */
+    margin-top: 15px;
+    font-weight: 500;
+    line-height: 1.5;
+}
+</style>
+
+<center>
+    <div class="face-frame-wrapper">
+        <div class="webcam-face"></div>
+        <img id="preview-face" class="d-none">
+        <div class="face-overlay">
+            <div class="face-oval"></div>
+        </div>
+    </div>
+
+    <small class="face-tip text-center d-block">
+        Posisikan wajah di dalam garis oval <br>
+        Lepas masker & kacamata <br>
+        Pastikan cahaya cukup & wajah menghadap kamera
+    </small>
+</center>
+`,
         showCancelButton: true,
-        reverseButtons: true,
+        showConfirmButton: false,
+        cancelButtonText: 'Batal',
         allowOutsideClick: false,
 
         didOpen: () => {
@@ -516,15 +653,70 @@ $('#btnRegisterFace').on('click', function () {
             Webcam.attach('.webcam-face');
         },
 
-        preConfirm: () => {
-            return new Promise(resolve => {
-                Webcam.snap(image => resolve(image));
-            });
-        }
+        // 🔥 WAJIB DI SINI
+    willClose: () => {
+        Webcam.reset();
+    },
 
-    }).then(result => {
+        footer: `
+            <button id="btnCapture" class="swal2-confirm swal2-styled">
+                Ambil Foto
+            </button>
+            <button id="btnRetake" class="swal2-cancel swal2-styled d-none">
+                Ulangi
+            </button>
+            <button id="btnSave" class="swal2-confirm swal2-styled d-none">
+                Simpan
+            </button>
+        `
+    });
 
-        if (!result.isConfirmed) return;
+    $(document).on('click', '#btnCapture', function () {
+
+        Webcam.snap(function (image) {
+            capturedImage = image;
+
+            // TAMPILKAN PREVIEW
+            $('#preview-face')
+                .attr('src', image)
+                .removeClass('d-none');
+
+            // HENTIKAN WEBCAM
+            Webcam.freeze();
+
+            // SEMBUNYIKAN VIDEO
+            $('.webcam-face').addClass('d-none');
+
+            // SEMBUNYIKAN OVAL
+            $('.face-overlay').addClass('d-none');
+
+            $('#btnCapture').addClass('d-none');
+            $('#btnRetake, #btnSave').removeClass('d-none');
+        });
+
+    });
+
+    $(document).on('click', '#btnRetake', function () {
+
+        capturedImage = null;
+
+        $('#preview-face')
+            .attr('src', '')
+            .addClass('d-none');
+
+        $('.webcam-face').removeClass('d-none');
+        $('.face-overlay').removeClass('d-none');
+
+        Webcam.unfreeze();
+
+        $('#btnCapture').removeClass('d-none');
+        $('#btnRetake, #btnSave').addClass('d-none');
+
+    });
+
+
+    $(document).on('click', '#btnSave', function () {
+        if (!capturedImage) return;
 
         Swal.fire({
             title: 'Memproses...',
@@ -532,13 +724,11 @@ $('#btnRegisterFace').on('click', function () {
             didOpen: () => Swal.showLoading()
         });
 
-        // ✅ PAKAI FormData
         let formData = new FormData();
         formData.append('_token', '{{ csrf_token() }}');
-        formData.append('pegawai_id', $('#pegawai_id').val());
         formData.append(
             'image',
-            dataURItoBlob(result.value),
+            dataURItoBlob(capturedImage),
             'face.png'
         );
 
@@ -546,23 +736,47 @@ $('#btnRegisterFace').on('click', function () {
             url: '/absen/face/register',
             method: 'POST',
             data: formData,
-            processData: false, // 🔴 WAJIB
-            contentType: false, // 🔴 WAJIB
+            processData: false,
+            contentType: false,
 
             success: res => {
-                Swal.fire('Berhasil', res.message, 'success');
+                // Matikan kamera segera setelah respons sukses diterima
+                Webcam.reset(); 
+            
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: res.message,
+                    confirmButtonText: 'OK',
+                    allowOutsideClick: false
+                }).then((result) => {
+                    // Redirect hanya setelah user menekan tombol OK
+                    if (result.isConfirmed) {
+                        window.location.href = "/absen/create";
+                    }
+                });
             },
 
             error: xhr => {
-                Swal.fire(
-                    'Gagal',
-                    xhr.responseJSON?.message || 'Registrasi wajah gagal',
-                    'error'
-                );
+                Swal.close();
+
+                const reason = xhr.responseJSON?.reason;
+                let msg = 'Gagal Registrasi Wajah';
+
+                if (reason === 'no_face') {
+                    msg = 'Wajah tidak terdeteksi.';
+                } else if (reason === 'multiple_face') {
+                    msg = 'Terdeteksi lebih dari satu wajah.';
+                }
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: msg
+                });
             }
         });
     });
 });
 </script>
-
 @endpush

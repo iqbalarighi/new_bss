@@ -14,7 +14,7 @@
     @endif
 
         <div class="card-header bg-danger text-white text-center fw-bold">Edit Pegawai
-            <button class="float-right btn btn-sm btn-secondary" onclick="history.back();">Kembali</button>
+            <button class="float-right btn btn-sm btn-secondary" onclick="window.location.href='{{route('pegawai.index')}}'">Kembali</button>
         </div>
         <div class="card-body">
 <form method="POST" action="{{ route('pegawai.update', $pegawai->id) }}" enctype="multipart/form-data" id="formEditPegawai">

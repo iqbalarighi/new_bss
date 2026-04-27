@@ -22,7 +22,7 @@
                 </div>
 
                 <div class="card-body">
-                <form action="{{ route('pegawai.index') }}" method="GET" class="d-flex gap-2 mb-3">
+                    <form action="{{ route('pegawai.index') }}" method="GET" class="d-flex gap-2 mb-3">
                     <input 
                         type="search" 
                         name="keyword"
@@ -32,7 +32,6 @@
                     >
                     <button class="btn btn-primary">Cari</button>
                 </form>
-
     <div class="card shadow-lg rounded-lg">
         <div class="card-body" style="overflow: auto;">
             <table class="table table-striped table-bordered table-hover"> 
@@ -57,7 +56,7 @@
                 </thead>
                 <tbody>
                     @foreach($pegawais as $num => $pegawai)
-                        <tr title="Klik untuk lihat detail">
+                        <tr>
                             <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;">{{ $pegawais->firstitem()+$num }}</td>
                             <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;">{{ $pegawai->nip }}</td>
                             <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;">{{ $pegawai->nama_lengkap }}</td>
@@ -73,8 +72,8 @@
                             <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;">{{ $pegawai->statpegawai ?? '-'}}</td>
                             <td onclick="window.location='{{route('pegawai.detail', $pegawai->id)}}'" style="cursor: pointer;">{{ $pegawai->shifts->shift ?? 'Optional'}}</td>
                             <td class="align-middle text-center">
-                                <button class="btn btn-primary btn-sm px-1" title="Klik untuk edit" onclick="window.location='{{route('pegawai.edit', $pegawai->id)}}'">Edit</button>
-                                <button class="btn btn-danger btn-sm px-1 btn-hapus" title="Klik untuk hapus"  data-id="{{ $pegawai->id }}" data-nama="{{ $pegawai->nama_lengkap }}">Hapus</button>
+                                <button class="btn btn-primary btn-sm px-1" onclick="window.location='{{route('pegawai.edit', $pegawai->id)}}'">Edit</button>
+                                <button class="btn btn-danger btn-sm px-1 btn-hapus" data-id="{{ $pegawai->id }}" data-nama="{{ $pegawai->nama_lengkap }}">Hapus</button>
                             </td>
                         </tr>
                     @endforeach

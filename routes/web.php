@@ -85,6 +85,24 @@ Route::middleware(['auth:web'])->group(function () {
         Route::post('/shift/store', [MasterController::class, 'shiftStore'])->name('master.shift.store');
         Route::put('/shift/update/{id}', [MasterController::class, 'shiftUpdate'])->name('master.shift.update');
         Route::delete('/shift/destroy/{id}', [MasterController::class, 'shiftdest'])->name('shift.destroy');
+        
+        Route::get('/pengecualian-absen', [MasterController::class, 'pengecualianIndex']);
+        Route::post('/pengecualian-absen/store', [MasterController::class, 'pengecualianStore']);
+        Route::delete('/pengecualian-absen/{id}', [MasterController::class, 'pengecualianDelete']);
+        Route::put('/pengecualian-absen/{id}', [MasterController::class, 'pengecualianUpdate']);
+        Route::get('/api/karyawan', [MasterController::class, 'getKaryawan']);
+
+        Route::post('/regu/store', [MasterController::class, 'reguStore'])->name('regu.store');
+        Route::get('/regu', [MasterController::class, 'reguIndex'])->name('regu');
+        Route::delete('/regu/{id}', [MasterController::class, 'reguDestroy'])->name('regu.destroy');
+        Route::delete('/regu/anggota/{id}', [MasterController::class, 'destroyAnggotaRegu'])->name('regu.anggota.delete');
+        Route::post('/regu/{id}/anggota', [MasterController::class, 'tambahAnggota'])
+            ->name('regu.anggota.store');
+            Route::put('/regu/{id}/supervisor', [MasterController::class, 'setSupervisor'])
+    ->name('regu.setSupervisor');
+    Route::put('/regu/{id}/danru', [MasterController::class, 'assignDanru'])
+    ->name('regu.assign.danru');
+    Route::post('/regu/move-anggota', [MasterController::class, 'moveAnggota']);
 
         Route::controller(PegawaiController::class)->group(function () {
             Route::get('/pegawai', 'index')->name('pegawai.index');
@@ -107,7 +125,7 @@ Route::middleware(['auth:web'])->group(function () {
             Route::get('/pegawai/absensi/izin', 'izin')->name('pegawai.absensi.izin');
             Route::get('/pegawai/lembur', 'lembur')->name('pegawai.lembur');
             Route::post('/pegawai/lembur/{id}/adm', 'aprv_adm');
-            Route::post('/pegawai/absensi/izin/{id}/status', 'izinstatus');
+            // Route::post('/pegawai/absensi/izin/{id}/status', 'izinstatus');
             Route::get('/pegawai/absensi/rekap', 'rekap')->name('pegawai.absensi.rekap');
             Route::post('/pegawai/absensi/rekapview', 'rekapview')->name('pegawai.absensi.rekapview');
             Route::get('/pegawai/patroli', 'patrol')->name('pegawai.patrol');
@@ -187,8 +205,11 @@ Route::controller(AbsenController::class)->middleware(['redirif:pegawai'])->grou
 
     Route::post('/absen/face/register', [FaceRecognitionController::class, 'register']);
     Route::post('/absen/face/verify', [FaceRecognitionController::class, 'verify']);
+    
 
 });
+
+Route::post('/pegawai/absensi/izin/{id}/status', [PegawaiController::class, 'izinstatus']);
 
 Route::post('/absen/logout', [AuthController::class, 'logout'])->middleware(['redirif:pegawai'])->name('absen.logout');
 

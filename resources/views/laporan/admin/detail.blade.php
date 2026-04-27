@@ -15,7 +15,7 @@
                     <table class="table" width="100%">
                     <tr>
                         <td>
-                        <b><center>Laporan Kegiatan @if(Str::contains(strtolower($detail->sat->satuan_kerja), ['kamdal', 'pam', 'pengamanan', 'satpam']) ) Pengamanan @else {{$detail->sat->satuan_kerja}} @endif</center></b>
+                        <b><center>Laporan Kegiatan {{$satker->satuan_kerja}}</center></b>
                         <b><center>{{$detail->kant->nama_kantor ?? ''}}</center></b>
                         <b><center>{{Carbon\Carbon::parse($detail->created_at)->isoFormat('dddd, D MMMM Y')}}</center></b>
                         <b><center>Pukul {{Carbon\Carbon::parse($detail->created_at)->isoFormat('HH:mm:ss')}} WIB</center></b>

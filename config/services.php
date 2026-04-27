@@ -32,7 +32,9 @@ return [
     ],
 
     'face_api' => [
-        'url' => env('FACE_API_URL'),
+        'primary' => env('FACE_API_PRIMARY'),
+        'backup'  => env('FACE_API_BACKUP'),
     ],
+
 
 ];

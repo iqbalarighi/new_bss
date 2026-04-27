@@ -1,6 +1,8 @@
 @extends('layouts.side.side')
 
 @section('content')
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
 <div class="container mw-100">
     <div class="row justify-content-center">
         <div class="col mw-100">
@@ -113,7 +115,10 @@
     }
 </script>
 <script>
-$('#btnDeleteFace').on('click', function () {
+$(document).on('click', '#btnDeleteFace', function () {
+
+    const pegawaiId = "{{ $detail->id }}"; // ambil dari data-id
+
     Swal.fire({
         title: 'Hapus Data Wajah?',
         text: 'Data face recognition akan dihapus dan harus registrasi ulang.',
@@ -130,29 +135,30 @@ $('#btnDeleteFace').on('click', function () {
         Swal.fire({
             title: 'Menghapus...',
             allowOutsideClick: false,
-            didOpen: () => Swal.showLoading()
+            allowEscapeKey: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
         });
 
         $.ajax({
-            url: '/pegawai/face/delete/{{$detail->id}}',
-            method: 'DELETE',
-            data: {
-                _token: '{{ csrf_token() }}'
+            url: `/pegawai/face/delete/${pegawaiId}`,
+            type: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function (res) {
                 Swal.fire({
                     title: 'Berhasil',
-                    text: res.message,
+                    text: res.message ?? 'Data wajah berhasil dihapus',
                     icon: 'success',
-                    confirmButtonText: 'OK'
+                    confirmButtonText: 'OK',
                     allowOutsideClick: false,
                 }).then((result) => {
-                    /* Akan dieksekusi setelah tombol OK diklik */
                     if (result.isConfirmed) {
                         location.reload();
                     }
                 });
-
             },
             error: function (xhr) {
                 Swal.fire(
@@ -165,5 +171,4 @@ $('#btnDeleteFace').on('click', function () {
     });
 });
 </script>
-
 @endsection

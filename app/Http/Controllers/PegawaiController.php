@@ -33,7 +33,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class PegawaiController extends Controller
 {
- public function index(Request $request)
+public function index(Request $request)
 {
     // ================= ROLE 0 =================
     if (Auth::user()->role === 0) {
@@ -191,7 +191,7 @@ class PegawaiController extends Controller
             'bpjs_kesehatan' => 'required|string',
             'kontak_darurat' => 'required|string|max:15',
             'satker' => 'required|string',
-            'shift' => 'required|string',
+            'shift'            => 'nullable|exists:shift,id', // 🔥 FIX UTAMA
             'statpegawai' => 'required|string|in:Tetap,Kontrak',
             'status' => 'required|string|in:Aktif,Tidak Aktif',
             'foto' => 'image|mimes:jpeg,png,jpg|max:8000',
@@ -211,7 +211,6 @@ class PegawaiController extends Controller
             'bpjs_kesehatan.required' => 'BPJS Kesehatan wajib diisi.',
             'kontak_darurat.required' => 'Kontak darurat wajib diisi.',
             'satker.required' => 'Satker wajib diisi.',
-            'shift.required' => 'Shift wajib diisi.',
             'statpegawai.required' => 'Status pegawai wajib diisi.',
             'status.required' => 'Status wajib diisi.',
             'foto.image' => 'File harus berupa gambar.',
@@ -279,90 +278,100 @@ if ($foto !== null) {
         ]);
 
 
-        return redirect()->route('pegawai.index')->with('success', 'Pegawai berhasil ditambahkan.');
+        return redirect()->route('pegawai.input')->with('success', 'Pegawai berhasil ditambahkan.');
     }
 
 public function update(Request $request, $id)
 {
+    // =========================
+    // VALIDATION (FIX)
+    // =========================
     $request->validate([
-        'nama' => 'required|string|max:255',
-        'nip' => 'required|string|max:50|unique:karyawan,nip,' . $id,
-        'password' => 'nullable|string|min:6',
-        'shift' => 'required|string',
-        'tgl_lahir' => 'required|date',
-        'alamat' => 'required|string',
-        'alamat_domisili' => 'required|string',
-        'no_telepon' => 'required|string|max:15',
-        'jabatan' => 'required|string',
-        'dept' => 'required|string',
-        'bpjs_tk' => 'required|string',
-        'bpjs_kesehatan' => 'required|string',
-        'kontak_darurat' => 'required|string|max:15',
-        'satker' => 'required|string',
-        'statpegawai' => 'required|string|in:Tetap,Kontrak',
-        'status' => 'required|string|in:Aktif,Tidak Aktif',
-        'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:8000',
+        'nama'             => 'required|string|max:255',
+        'nip'              => 'required|string|max:50|unique:karyawan,nip,' . $id,
+        'password'         => 'nullable|string|min:6',
+        'tgl_lahir'        => 'required|date',
+        'alamat'           => 'required|string',
+        'alamat_domisili'  => 'required|string',
+        'no_telepon'       => 'required|string|max:15',
+        'jabatan'          => 'required|string',
+        'dept'             => 'required|string',
+        'bpjs_tk'          => 'required|string',
+        'bpjs_kesehatan'   => 'required|string',
+        'kontak_darurat'   => 'required|string|max:15',
+        'satker'           => 'required|string',
+        'statpegawai'      => 'required|in:Tetap,Kontrak',
+        'status'           => 'required|in:Aktif,Tidak Aktif',
+        'shift'            => 'nullable|exists:shift,id', // 🔥 FIX UTAMA
+        'foto'             => 'nullable|image|mimes:jpeg,png,jpg|max:8000',
     ]);
 
     $pegawai = PegawaiModel::findOrFail($id);
 
-    // Dapatkan nilai perusahaan & kantor berdasarkan role
+    // =========================
+    // ROLE LOGIC
+    // =========================
     if (Auth::user()->role === 1) {
         $perusahaan = Auth::user()->perusahaan;
-        $kantor = $request->kantor;
+        $kantor     = $request->kantor;
     } elseif (Auth::user()->role === 3) {
         $perusahaan = Auth::user()->perusahaan;
-        $kantor = Auth::user()->kantor;
+        $kantor     = Auth::user()->kantor;
     } else {
         $perusahaan = $request->perusahaan;
-        $kantor = $request->kantor;
+        $kantor     = $request->kantor;
     }
 
-    // Upload foto jika ada
+    // =========================
+    // FOTO UPLOAD
+    // =========================
     if ($request->hasFile('foto')) {
-    $foto = $request->file('foto');
-    $fotoNama = Str::random(20) . '.' . $foto->getClientOriginalExtension();
-    $folder = 'foto_pegawai/' . $request->nip;
+        $foto = $request->file('foto');
+        $fotoNama = Str::random(20) . '.' . $foto->getClientOriginalExtension();
+        $folder = 'foto_pegawai/' . $request->nip;
 
-    // Proses gambar menggunakan Intervention Image
-    $manager = new ImageManager(new Driver());
-    $image = $manager->read($foto->getPathname());
+        $manager = new ImageManager(new Driver());
+        $image = $manager->read($foto->getPathname());
+        $image->scale(width: 600);
 
-    // Resize opsional (misalnya, lebar maks. 600px)
-    $image->scale(width: 600);
+        Storage::disk('public')->put(
+            $folder . '/' . $fotoNama,
+            (string) $image->encode()
+        );
+    } else {
+        $fotoNama = $pegawai->foto;
+    }
 
-    // Simpan hasil encode ke Laravel Storage (storage/app/public)
-    Storage::disk('public')->put(
-        $folder . '/' . $fotoNama,
-        (string) $image->encode() // encode ke format asli
-    );
-} else {
-    $fotoNama = $pegawai->foto; // Tetap gunakan foto lama jika tidak upload
-}
-
+    // =========================
+    // UPDATE DATA (FIX SHIFT)
+    // =========================
     $pegawai->update([
-        'perusahaan' => $perusahaan,
+        'perusahaan'   => $perusahaan,
         'nama_lengkap' => $request->nama,
-        'nip' => $request->nip,
-        'dept' => $request->dept,
-        'shift' => $request->shift,
-        'password' => $request->password ? Hash::make($request->password) : $pegawai->password,
-        'tgl_lahir' => $request->tgl_lahir,
-        'alamat' => $request->alamat,
-        'domisili' => $request->alamat_domisili,
-        'no_hp' => $request->no_telepon,
-        'jabatan' => $request->jabatan,
-        'bpjs_tk' => $request->bpjs_tk,
-        'bpjs_sehat' => $request->bpjs_kesehatan,
-        'ko_drat' => $request->kontak_darurat,
-        'nama_kantor' => $kantor,
-        'satker' => $request->satker,
-        'statpegawai' => $request->statpegawai,
-        'status' => $request->status,
-        'foto' => $fotoNama,
+        'nip'          => $request->nip,
+        'dept'         => $request->dept,
+        'shift'        => $request->filled('shift') ? $request->shift : null, // 🔥 FIX
+        'password'     => $request->password
+                            ? Hash::make($request->password)
+                            : $pegawai->password,
+        'tgl_lahir'    => $request->tgl_lahir,
+        'alamat'       => $request->alamat,
+        'domisili'     => $request->alamat_domisili,
+        'no_hp'        => $request->no_telepon,
+        'jabatan'      => $request->jabatan,
+        'bpjs_tk'      => $request->bpjs_tk,
+        'bpjs_sehat'   => $request->bpjs_kesehatan,
+        'ko_drat'      => $request->kontak_darurat,
+        'nama_kantor'  => $kantor,
+        'satker'       => $request->satker,
+        'statpegawai'  => $request->statpegawai,
+        'status'       => $request->status,
+        'foto'         => $fotoNama,
     ]);
 
-    return redirect()->route('pegawai.index')->with('success', 'Data pegawai berhasil diperbarui.');
+    return redirect()
+        ->route('pegawai.index')
+        ->with('success', 'Data pegawai berhasil diperbarui.');
 }
 
     public function detail($id)
@@ -429,59 +438,83 @@ public function update(Request $request, $id)
     //     return view('pegawai.absensi', compact('absen'));
     // }
 
-    public function absensi(Request $request)
-    {
-        $tanggal = $request->tanggal; // Format: YYYY-MM
+public function absensi(Request $request)
+{
+    $user    = Auth::user();
+    $kantor  = $request->kantor;
+    $keyword = $request->keyword;
 
-        if (Auth::user()->role == 0) {
-            if($tanggal == ""){
-            $absen = AbsenModel::latest()->paginate(10);
-            } else {
-            $absen = AbsenModel::where('tgl_absen', 'LIKE', '%'.$tanggal.'%')
-                ->latest()
-                ->paginate(10); // Sesuaikan kolomnya
-
-                $absen->appends(['tanggal' => $tanggal]);
-            }
-        } elseif (Auth::user()->role == 1) {
-            $comp = Auth::user()->perusahaan;
-            $kantor = $request->kantor;
-
-            if($tanggal == ""){
-            $absen = AbsenModel::where('perusahaan', $comp)
-                ->latest()
-                ->paginate(10);
-                } else {
-                $absen = AbsenModel::where('perusahaan', $comp)
-                    ->where('tgl_absen', 'LIKE', '%'.$tanggal.'%')
-                    ->latest()
-                    ->paginate(10); // Sesuaikan kolomnya
-
-                    $absen->appends(['tanggal' => $tanggal]);
-                }
-        } elseif (Auth::user()->role == 3) {
-            $comp = Auth::user()->perusahaan;
-            $kantor = Auth::user()->kantor;
-
-            if($tanggal == ""){
-            $absen = AbsenModel::where('perusahaan', $comp)
-                ->where('kantor', $kantor)
-                ->latest()
-                ->paginate(10);
-                } else {
-                $absen = AbsenModel::where('perusahaan', $comp)
-                    ->where('kantor', $kantor)
-                    ->where('tgl_absen', 'LIKE', '%'.$tanggal.'%')
-                    ->latest()
-                    ->paginate(10); // Sesuaikan kolomnya
-
-                    $absen->appends(['tanggal' => $tanggal]);
-                }
-        } 
-
-        return view('pegawai.absensi', compact('absen'));
+    // ================= TANGGAL DEFAULT =================
+    if ($request->tanggal) {
+        $date = Carbon::createFromFormat('Y-m', $request->tanggal);
+    } else {
+        $date = Carbon::now(); // default bulan berjalan
     }
 
+    $bulan = $date->month;
+    $tahun = $date->year;
+
+    $query = AbsenModel::query();
+
+    // ================= ROLE 0 =================
+    if ($user->role == 0) {
+
+        if (!empty($kantor)) {
+            $query->where('kantor', $kantor);
+        }
+
+    // ================= ROLE 1 =================
+    } elseif ($user->role == 1) {
+
+        $query->where('perusahaan', $user->perusahaan);
+
+        if (!empty($kantor)) {
+            $query->where('kantor', $kantor);
+        }
+
+    // ================= ROLE 3 =================
+    } elseif ($user->role == 3) {
+
+        $query->where('perusahaan', $user->perusahaan)
+              ->where('kantor', $user->kantor);
+    }
+
+    // ================= FILTER BULAN =================
+    $query->whereMonth('tgl_absen', $bulan)
+          ->whereYear('tgl_absen', $tahun);
+
+    // ================= SEARCH NAMA / NIP =================
+    if (!empty($keyword)) {
+        $query->whereHas('pegawai', function ($q) use ($keyword) {
+            $q->where('nama_lengkap', 'like', '%' . $keyword . '%')
+              ->orWhere('nip', 'like', '%' . $keyword . '%');
+        });
+    }
+
+    // ================= EKSEKUSI =================
+    $absen = $query->latest()->paginate(10);
+
+    $absen->appends([
+        'tanggal' => $request->tanggal,
+        'kantor'  => $kantor,
+        'keyword' => $keyword
+    ]);
+
+    // ================= LIST KANTOR =================
+    if ($user->role == 0) {
+        $listKantor = KantorModel::orderBy('id')->get();
+
+    } elseif ($user->role == 1) {
+        $listKantor = KantorModel::where('perusahaan', $user->perusahaan)
+            ->orderBy('id')
+            ->get();
+
+    } else {
+        $listKantor = collect();
+    }
+
+    return view('pegawai.absensi', compact('absen', 'listKantor'));
+}
     public function lapor() //untuk role 1 dan 3 nya masih ngebug
     {
         if (Auth::user()->role == 0) {

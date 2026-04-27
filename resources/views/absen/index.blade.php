@@ -7,6 +7,20 @@
   line-height: 1.1;         /* Atur tinggi baris agar cukup ruang antar baris */
   word-wrap: break-word;    /* Agar kata panjang bisa dipotong jika perlu */
 }
+    .medium {
+  font-size: 24px; 
+}
+
+.bg-gagal {
+    background-color: #F08080;
+}
+
+.bg-oke {
+    background-color: #A7D3A6;
+}
+.bg-warn {
+    background-color: #FFF9C4;
+}
 </style>
     <div class="section p-2" id="user-section" style="z-index: 1;">
             <div id="user-detail">
@@ -110,7 +124,7 @@
                         </div>
                         @endif
 
-                        @if(Str::contains(strtolower($pegawai->sat->satuan_kerja), ['kamdal', 'pam', 'pengamanan', 'satpam']) == true && Str::contains(strtolower($pegawai->jabat->jabatan), ['danru']) == false)
+                        @if(Str::contains(strtolower($pegawai->sat->satuan_kerja), ['kamdal', 'pam', 'pengamanan', 'satpam', 'trc']) == true && Str::contains(strtolower($pegawai->jabat->jabatan), ['danru', 'supervisor']) == false)
 
                         <div class="item-menu text-center">
                             <div class="menu-icon">
@@ -122,9 +136,9 @@
                                 <span class="text-center">Patroli</span>
                             </div>
                         </div> 
+                        @endif
 
-
-                    @elseif(Str::contains(strtolower($pegawai->jabat->jabatan), ['danru', 'komandan regu']) == true && Str::contains(strtolower($pegawai->sat->satuan_kerja), ['kamdal', 'pam', 'pengamanan', 'satpam']) == true)
+                    @if(Str::contains(strtolower($pegawai->jabat->jabatan), ['danru', 'komandan regu', 'supervisor', 'trc']) == true && Str::contains(strtolower($pegawai->sat->satuan_kerja), ['kamdal', 'pam', 'pengamanan', 'satpam']) == true)
 
                          <div class="item-menu text-center" onclick="popupPengamanan()" style="cursor:pointer;">
                             <div class="menu-icon">
@@ -195,8 +209,20 @@ function popupPengamanan() {
             <div class="todaypresence">
         @if($absen != null)
                     <h5><ion-icon name="person"></ion-icon> Kehadiran Terakhir</h5>
-            <div class="card p-1 mb-1">
-                <h5>{{Carbon\carbon::parse($absen->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} ({{$absen->shifts->shift}})</h5>
+            <div onclick="return stat();" class="card p-1 mb-1 {{ 
+    $absen->face_status == 'verified' ? 'bg-oke' : 
+    ($absen->face_status == 'fallback' ? 'bg-warn' : 
+    ($absen->face_status == 'no_face' ? 'bg-gagal' : 'bg-secondary')) 
+}}">
+                <h6>{{Carbon\carbon::parse($absen->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} ({{$absen->shifts->shift}})
+                    @if($absen->face_status == 'fallback')
+                        <span class="text-warning float-right medium"><ion-icon name="alert-circle-outline"></ion-icon></span>
+                    @elseif($absen->face_status == 'verified')
+                        <span class="text-success float-right medium"><ion-icon name="checkmark-done-circle-outline"></ion-icon></span> 
+                    @else
+                        <span class="text-danger float-right medium"><ion-icon name="close-circle-outline"></ion-icon></span>
+                    @endif
+                </h6>
 
                 <div class="d-flex justify-content-around align-items-center">
                     <div class="d-flex align-items-center gap-2">
@@ -236,7 +262,13 @@ function popupPengamanan() {
         @if($absenTerakhir)
                     <h5><ion-icon name="person"></ion-icon> Kehadiran Terakhir</h5>
             <div class="card p-1 mb-1">
-                <h5>{{Carbon\carbon::parse($absenTerakhir->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} ({{$absenTerakhir->shifts->shift}})</h5>
+                <h6>{{Carbon\carbon::parse($absenTerakhir->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} ({{$absenTerakhir->shifts->shift}})
+                    @if($absenTerakhir->jam_out == null)
+                        <span class="text-danger float-right medium"><ion-icon name="close-circle-outline"></ion-icon></span>
+                    @else
+                        <span class="text-success float-right medium"><ion-icon  name="checkmark-done-circle-outline"></ion-icon></span> 
+                    @endif
+                </h6>
 
                 <div class="d-flex justify-content-around align-items-center">
                     <div class="d-flex align-items-center gap-2">
@@ -563,7 +595,13 @@ function popupPengamanan() {
                          @foreach($absens as $item)
                         <li>
                            <div class="card p-1 mb-2">
-                                <h5>{{Carbon\carbon::parse($item->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} ({{$item->shifts->shift}})</h5>
+                                <h6>{{Carbon\carbon::parse($item->tgl_absen)->locale('id')->translatedFormat('l, d M Y')}} ({{$item->shifts->shift}})
+                    @if($item->face_status == 'fallback')
+                        <span class="text-danger float-right medium"><ion-icon name="close-circle-outline"></ion-icon></span>
+                    @elseif($item->face_status == 'verified')
+                        <span class="text-success float-right medium"><ion-icon name="checkmark-done-circle-outline"></ion-icon></span> 
+                    @endif
+                                </h6>
                                 <div class="d-flex justify-content-around align-items-center">
                                     <div class="d-flex align-items-center gap-2">
                                         <img src="{{ asset('storage/absensi/'.$item->pegawai->nip.'/'.$item->foto_in) }}" alt="Foto Masuk" class="rounded" width="50">
@@ -622,6 +660,41 @@ function popupPengamanan() {
 @endsection
 
 @push('myscript')
+@if($absen?->face_status == 'verified')
+    </script><script type="text/javascript">
+        function stat() {
+            Swal.fire({
+                icon: 'success',
+                title: 'Verified',
+                text: 'Absensi sudah di verifikasi sistem',
+                showCancelButton: false,
+                    });
+        }
+    </script>
+@elseif($absen?->face_status == 'fallback')
+    <script type="text/javascript">
+        function stat() {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Not Verified',
+                text: 'Absensi belum di verifikasi sistem',
+                showCancelButton: false,
+                    });
+        }
+    </script>
+@else
+    <script type="text/javascript">
+        function stat() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Unverified',
+                text: 'Absensi tidak dapat di verifikasi sistem',
+                showCancelButton: false,
+                    });
+        }
+    </script>
+@endif
+
 @if($lembur != null)
 <script>
     const jamIn = new Date("{{ \Carbon\Carbon::parse($lembur->jam_in)->timezone('Asia/Jakarta')->format('Y-m-d\TH:i:sP') }}");

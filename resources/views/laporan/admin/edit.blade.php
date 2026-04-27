@@ -25,7 +25,7 @@
 
                     <tr>
                         <td>
-                            <b><center>Laporan Kegiatan @if(Str::contains(strtolower($edit->sat->satuan_kerja), ['kamdal', 'pam', 'pengamanan', 'satpam']) ) Pengamanan @else {{$edit->sat->satuan_kerja}} @endif</center></b>
+                            <b><center>Laporan Kegiatan Admin</center></b>
                             <b><center>{{$edit->kant->nama_kantor ?? ''}}</center></b>
                             <b><center>{{Carbon\Carbon::parse($edit->tanggal)->isoFormat('dddd, D MMMM Y')}}</center></b>
                             <b><center>Pukul {{Carbon\Carbon::parse($edit->updated_at)->isoFormat('HH:mm:ss')}} WIB</center></b>

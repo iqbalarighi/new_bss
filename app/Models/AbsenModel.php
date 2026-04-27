@@ -22,6 +22,11 @@ class AbsenModel extends Model
         'jam_out',
         'foto_out',
         'lokasi_out',
+        'face_verified',
+        'face_score',
+        'is_fallback',
+        'verified_at',
+        'face_status',
     ];
 
     public function pegawai()

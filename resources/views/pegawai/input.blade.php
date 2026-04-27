@@ -3,6 +3,17 @@
 <div class="container mt-1 mw-100">
     <div class="card shadow-lg rounded-lg">
 
+@if(Session::get('success'))
+<script type="text/javascript">
+    Swal.fire({
+  icon: "success",
+  title: "{{Session::get('success')}}",
+  showConfirmButton: false,
+  timer: 2000
+});
+</script>
+@endif
+
     @if ($errors->any())
     <div class="alert alert-danger">
         <ul>
@@ -51,27 +62,27 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Alamat</label>
-                    <textarea class="form-control" name="alamat" required></textarea>
+                    <textarea class="form-control" name="alamat" required>-</textarea>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Alamat Domisili</label>
-                    <textarea class="form-control" name="alamat_domisili" required></textarea>
+                    <textarea class="form-control" name="alamat_domisili" required>-</textarea>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">No. Telepon</label>
-                    <input type="tel" class="form-control" oninput="validateInput(event)" maxlength="14" name="no_telepon" required>
+                    <input type="tel" class="form-control" oninput="validateInput(event)" maxlength="14" name="no_telepon" value="000000000000" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">BPJS TK</label>
-                    <input type="tel" class="form-control" oninput="validateInput(event)" maxlength="16" name="bpjs_tk" required>
+                    <input type="tel" class="form-control" oninput="validateInput(event)" maxlength="16" name="bpjs_tk"  value="0000000000000000" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">BPJS Kesehatan</label>
-                    <input type="tel" class="form-control" oninput="validateInput(event)" maxlength="16" name="bpjs_kesehatan" required>
+                    <input type="tel" class="form-control" oninput="validateInput(event)" maxlength="16" name="bpjs_kesehatan"  value="0000000000000000" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Kontak Darurat</label>
-                    <input type="tel" class="form-control" oninput="validateInput(event)" maxlength="14" name="kontak_darurat" required>
+                    <input type="tel" class="form-control" oninput="validateInput(event)" maxlength="14" name="kontak_darurat" value="000000000000" required>
                 </div>
 
                 @if(Auth::user()->role === 0)
@@ -123,8 +134,8 @@
                 <div class="mb-3">
                     <label for="statpegawai" class="form-label">Status Pegawai</label>
                     <select class="form-control" id="statpegawai" name="statpegawai" required>
-                        <option value="Tetap">Tetap</option>
                         <option value="Kontrak">Kontrak</option>
+                        <option value="Tetap">Tetap</option>
                     </select>
                 </div>
                 <div class="mb-3">

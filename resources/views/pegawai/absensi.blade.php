@@ -3,27 +3,28 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <div class="container mw-100">
     <!-- CSS Placeholder Palsu -->
-<style>
+           <style>
     .form-group {
         position: relative;
-        margin-top: 1.5rem;
+        margin-bottom: 1.5rem;
     }
 
     .form-control {
-        padding-top: 0.5rem;
+        height: 45px;
+        border-radius: 6px;
     }
 
     .fake-placeholder {
         position: absolute;
         top: 50%;
-        left: 15px;
+        left: 12px;
         transform: translateY(-50%);
         color: #999;
         font-size: 14px;
         pointer-events: none;
         transition: 0.2s ease;
-        background: white;
-        padding: 0 4px;
+        background: #fff;
+        padding: 0 6px;
     }
 
     .form-control:focus + .fake-placeholder,
@@ -32,32 +33,90 @@
         font-size: 12px;
         color: #495057;
     }
+
+    .btn-group-filter {
+        display: flex;
+        gap: 10px;
+        height: 45px;
+        align-items: center;
+    }
 </style>
-    <div class="row justify-content-center">
-        <div class="col">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between fw-bold">{{ __('Monitoring Absensi Pegawai') }}
+
+<div class="row justify-content-center">
+    <div class="col">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between fw-bold">
+                {{ __('Monitoring Absensi Pegawai') }}
+            </div>
+
+<div class="card-body">
+    <form method="GET" id="formFilter">
+
+        <div class="row">
+
+            <!-- BULAN -->
+            <div class="col-md-3 form-group">
+                <input type="month"
+                       name="tanggal"
+                       value="{{ request('tanggal') }}"
+                       class="form-control"
+                       placeholder=" ">
+                <span class="fake-placeholder">Pilih Bulan</span>
+            </div>
+
+            <!-- KANTOR -->
+            @if(Auth::user()->role == 0 || Auth::user()->role == 1)
+            <div class="col-md-3 form-group">
+                <select name="kantor" class="form-control">
+                    <option value="">-- Semua Kantor --</option>
+                    @foreach($listKantor as $k)
+                        <option value="{{ $k->id }}"
+                            {{ request('kantor') == $k->id ? 'selected' : '' }}>
+                            {{ $k->nama_kantor }}
+                        </option>
+                    @endforeach
+                </select>
+                <span class="fake-placeholder">Pilih Kantor</span>
+            </div>
+            @endif
+
+            <!-- SEARCH -->
+            <div class="col-md-3 form-group">
+                <input type="text"
+                       name="keyword"
+                       value="{{ request('keyword') }}"
+                       class="form-control"
+                       placeholder=" ">
+                <span class="fake-placeholder">Cari Nama / NIP</span>
+            </div>
+
+            <!-- BUTTON -->
+            <div class="col-md-3 form-group">
+                <div class="btn-group-filter">
+                    <button type="submit" class="btn btn-primary w-50">
+                        Filter
+                    </button>
+
+                    <button type="button" class="btn btn-secondary w-50" onclick="resetFilter()">
+                        Reset
+                    </button>
                 </div>
-                <div class="card-body">
-                <!-- Bootstrap form-group dengan label -->
-                    <div class="col form-group position-relative d-flex justify-content-between ps-0">
-                        <div class="col-11 ps-0">
-                        <form method="GET" action="" id="formTanggal">
-                                <input type="text" 
-                                       onfocus="this.type='date'"
-                                       name="tanggal"
-                                       id="bultah"
-                                       min="2024-01-01"
-                                       max="{{ \Carbon\Carbon::now()->format('Y-m-d') }}" 
-                                       class="form-control" 
-                                       placeholder=" ">
-                                <span class="fake-placeholder">Pilih Tanggal</span>
-                        </form>
-                        </div> 
-                        <div class="col-1">
-                            <button type="button" class="btn btn-sm btn-secondary float-end" onclick="resetTanggal()">Reset</button>
-                        </div>
-                    </div>
+            </div>
+
+        </div>
+
+    </form>
+</div>
+            
+        </div>
+    </div>
+</div>
+
+<script>
+function resetFilter() {
+    window.location.href = "{{ url()->current() }}";
+}
+</script>
                     <div style="overflow: auto;">
                     <table class="table table-striped table-bordered table-hover" id="dataTable">
                         <thead class="text-center table-dark px-1">
@@ -117,12 +176,15 @@
                                 </td>
                                 <td class="text-center">
                                     <button class="btn btn-sm btn-primary" 
-                                    data-id="{{$abs->id}}" 
-                                    data-lokasi="{{$abs->lokasi_in}}" 
-                                    data-nama="{{$abs->pegawai->nama_lengkap}}" 
-                                    data-kantor="{{$abs->pegawai->kantor->lokasi}}" 
-                                    data-radius="{{$abs->pegawai->kantor->radius}}" 
-                                    id="btnMap"><i class="bi bi-map"></i></button>
+                                        data-id="{{$abs->id}}" 
+                                        data-lokasi-in="{{$abs->lokasi_in}}" 
+                                        data-lokasi-out="{{$abs->lokasi_out}}" 
+                                        data-nama="{{$abs->pegawai->nama_lengkap}}" 
+                                        data-kantor="{{$abs->pegawai->kantor->lokasi}}" 
+                                        data-radius="{{$abs->pegawai->kantor->radius}}" 
+                                        id="btnMap">
+                                        <i class="bi bi-map"></i>
+                                    </button>
                                 </td>
                             </tr>
                             @endforeach
@@ -158,28 +220,82 @@
 <script>
 $(document).ready(function () {
     // Event delegation agar tombol btnMap tetap bisa berfungsi setelah AJAX
-    $('#dataTable').on('click', '[id^="btnMap"]', function () {
-        let id = $(this).data('id');
-        let lokasi = $(this).data('lokasi'); // "lat,lng"
-        let nama = $(this).data('nama');
-        let kantor = $(this).data('kantor'); // "lat,lng"
-        let radius = parseFloat($(this).data('radius'));
+   $('#dataTable').on('click', '[id^="btnMap"]', function () {
 
-        let [lat, lng] = lokasi.split(',').map(Number);
-        let [latKantor, lngKantor] = kantor.split(',').map(Number);
+    let id = $(this).data('id');
+    let lokasiIn = $(this).data('lokasi-in');
+    let lokasiOut = $(this).data('lokasi-out');
+    let nama = $(this).data('nama');
+    let kantor = $(this).data('kantor');
+    let radius = parseFloat($(this).data('radius'));
 
-        Swal.fire({
-            title: 'Lokasi Absen: ' + nama,
-            html: `<div id="map${id}" style="height: 400px;"></div>`,
-            width: 700,
-            didOpen: () => {
-                let map = L.map(`map${id}`).setView([lat, lng], 17);
+    // ================= VALIDASI MASUK =================
+    if (!lokasiIn || !lokasiIn.includes(',')) {
+        alert("Lokasi masuk tidak tersedia");
+        return;
+    }
 
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; OpenStreetMap contributors'
-                }).addTo(map);
+    let [latIn, lngIn] = lokasiIn.split(',').map(Number);
 
-                L.marker([lat, lng]).addTo(map).bindPopup(nama).openPopup();
+    // ================= VALIDASI KANTOR =================
+    let latKantor = null;
+    let lngKantor = null;
+
+    if (kantor && kantor.includes(',')) {
+        [latKantor, lngKantor] = kantor.split(',').map(Number);
+    }
+
+    // ================= ICON PULANG =================
+    let redIcon = L.icon({
+        iconUrl: 'https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers/img/marker-icon-red.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+
+    Swal.fire({
+        title: 'Lokasi Absen: ' + nama,
+        html: `<div id="map${id}" style="height: 400px;"></div>`,
+        width: 700,
+
+        didOpen: () => {
+
+            let map = L.map(`map${id}`);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            // ================= GROUP BOUNDS =================
+            let group = [];
+
+            // ================= MASUK =================
+            let markerIn = L.marker([latIn, lngIn])
+                .addTo(map)
+                .bindPopup("Masuk: " + nama)
+                .openPopup();
+
+            group.push([latIn, lngIn]);
+
+            // ================= PULANG =================
+            if (lokasiOut && lokasiOut.includes(',')) {
+
+                let [latOut, lngOut] = lokasiOut.split(',').map(Number);
+
+                if (!isNaN(latOut) && !isNaN(lngOut)) {
+
+                    let markerOut = L.marker([latOut, lngOut], { icon: redIcon })
+                        .addTo(map)
+                        .bindPopup("Pulang: " + nama);
+
+                    group.push([latOut, lngOut]);
+                }
+            }
+
+            // ================= RADIUS KANTOR =================
+            if (!isNaN(radius) && latKantor && lngKantor) {
 
                 L.circle([latKantor, lngKantor], {
                     color: 'blue',
@@ -187,9 +303,20 @@ $(document).ready(function () {
                     fillOpacity: 0.2,
                     radius: radius
                 }).addTo(map);
+
+                group.push([latKantor, lngKantor]);
             }
-        });
+
+            // ================= AUTO FIT ALL MARKER =================
+            if (group.length > 0) {
+                let bounds = L.latLngBounds(group);
+                map.fitBounds(bounds, { padding: [50, 50] });
+            } else {
+                map.setView([latIn, lngIn], 17);
+            }
+        }
     });
+});
 });
 </script>
 @endpush
