@@ -190,7 +190,7 @@
                     <ion-icon name="people-outline" class="profile-icon"></ion-icon>
                     <div class="ms-3">
                         <div class="profile-label">Regu</div>
-                        <p class="profile-value">
+                        <p class="profile-value fw-bold">
                             {{ $anggotaRegu->regu->nama_regu ?? '-' }}
                         </p>
                         <small class="text-muted">
