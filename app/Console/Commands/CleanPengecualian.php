@@ -15,51 +15,62 @@ class CleanPengecualian extends Command
     public function handle()
     {
         $today = Carbon::today()->format('Y-m-d');
-
-        PengecualianAbsen::whereNotNull('tanggal')
-            ->select('id', 'tanggal')
+    
+        PengecualianAbsen::select('id', 'tanggal')
             ->chunkById(200, function ($rows) use ($today) {
-
+    
                 foreach ($rows as $item) {
-
+    
+                    // =========================
+                    // 🔥 JIKA NULL → SKIP
+                    // =========================
+                    if (is_null($item->tanggal)) {
+                        continue;
+                    }
+    
+                    // =========================
+                    // 🔥 NORMALISASI DATA
+                    // =========================
                     $tanggalList = is_array($item->tanggal)
                         ? $item->tanggal
                         : explode(',', $item->tanggal);
-
-                    $tanggalList = array_filter(array_map('trim', $tanggalList));
-
+    
+                    $tanggalList = array_values(array_filter(array_map('trim', $tanggalList)));
+    
                     $tanggalBaru = [];
-
+    
                     foreach ($tanggalList as $tgl) {
                         if ($tgl >= $today) {
                             $tanggalBaru[] = $tgl;
                         }
                     }
-
-                    // 🔥 kalau kosong → delete
-                    if (empty($tanggalBaru)) {
+    
+                    // =========================
+                    // 🔥 RULE BARU
+                    // =========================
+    
+                    // ❌ jika sisa ≤ 1 → HAPUS
+                    if (count($tanggalBaru) <= 1) {
                         DB::table('pengecualian_absen')
                             ->where('id', $item->id)
                             ->delete();
                         continue;
                     }
-
-                    // 🔥 kalau tidak berubah → skip
-                    if ($tanggalBaru === array_values($tanggalList)) {
+    
+                    // ⏭️ jika tidak berubah → skip
+                    if ($tanggalBaru === $tanggalList) {
                         continue;
                     }
-
-                    // 🔥 update
-                    $table = (new PengecualianAbsen)->getTable();
-                    
-                    DB::table($table)
+    
+                    // ✅ update jika masih > 1
+                    DB::table('pengecualian_absen')
                         ->where('id', $item->id)
                         ->update([
                             'tanggal' => json_encode(array_values($tanggalBaru))
                         ]);
                 }
             });
-
+    
         $this->info('Pembersihan pengecualian selesai.');
     }
 }

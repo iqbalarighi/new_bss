@@ -1139,8 +1139,8 @@ $perusa = Auth::user()->perusahaan;
     public function pengecualianStore(Request $request)
 {
     $request->validate([
-        'karyawan_id' => 'required',
-        'tanggal' => 'required'
+        'karyawan_id' => 'required'
+        // 🔥 tanggal tidak wajib lagi
     ]);
 
     $user = Auth::user();
@@ -1154,25 +1154,49 @@ $perusa = Auth::user()->perusahaan;
         return back()->with('error', 'Data karyawan tidak ditemukan!');
     }
 
-    // 🔥 pecah tanggal dari flatpickr (string → array)
+    // =========================
+    // 🔥 PARSING TANGGAL
+    // =========================
     if (is_array($request->tanggal)) {
-        $tanggalList = $request->tanggal;
+        $tanggalList = array_filter($request->tanggal);
     } else {
-        $tanggalList = array_map('trim', explode(',', $request->tanggal));
+        $tanggalList = array_filter(
+            array_map('trim', explode(',', $request->tanggal ?? ''))
+        );
     }
 
-    // 🔥 ambil data existing (kalau ada)
-    $existing = PengecualianAbsen::where('karyawan_id', $karyawan->id)
-        ->first();
-        
+    // 👉 kalau kosong → jadikan null
+    $tanggalList = !empty($tanggalList) ? array_values($tanggalList) : null;
+
+    // =========================
+    // 🔥 AMBIL DATA EXISTING
+    // =========================
+    $existing = PengecualianAbsen::where('karyawan_id', $karyawan->id)->first();
+
     $existingTanggal = $existing ? ($existing->tanggal ?? []) : [];
 
-    $duplikat = array_intersect($existingTanggal, $tanggalList);
+    // =========================
+    // 🔥 CEK DUPLIKAT (HANYA JIKA ADA TANGGAL)
+    // =========================
+    if ($tanggalList && $existingTanggal) {
+        $duplikat = array_intersect($existingTanggal, $tanggalList);
 
+        if (count($duplikat)) {
+            return back()->with('error', 'Tanggal sudah ada: ' . implode(', ', $duplikat));
+        }
+    }
+
+    // =========================
+    // 💾 SIMPAN DATA
+    // =========================
     if ($existing) {
 
-        // gabungkan tanggal lama + baru
-        $merged = array_unique(array_merge($existing->tanggal ?? [], $tanggalList));
+        if ($tanggalList) {
+            $merged = array_unique(array_merge($existingTanggal, $tanggalList));
+        } else {
+            // 👉 kalau kosong, tetap simpan null
+            $merged = null;
+        }
 
         $existing->update([
             'tanggal' => $merged,
@@ -1186,17 +1210,14 @@ $perusa = Auth::user()->perusahaan;
             'perusahaan' => $karyawan->perusahaan,
             'nama_kantor' => $karyawan->nama_kantor,
             'keterangan' => $request->keterangan,
-            'tanggal' => $tanggalList
+            'tanggal' => $tanggalList // bisa null
         ]);
     }
 
-if (count($duplikat)) {
-    return back()->with('error', 'Tanggal sudah ada: ' . implode(', ', $duplikat));
-}
     return redirect()
-    ->back()
-    ->with('success', 'Data berhasil disimpan')
-    ->with('open_modal_tambah', true);
+        ->back()
+        ->with('success', 'Data berhasil disimpan')
+        ->with('open_modal_tambah', true);
 }
     
     public function pengecualianDelete($id)
@@ -1254,34 +1275,54 @@ if (count($duplikat)) {
         );
     }
     
-    public function pengecualianUpdate(Request $request, $id)
-    {
-        $request->validate([
-            'tanggal' => 'required'
-        ]);
-    
-        $data = PengecualianAbsen::findOrFail($id);
-    
+public function pengecualianUpdate(Request $request, $id)
+{
+    $request->validate([
+        // 🔥 tanggal tidak wajib lagi
+    ]);
+
+    $data = PengecualianAbsen::findOrFail($id);
+
+    // =========================
+    // 🔥 PARSING TANGGAL
+    // =========================
+    if (is_array($request->tanggal)) {
+
         $tanggalList = [];
-    
-        if (is_array($request->tanggal)) {
-            foreach ($request->tanggal as $item) {
-                $tanggalList = array_merge($tanggalList, explode(',', $item));
+
+        foreach ($request->tanggal as $item) {
+            if ($item) {
+                $tanggalList = array_merge(
+                    $tanggalList,
+                    array_map('trim', explode(',', $item))
+                );
             }
-        } else {
-            $tanggalList = explode(',', $request->tanggal);
         }
-    
-        $tanggalList = array_map('trim', $tanggalList);
-        $tanggalList = array_values(array_filter($tanggalList));
-    
-        $data->update([
-            'keterangan' => $request->keterangan,
-            'tanggal'    => $tanggalList // simpan array
-        ]);
-    
-        return back()->with('success', 'Data berhasil diupdate');
+
+    } else {
+
+        $tanggalList = array_map(
+            'trim',
+            explode(',', $request->tanggal ?? '')
+        );
     }
+
+    // 🔥 buang kosong
+    $tanggalList = array_values(array_filter($tanggalList));
+
+    // 👉 kalau kosong → jadikan null
+    $tanggalList = !empty($tanggalList) ? $tanggalList : null;
+
+    // =========================
+    // 💾 UPDATE DATA
+    // =========================
+    $data->update([
+        'keterangan' => $request->keterangan,
+        'tanggal'    => $tanggalList // bisa array / null
+    ]);
+
+    return back()->with('success', 'Data berhasil diupdate');
+}
     
 public function reguStore(Request $request)
 {

@@ -310,41 +310,151 @@ function ambilFotoDanAbsen() {
         let confirm = $('#confirm').val();
         let shift = $('#shift').val();
 
-        Swal.fire({
-            html: `
-                Lokasi Absen<br>
-                <ion-icon name="location" style="color:red; font-size:18px;"></ion-icon>
-                ${lokasi}
-            `,
-            imageUrl: uri,
-            showCancelButton: true
-        }).then(result => {
+        // 🔥 VALIDASI LOKASI DULU
+        if (!lokasi) {
+            Swal.fire(
+                'Error!',
+                'Lokasi tidak terdeteksi. Aktifkan GPS!',
+                'error'
+            );
+            return;
+        }
 
-            if (!result.isConfirmed) return;
+        // =========================
+        // 🔄 MIRROR IMAGE (FIX KAMERA DEPAN)
+        // =========================
+        let canvas = document.createElement("canvas");
+        let ctx = canvas.getContext("2d");
+        let img = new Image();
 
-            let formData = new FormData();
-            formData.append('_token', '{{ csrf_token() }}');
-            formData.append('pegawai_id', $('#pegawai_id').val());
-            formData.append('lokasi', lokasi);
-            formData.append('confirm', confirm);
-            formData.append('shift', shift);
-            formData.append('image', dataURItoBlob(uri), 'absen.png');
+        img.onload = function () {
 
-            $.ajax({
-                type: 'POST',
-                url: '/absen/store',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function () {
-                    Swal.fire('Berhasil', 'Absen berhasil', 'success')
-                        .then(() => location.reload());
-                },
-                error: function () {
-                    Swal.fire('Error', 'Absen gagal', 'error');
-                }
+            canvas.width = img.width;
+            canvas.height = img.height;
+
+            ctx.translate(img.width, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(img, 0, 0);
+
+            let mirroredImage = canvas.toDataURL('image/png');
+
+            // =========================
+            // 📍 PREVIEW SWEETALERT
+            // =========================
+            Swal.fire({
+                html: `
+                    <div style="font-size:14px;">
+                        <b>Lokasi Absen</b><br>
+                        <ion-icon name="location" style="color:red; font-size:20px;"></ion-icon>
+                        ${lokasi}
+                    </div>
+                `,
+                imageUrl: mirroredImage,
+                imageWidth: 300,
+                imageAlt: 'Preview Foto',
+                showCancelButton: true,
+                confirmButtonText: 'Kirim',
+                cancelButtonText: 'Batal',
+                reverseButtons: true,
+                allowOutsideClick: false,
+            }).then((result) => {
+
+                if (!result.isConfirmed) return;
+
+                Swal.fire({
+                    title: 'Mengirim Data...',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                let formData = new FormData();
+                formData.append('_token', '{{ csrf_token() }}');
+                formData.append('pegawai_id', $('#pegawai_id').val());
+                formData.append('lokasi', lokasi);
+                formData.append('confirm', confirm);
+                formData.append('shift', shift);
+                formData.append(
+                    'image',
+                    dataURItoBlob(mirroredImage),
+                    'absen.png'
+                );
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/absen/store',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    cache: false,
+
+                    success: function (respond) {
+                        Swal.close();
+
+                        const status = respond.split("|");
+                        const code   = status[0];
+                        const msg    = status[1] || 'Proses selesai';
+
+                        // ❌ GAGAL (dari backend)
+                        if (code === 'fail') {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Belum Bisa Absen Pulang',
+                                text: msg,
+                                confirmButtonText: 'OK'
+                            });
+                            return;
+                        }
+
+                        // ✅ SUCCESS
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: msg,
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            window.location.href = '{{ url('/absen') }}';
+                        });
+                    },
+
+                    error: function (xhr) {
+                        Swal.close();
+
+                        const reason = xhr.responseJSON?.reason;
+                        let msg = 'Absen gagal';
+
+                        // 🔥 JANGAN DIUBAH (sesuai request kamu)
+                        if (reason === 'no_face') {
+                            msg = 'Wajah tidak terdeteksi. Pastikan wajah terlihat jelas.';
+                        } else if (reason === 'multiple_face') {
+                            msg = 'Terdeteksi lebih dari satu wajah.';
+                        } else if (reason === 'not_match') {
+                            msg = 'Wajah tidak sesuai dengan data. Pastikan untuk melepas masker atau penutup wajah dan berada di tempat yang cukup cahaya.';
+                        } else if (reason === 'face_not_registered') {
+                            msg = 'Wajah belum terdaftar. Silakan lakukan registrasi wajah.';
+                        }
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal',
+                            text: msg,
+                            confirmButtonText: 'OK',
+                            allowOutsideClick: false
+                        }).then((result) => {
+
+                            if (
+                                result.isConfirmed &&
+                                msg.toLowerCase().includes('wajah belum')
+                            ) {
+                                window.location.href = '/absen/profile/#vermuk';
+                            }
+
+                        });
+                    }
+                });
             });
-        });
+        };
+
+        img.src = uri;
     });
 }
 
