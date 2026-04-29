@@ -96,13 +96,22 @@ Route::middleware(['auth:web'])->group(function () {
         Route::post('/regu/store', [MasterController::class, 'reguStore'])->name('regu.store');
         Route::delete('/regu/{id}', [MasterController::class, 'reguDestroy'])->name('regu.destroy');
         Route::delete('/regu/anggota/{id}', [MasterController::class, 'destroyAnggotaRegu'])->name('regu.anggota.delete');
-        Route::post('/regu/{id}/anggota', [MasterController::class, 'tambahAnggota'])
-            ->name('regu.anggota.store');
-            Route::put('/regu/{id}/supervisor', [MasterController::class, 'setSupervisor'])
-    ->name('regu.setSupervisor');
-    Route::put('/regu/{id}/danru', [MasterController::class, 'assignDanru'])
-    ->name('regu.assign.danru');
-    Route::post('/regu/move-anggota', [MasterController::class, 'moveAnggota']);
+        Route::post('/regu/{id}/anggota', [MasterController::class, 'tambahAnggota'])->name('regu.anggota.store');
+        Route::put('/regu/{id}/supervisor', [MasterController::class, 'setSupervisor'])->name('regu.setSupervisor');
+        Route::put('/regu/{id}/danru', [MasterController::class, 'assignDanru'])->name('regu.assign.danru');
+        Route::post('/regu/move-anggota', [MasterController::class, 'moveAnggota']);
+
+    Route::prefix('rollingpegawai')->controller(\App\Http\Controllers\RollingPegawaiController::class)->group(function () {
+            Route::get('/', 'index')->name('rollingpegawai.index');
+            Route::get('/create', 'create')->name('rollingpegawai.create');
+            Route::post('/store', 'store')->name('rollingpegawai.store');
+            Route::get('/detail/{id}', 'detail')->name('rollingpegawai.detail');
+
+            // 🔥 FIX INI
+            Route::put('/update/{id}','update')->name('rollingpegawai.update');
+
+            Route::delete('/delete/{id}', 'destroy')->name('rollingpegawai.delete');
+        });
 
         Route::controller(PegawaiController::class)->group(function () {
             Route::get('/pegawai', 'index')->name('pegawai.index');
