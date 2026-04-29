@@ -33,6 +33,13 @@
     cursor: not-allowed;
 }
 </style>
+<style>
+.highlight {
+    background-color: #ffe066;
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+</style>
 @endpush
 
 @section('content')
@@ -413,32 +420,33 @@
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
 <script>
-    @if(session('success'))
-        Swal.fire({
-            icon: 'success',
-            title: 'Berhasil',
-            text: "{{ session('success') }}",
-            timer: 1500,
-            showConfirmButton: false
-        });
-    @endif
+// ================= SWEET ALERT SESSION =================
+@if(session('success'))
+Swal.fire({
+    icon: 'success',
+    title: 'Berhasil',
+    text: "{{ session('success') }}",
+    timer: 1500,
+    showConfirmButton: false
+});
+@endif
 
-    @if(session('error'))
-        Swal.fire({
-            icon: 'error',
-            title: 'Gagal',
-            text: "{{ session('error') }}"
-        });
-    @endif
-
+@if(session('error'))
+Swal.fire({
+    icon: 'error',
+    title: 'Gagal',
+    text: "{{ session('error') }}"
+});
+@endif
 </script>
+
 <script>
+// ================= BLOCK DRAG DANRU =================
 document.addEventListener('pointerdown', function (e) {
 
     const handle = e.target.closest('.drag-handle');
     if (!handle) return;
 
-    // cek danru
     if (handle.classList.contains('is-danru') || handle.dataset.danru === '1') {
 
         e.preventDefault();
@@ -454,26 +462,84 @@ document.addEventListener('pointerdown', function (e) {
         return false;
     }
 
-}, true); // 🔥 IMPORTANT: capture phase = TRUE
+}, true);
 </script>
+
 <script>
+// ================= HIGHLIGHT SEARCH =================
+function highlightText(keyword) {
+
+    if (!keyword) return;
+
+    keyword = keyword.toLowerCase();
+
+    document.querySelectorAll('.accordion-item').forEach(item => {
+
+        let elements = item.querySelectorAll('b, td, span, small');
+
+        let found = false;
+
+        elements.forEach(el => {
+
+            let text = el.textContent;
+            let lower = text.toLowerCase();
+
+            if (lower.includes(keyword)) {
+
+                let regex = new RegExp(`(${keyword})`, 'gi');
+
+                el.innerHTML = text.replace(regex, `<span class="highlight">$1</span>`);
+
+                found = true;
+            }
+        });
+
+        // 🔥 AUTO OPEN ACCORDION JIKA ADA MATCH
+        if (found) {
+            let collapse = item.querySelector('.accordion-collapse');
+            if (collapse) {
+                bootstrap.Collapse.getOrCreateInstance(collapse).show();
+            }
+        }
+
+    });
+
+    // 🔥 AUTO SCROLL KE HASIL PERTAMA
+    setTimeout(() => {
+        let first = document.querySelector('.highlight');
+        if (first) {
+            first.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+    }, 300);
+}
+
+// RUN SAAT LOAD
+document.addEventListener('DOMContentLoaded', function () {
+
+    let keyword = "{{ request('search') }}";
+
+    if (keyword) {
+        highlightText(keyword);
+    }
+
+});
+</script>
+
+<script>
+// ================= SORTABLE =================
 function openAllAccordion() {
     document.querySelectorAll('.accordion-collapse').forEach(el => {
-        bootstrap.Collapse.getOrCreateInstance(el, {
-            toggle: false
-        }).show();
+        bootstrap.Collapse.getOrCreateInstance(el, { toggle: false }).show();
     });
 }
 
 document.querySelectorAll('.anggota-list').forEach(function (el) {
 
     new Sortable(el, {
-        group: {
-            name: 'anggota',
-            pull: true,
-            put: true
-        },
-
+        group: { name: 'anggota', pull: true, put: true },
         animation: 150,
         handle: '.drag-handle',
         draggable: 'tr',
@@ -482,47 +548,35 @@ document.querySelectorAll('.anggota-list').forEach(function (el) {
         fallbackOnBody: true,
         swapThreshold: 0.65,
 
-        // 🔥 AUTO SCROLL SAAT DRAG
+        // AUTO SCROLL
         scroll: true,
         scrollSensitivity: 80,
         scrollSpeed: 15,
         bubbleScroll: true,
-        filter: '.danru-lock',
-        preventOnFilter: true,
 
         onStart: function () {
             document.body.classList.add('dragging-active');
-
-            // 🔥 OPEN SEMUA ACCORDION SAAT DRAG
             openAllAccordion();
         },
 
         onEnd: function () {
-    // document.body.classList.remove('dragging-active');
-
-    // optional: bisa collapse lagi semua
-    document.querySelectorAll('.accordion-collapse.show').forEach(el => {
-        bootstrap.Collapse.getOrCreateInstance(el).hide();
-    });
-},
+            document.querySelectorAll('.accordion-collapse.show').forEach(el => {
+                bootstrap.Collapse.getOrCreateInstance(el).hide();
+            });
+        },
 
         onAdd: function (evt) {
 
             let pegawaiId = evt.item.dataset.id;
             let newReguId = evt.to.dataset.reguId;
 
-            if (!newReguId) {
-                console.log('REGU ID NULL - DROP FAILED');
-                return;
-            }
+            if (!newReguId) return;
 
-                Swal.fire({
-                    title: 'Memindahkan...',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
+            Swal.fire({
+                title: 'Memindahkan...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
 
             fetch('/regu/move-anggota', {
                 method: 'POST',
@@ -537,40 +591,26 @@ document.querySelectorAll('.anggota-list').forEach(function (el) {
             })
             .then(res => res.json())
             .then(res => {
+
                 Swal.close();
-                 if (!res.success) {
 
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Gagal!',
-                            text: res.message || 'Gagal memindahkan anggota',
-                        });
-
-                        return;
-                    }
-
+                if (!res.success) {
                     Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil',
-                        text: res.message,
-                        timer: 1200,
-                        showConfirmButton: false
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: res.message || 'Gagal memindahkan anggota'
                     });
-
-
-                // 🔥 FIX ACCORDION AUTO OPEN
-                let target = evt.to.closest('.accordion-collapse');
-
-                if (target) {
-                    document.querySelectorAll('.accordion-collapse.show')
-                        .forEach(open => {
-                            if (open !== target) {
-                                bootstrap.Collapse.getOrCreateInstance(open).hide();
-                            }
-                        });
-
-                    bootstrap.Collapse.getOrCreateInstance(target).show();
+                    return;
                 }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: res.message,
+                    timer: 1200,
+                    showConfirmButton: false
+                });
+
                 location.reload();
             })
             .catch(() => {
@@ -583,240 +623,38 @@ document.querySelectorAll('.anggota-list').forEach(function (el) {
             });
         }
     });
+
 });
 </script>
+
 <script>
+// ================= SELECT2 DAN MODAL =================
 let pegawaiGlobalUsed = @json($pegawaiSudahMasukRegu);
-
-$(document).ready(function () {
-
-    // INIT SELECT2
-    $('#selectDanru').select2({
-        dropdownParent: $('#modalDanru'),
-        width: '100%',
-        templateResult: function (data) {
-
-            if (!data.id) return data.text;
-
-            let isUsed = $(data.element).data('used');
-
-            if (isUsed == 1) {
-                return $('<span style="color:red;">' + data.text + ' (sudah dipakai)</span>');
-            }
-
-            return data.text;
-        }
-    });
-
-});
-
-
-// ================= OPEN MODAL =================
-$(document).on('click', '.btnDanru', function () {
-
-    let id = $(this).data('id');
-    let nama = $(this).data('nama');
-    let danru = $(this).data('danru');
-    let danruId = $(this).data('danru-id');
-
-    // SET JUDUL
-    $('#judulDanru').text(`Assign Danru - ${nama ?? 'Regu'}`);
-
-    // SET DANRU SAAT INI
-    if (danru) {
-        $('#danruSekarang').html('<span class="badge bg-success">' + danru + '</span>');
-    } else {
-        $('#danruSekarang').html('<span class="text-muted">Belum ada</span>');
-    }
-
-    // RESET SELECT
-    $('#selectDanru').val(null).trigger('change');
-
-    // ENABLE/DISABLE OPTION
-    $('#selectDanru option').each(function () {
-
-        let used = $(this).data('used');
-        let val  = $(this).val();
-
-        // 🔥 allow kalau itu danru regu ini
-        if (used == 1 && val != danruId) {
-            $(this).prop('disabled', true);
-        } else {
-            $(this).prop('disabled', false);
-        }
-
-    });
-
-    // SET SELECTED JIKA ADA
-    if (danruId) {
-        $('#selectDanru').val(danruId).trigger('change');
-    }
-
-    // SET ACTION FORM
-    $('#formDanru').attr('action', '/regu/' + id + '/danru');
-
-    // SHOW MODAL
-    $('#modalDanru').modal('show');
-});
-
-
-// ================= RESET MODAL =================
-$('#modalDanru').on('hidden.bs.modal', function () {
-
-    $('#selectDanru').val(null).trigger('change');
-
-    $('#selectDanru option').prop('disabled', false);
-
-    $('#danruSekarang').html('<span class="text-muted">Belum ada</span>');
-});
-</script>
-<script>
 let anggotaExisting = [];
 
 $(document).ready(function () {
 
-    // ================= SELECT2 =================
-$('#pegawaiSelect').select2({
-    dropdownParent: $('#modalAnggota'),
-    placeholder: "Pilih anggota...",
-    width: '100%',
-
-    templateResult: function (data) {
-
-        if (!data.id) return data.text;
-
-        let kantorId = $('#filterKantor').val();
-        let kantor = $(data.element).data('kantor');
-
-        if (kantorId && kantor != kantorId) return null;
-
-        // 🔥 GLOBAL CHECK (SEMUA REGU)
-        if (pegawaiGlobalUsed.includes(parseInt(data.id))) {
-            return $(`
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span>${data.text}</span>
-                    <span class="badge bg-danger">Sudah di regu</span>
-                </div>
-            `);
-        }
-
-        return data.text;
-    },
-
-    templateSelection: function (data) {
-
-        if (!data.id) return data.text;
-
-        // 🔥 kalau somehow ke-select (fallback UI)
-        if (anggotaExisting.includes(parseInt(data.id))) {
-            return $('<span style="color:red;">' + data.text + '</span>');
-        }
-
-        return data.text;
-    }
-
-});
-
-});
-
-
-// ================= FILTER KANTOR =================
-$('#filterKantor').on('change', function () {
-    $('#pegawaiSelect').trigger('change.select2'); // refresh dropdown
-});
-
-
-// ================= OPEN MODAL TAMBAH ANGGOTA =================
-$(document).on('click', '.btnTambahAnggota', function () {
-
-    let id = $(this).data('id');
-    let nama = $(this).data('nama');
-
-    // ambil anggota existing
-    anggotaExisting = $(this).data('anggota') || [];
-
-    // 🔥 RESET TOTAL SELECT2
-    $('#pegawaiSelect').val(null).trigger('change');
-
-    // 🔥 ENABLE/DISABLE OPTION
-    $('#pegawaiSelect option').each(function () {
-
-    let val = parseInt($(this).val());
-
-    if (pegawaiGlobalUsed.includes(val)) {
-        $(this).prop('disabled', true);
-    } else {
-        $(this).prop('disabled', false);
-    }
-});
-
-    // refresh select2
-    $('#pegawaiSelect').trigger('change.select2');
-
-    // reset filter
-    $('#filterKantor').val('');
-
-    // set form action
-    $('#formTambahAnggota').attr('action', '/regu/' + id + '/anggota');
-
-    // judul modal
-    $('#judulModal').text(`Tambah Anggota - ${nama ?? 'Regu'}`);
-
-    // tampilkan modal
-    $('#modalAnggota').modal('show');
-});
-
-
-// ================= RESET MODAL ANGGOTA =================
-$('#modalAnggota').on('hidden.bs.modal', function () {
-
-    anggotaExisting = [];
-
-    $('#pegawaiSelect').val(null).trigger('change');
-
-    $('#pegawaiSelect option')
-        .prop('selected', false)
-        .prop('disabled', false);
-
-    $('#filterKantor').val('');
-});
-
-$(document).ready(function () {
+    $('#selectDanru').select2({
+        dropdownParent: $('#modalDanru'),
+        width: '100%'
+    });
 
     $('#selectSupervisor').select2({
         dropdownParent: $('#modalSupervisor'),
-        placeholder: "Pilih supervisor...",
+        width: '100%'
+    });
+
+    $('#pegawaiSelect').select2({
+        dropdownParent: $('#modalAnggota'),
+        placeholder: "Pilih anggota...",
         width: '100%'
     });
 
 });
-
-// ================= OPEN MODAL =================
-$(document).on('click', '.btnAssignSupervisor', function () {
-
-    let id = $(this).data('id');
-    let nama = $(this).data('nama');
-    let supervisor = $(this).data('supervisor');
-
-    // set title
-    $('#judulSupervisor').text(`Set Supervisor - ${nama ?? 'Regu'}`);
-
-    // set selected
-    $('#selectSupervisor').val(supervisor).trigger('change');
-
-    // set action
-    $('#formSupervisor').attr('action', '/regu/' + id + '/supervisor');
-
-    // show modal
-    $('#modalSupervisor').modal('show');
-});
-
-// reset
-$('#modalSupervisor').on('hidden.bs.modal', function () {
-    $('#selectSupervisor').val(null).trigger('change');
-});
 </script>
+
 <script>
+// ================= CONFIRM DELETE =================
 function confirmDelete(form, text = 'Data akan dihapus permanen!') {
     event.preventDefault();
 
@@ -836,4 +674,5 @@ function confirmDelete(form, text = 'Data akan dihapus permanen!') {
     });
 }
 </script>
+
 @endpush

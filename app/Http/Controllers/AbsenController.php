@@ -702,103 +702,87 @@ public function profilimage(Request $request)
    public function izin(Request $request)
 {
     $user = Auth::guard('pegawai')->user();
-    $nip_id = $user->id;
 
-    $now = Carbon::now();
-
-    // 🔥 TAMBAHAN: ambil input bulan dari blade
-    $bulanInput = $request->bulan;
-
-    if ($bulanInput) {
-        $tanggal = Carbon::parse($bulanInput);
-    } else {
-        $tanggal = $now;
-    }
+    $tanggal = $request->bulan
+        ? Carbon::parse($request->bulan)
+        : Carbon::now();
 
     $bulan = $tanggal->month;
     $tahun = $tanggal->year;
 
-    $jabatan = JabatanModel::where('id', $user->jabatan)->first();
-    $roleJabatan = strtolower($jabatan->jabatan ?? '');
+    // 🔥 AMBIL REGU YANG DIA PEGANG
+    $reguSupervisor = ReguModel::where('supervisor_id', $user->id)
+        ->pluck('id')
+        ->toArray();
 
-    // whitelist kantor
-    $multiKantorUser = [
-        338 => [10,18,19,20,21,22,23,24,25,26,27,28,29,30],
-    ];
+    $reguDanru = ReguModel::where('danru_id', $user->id)
+        ->pluck('id')
+        ->toArray();
 
-    $isMultiKantor = isset($multiKantorUser[$user->id]);
+    // 🔥 CEK APA DIA PUNYA PERAN
+    $isSupervisor = count($reguSupervisor) > 0;
+    $isDanru      = count($reguDanru) > 0;
 
-    $kantorFilter = [$user->nama_kantor ?? 0];
+    // 🔥 DEFAULT QUERY (IZIN SENDIRI)
+    $query = IzinabsenModel::with('pegawai.jabat')
+        ->where('nip', $user->id);
 
-    if ($isMultiKantor) {
-        $kantorFilter = $multiKantorUser[$user->id];
-    }
-    
-    $kantorFilter = array_map('intval', $kantorFilter);
-    
-    if (
-        str_contains($roleJabatan, 'supervisor pam') ||
-        str_contains($roleJabatan, 'koordinator pam')||
-        str_contains($roleJabatan, 'komandan pam')
-    ) {
+    // ===============================
+    // 🔥 SUPERVISOR
+    // ===============================
+    if ($isSupervisor) {
 
-        $izin = IzinabsenModel::with('pegawai.jabat')
-    ->where(function ($query) use ($user, $kantorFilter, $isMultiKantor) {
+        $query = IzinabsenModel::with('pegawai.jabat')
+            ->where(function ($q) use ($user, $reguSupervisor) {
 
-        // 🔥 DATA MILIK SENDIRI (WAJIB MASUK)
-        $query->where('nip', $user->id);
+                // data sendiri
+                $q->where('nip', $user->id);
 
-        // 🔥 DATA ORANG LAIN (KHUSUS MULTI KANTOR)
-        if ($isMultiKantor) {
-            $query->orWhere(function ($q2) use ($user, $kantorFilter) {
-                $q2->whereIn('nama_kantor', $kantorFilter)
-
-                   ->whereHas('pegawai', function ($q3) use ($user) {
-                       $q3->whereHas('jabat', function ($q4) {
-                           $q4->where(function ($sub) {
-                               $sub->where('jabatan', 'like', '%pam%')
-                                   ->orWhere('jabatan', 'like', '%kamdal%')
-                                   ->orWhere('jabatan', 'like', '%pengamanan%');
-                           });
-                       });
-                   });
-            });
-        }
-    })
-
-    // 🔥 FILTER BULAN TETAP BERLAKU UNTUK SEMUA
-    ->whereMonth('tanggal', $bulan)
-    ->whereYear('tanggal', $tahun)
-
-    ->where('perusahaan', $user->perusahaan)
-
-    ->orderBy('tanggal', 'desc')
-    ->get()
-
-    ->groupBy(function ($item) {
-        return Carbon::parse($item->tanggal)->format('Y-m-d');
-    });
-
-    } else {
-
-        $izin = IzinabsenModel::where('nip', $nip_id)
-
-            // 🔥 UPDATE: pakai bulan dari input / default sekarang
-            ->whereMonth('tanggal', $bulan)
-            ->whereYear('tanggal', $tahun)
-
-            ->orderBy('tanggal', 'desc')
-            ->get()
-
-            ->groupBy(function ($item) {
-                return Carbon::parse($item->tanggal)->format('Y-m-d');
+                // data anggota regu dia
+                $q->orWhereHas('pegawai', function ($q2) use ($reguSupervisor) {
+                    $q2->whereHas('reguAnggota', function ($q3) use ($reguSupervisor) {
+                        $q3->whereIn('regu_id', $reguSupervisor);
+                    });
+                });
             });
     }
 
-    // 🔥 UPDATE: mengikuti bulan filter
+    // ===============================
+    // 🔥 DANRU (kalau bukan supervisor)
+    // ===============================
+    elseif ($isDanru) {
+
+        $query = IzinabsenModel::with('pegawai.jabat')
+            ->where(function ($q) use ($user, $reguDanru) {
+
+                // data sendiri
+                $q->where('nip', $user->id);
+
+                // data anggota regu dia
+                $q->orWhereHas('pegawai', function ($q2) use ($reguDanru) {
+                    $q2->whereHas('reguAnggota', function ($q3) use ($reguDanru) {
+                        $q3->whereIn('regu_id', $reguDanru);
+                    });
+                });
+            });
+    }
+
+    // ===============================
+    // 🔥 FILTER BULAN + PERUSAHAAN
+    // ===============================
+    $izin = $query
+        ->whereMonth('tanggal', $bulan)
+        ->whereYear('tanggal', $tahun)
+        ->where('perusahaan', $user->perusahaan)
+        ->orderBy('tanggal', 'desc')
+        ->get()
+        ->groupBy(function ($item) {
+            return Carbon::parse($item->tanggal)->format('Y-m-d');
+        });
+
     $bulanNow = $tanggal->translatedFormat('F Y');
 
-    return view('absen.izin', compact('izin','bulanNow','bulanInput'));
+    return view('absen.izin', compact('izin','bulanNow'));
 }
 
     public function formizin()

@@ -84,5 +84,9 @@ public function shifts()
     {
         return $this->belongsTo(ShiftModel::class, 'shift');
     }
-
+    
+public function reguAnggota()
+    {
+        return $this->hasMany(ReguAnggotaModel::class, 'pegawai_id');
+    }
 }
